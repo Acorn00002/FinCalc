@@ -2543,34 +2543,70 @@
   .rgp-advice-chip p b{color:var(--brand);font-weight:800;}
 
   /* ==================================================
-     자산 라운지 — Firestore 실시간 커뮤니티 피드 (독립 메뉴)
+     자산 라운지 — 토스(Toss) 커뮤니티 디자인 시스템: 무채색 위주, 절제된 여백, 이모지 배제
+     색상은 기존 CSS 변수(토큰)를 그대로 사용 — 이미 이 프로젝트의 --bg/--ink-1/--ink-2/--ink-3/--brand-2가
+     토스 팔레트(#F2F4F6/#191F28/#4E5968/#8B95A1/#3182F6)와 정확히 일치해서, 변수를 쓰면 다크모드도 자동 대응됨.
      ================================================== */
   .lounge-head{padding:28px 2px 20px;}
   @media (min-width:640px){ .lounge-head{padding:36px 2px 24px;} }
-  .lounge-eyebrow{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--brand);}
+  .lounge-eyebrow{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--brand-2);}
   .lounge-head h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--ink-1);}
   .lounge-head p{margin:0;font-size:13.5px;font-weight:500;color:var(--ink-3);}
 
-  .lounge-filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  /* 카테고리 필터 — 알약형 탭, 선택 시 토스 다크 배경 */
+  .lounge-filter-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
   .lounge-filter-pill{
-    padding:10px 18px;border-radius:999px;border:none;
-    background:var(--card);color:var(--ink-2);
-    font-size:13.5px;font-weight:700;letter-spacing:-0.02em;
-    cursor:pointer;box-shadow:var(--shadow-card);
-    transition:background .15s ease, color .15s ease, transform .15s ease, box-shadow .15s ease;
+    padding:11px 20px;border-radius:20px;border:none;
+    background:var(--bg);color:var(--ink-2);
+    font-size:14px;font-weight:600;letter-spacing:-0.02em;
+    cursor:pointer;box-shadow:none;
+    transition:background .15s ease, color .15s ease;
   }
-  .lounge-filter-pill:hover{transform:translateY(-1px);}
-  .lounge-filter-pill.active{background:var(--brand);color:#fff;box-shadow:none;}
+  .lounge-filter-pill:hover{background:var(--line);}
+  .lounge-filter-pill.active{background:var(--ink-1);color:#fff;}
+  .lounge-filter-pill.active:hover{background:var(--ink-1);}
 
-  .lounge-write-bar{
-    display:flex;flex-direction:column;gap:10px;
-    background:var(--card);border-radius:var(--radius-lg);
-    padding:18px 20px;
-    margin-bottom:24px;
-    box-shadow:var(--shadow-card);
+  /* 한 줄 프롬프트 바 — 기존의 무거운 작성 폼을 대체, 클릭하면 글쓰기 모달이 열림 */
+  .lounge-prompt-bar{
+    display:flex;align-items:center;gap:12px;width:100%;
+    background:var(--card-soft);border:1px solid var(--line);
+    border-radius:16px;padding:14px 18px;margin-bottom:28px;
+    cursor:pointer;text-align:left;
+    transition:background .15s ease, transform .15s ease;
   }
+  .lounge-prompt-bar:hover{background:var(--bg);transform:scale(1.005);}
+  .lounge-prompt-bar:active{transform:scale(0.99);}
+  .lounge-prompt-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--line);}
+  .lounge-prompt-placeholder{
+    flex:1;min-width:0;font-size:14px;font-weight:500;color:var(--ink-3);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .lounge-prompt-pencil{font-size:18px;color:var(--ink-3);flex-shrink:0;--ph-duotone-secondary-opacity:0;}
+
+  /* 글쓰기 모달 — 프롬프트 바 클릭 시 뜨는 오버레이. 내부 필드는 기존 로직/ID를 그대로 재사용 */
+  .lounge-write-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;z-index:220;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .lounge-write-overlay.open{opacity:1;pointer-events:auto;}
+  .lounge-write-modal{
+    width:100%;max-width:480px;max-height:88vh;overflow-y:auto;
+    background:var(--card);border-radius:20px;padding:24px;
+    transform:translateY(12px) scale(0.98);opacity:0;transition:transform .22s ease, opacity .22s ease;
+  }
+  .lounge-write-overlay.open .lounge-write-modal{transform:translateY(0) scale(1);opacity:1;}
+  .lounge-write-modal-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .lounge-write-modal-top h3{margin:0;font-size:17px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .lounge-write-modal-close{
+    width:32px;height:32px;border-radius:10px;border:none;background:var(--bg);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .lounge-write-modal-close:hover{background:var(--line);}
+
+  .lounge-write-bar{display:flex;flex-direction:column;gap:12px;}
   .lounge-write-top{display:flex;gap:10px;flex-wrap:wrap;}
-  .lounge-write-select-wrap{position:relative;background:var(--card-soft);border-radius:12px;flex-shrink:0;}
+  .lounge-write-select-wrap{position:relative;background:var(--bg);border-radius:12px;flex-shrink:0;}
   .lounge-write-category{
     appearance:none;-webkit-appearance:none;border:none;outline:none;background:transparent;
     font:inherit;letter-spacing:inherit;font-size:13px;font-weight:700;color:var(--ink-1);
@@ -2582,13 +2618,13 @@
     transform:translateY(-65%) rotate(45deg);pointer-events:none;
   }
   .lounge-write-title{
-    flex:1;min-width:160px;border:none;outline:none;background:var(--card-soft);border-radius:12px;
+    flex:1;min-width:160px;border:none;outline:none;background:var(--bg);border-radius:12px;
     font:inherit;letter-spacing:inherit;font-size:13.5px;font-weight:700;color:var(--ink-1);
     padding:11px 14px;
   }
   .lounge-write-title::placeholder{color:var(--ink-3);font-weight:500;}
   .lounge-write-content{
-    width:100%;border:none;outline:none;background:var(--card-soft);border-radius:12px;
+    width:100%;border:none;outline:none;background:var(--bg);border-radius:12px;
     font:inherit;letter-spacing:inherit;font-size:13.5px;font-weight:500;color:var(--ink-1);
     padding:12px 14px;resize:vertical;min-height:52px;line-height:1.6;
   }
@@ -2604,107 +2640,105 @@
   .lounge-write-btn:disabled{background:#c2c8d1;cursor:default;}
 
   /* 일반 글 / 투표 작성 타입 토글 */
-  .lounge-write-type-toggle{display:flex;background:var(--card-soft);border-radius:12px;padding:3px;flex-shrink:0;}
+  .lounge-write-type-toggle{display:flex;background:var(--bg);border-radius:12px;padding:3px;flex-shrink:0;}
   .lounge-write-type-btn{
     padding:9px 13px;border-radius:9px;border:none;background:transparent;
     color:var(--ink-3);font-size:12.5px;font-weight:700;letter-spacing:-0.02em;
     cursor:pointer;white-space:nowrap;transition:all .15s ease;
   }
-  .lounge-write-type-btn.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(15,23,42,0.08);}
+  .lounge-write-type-btn.active{background:var(--card);color:var(--brand-2);box-shadow:0 2px 6px rgba(15,23,42,0.08);}
 
   /* 투표 선택지 작성 영역 */
   .lounge-write-poll{display:flex;flex-direction:column;gap:8px;}
   .lounge-poll-option-list{display:flex;flex-direction:column;gap:8px;}
   .lounge-poll-option-row{display:flex;align-items:center;gap:8px;}
   .lounge-poll-option-row input{
-    flex:1;min-width:0;border:none;outline:none;background:var(--card-soft);border-radius:10px;
+    flex:1;min-width:0;border:none;outline:none;background:var(--bg);border-radius:10px;
     font:inherit;letter-spacing:inherit;font-size:13px;font-weight:600;color:var(--ink-1);
     padding:10px 12px;
   }
   .lounge-poll-option-row input::placeholder{color:var(--ink-3);font-weight:500;}
   .lounge-poll-option-remove{
     flex-shrink:0;width:32px;height:32px;border-radius:10px;border:none;
-    background:var(--card-soft);color:var(--ink-3);cursor:pointer;
+    background:var(--bg);color:var(--ink-3);cursor:pointer;
     display:flex;align-items:center;justify-content:center;font-size:16px;
     transition:background .15s ease, color .15s ease;
   }
   .lounge-poll-option-remove:hover{background:#fde8e8;color:#f04452;}
   .lounge-poll-add-btn{
-    padding:10px;border-radius:10px;border:1.5px dashed #d8dce2;background:transparent;
+    padding:10px;border-radius:10px;border:1.5px dashed var(--line);background:transparent;
     color:var(--brand-2);font-size:12.5px;font-weight:700;cursor:pointer;
     transition:background .15s ease;
   }
   .lounge-poll-add-btn:hover{background:var(--brand-soft-2);}
 
-  .lounge-feed{display:flex;flex-direction:column;gap:14px;padding-bottom:40px;}
+  /* 피드 카드 — 두꺼운 테두리/그림자 대신 미세한 micro-shadow만 사용 */
+  .lounge-feed{display:flex;flex-direction:column;gap:20px;padding-bottom:40px;}
   .lounge-card{
-    background:var(--card);border-radius:var(--radius-lg);padding:22px 24px;
-    box-shadow:var(--shadow-card);transition:box-shadow .15s ease;cursor:pointer;
+    background:var(--card);border-radius:16px;padding:20px 22px;
+    box-shadow:0 1px 2px rgba(15,23,42,0.05);transition:box-shadow .15s ease;cursor:pointer;
   }
-  .lounge-card:hover{box-shadow:var(--shadow-card-hover);}
+  .lounge-card:hover{box-shadow:0 4px 14px rgba(15,23,42,0.07);}
 
-  .lounge-card-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-  .lounge-card-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
+  .lounge-card-top{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .lounge-card-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg);}
   .lounge-card-author{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3;}
-  .lounge-card-name{font-size:13px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+  .lounge-card-name{font-size:13px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .lounge-card-time{font-size:11px;font-weight:600;color:var(--ink-3);}
 
-  /* 자산 티어 배지 — 닉네임 옆에 익명으로 표기되는 등급 뱃지 */
+  /* 자산 티어 배지 — 컬러풀한 그라디언트 대신 11px 옅은 회색 텍스트 태그로 최소화 */
   .lounge-tier-badge{
-    flex-shrink:0;font-size:10px;font-weight:800;letter-spacing:-0.01em;
-    padding:2px 8px;border-radius:999px;white-space:nowrap;
-    background:var(--card-soft);color:var(--ink-3);
+    flex-shrink:0;font-size:11px;font-weight:500;letter-spacing:-0.01em;
+    color:var(--ink-3);white-space:nowrap;
   }
-  .lounge-tier-badge.tier-diamond{background:linear-gradient(135deg,#c7d2fe,#a5b4fc);color:#4338ca;}
-  .lounge-tier-badge.tier-gold{background:linear-gradient(135deg,#fde68a,#fbbf24);color:#92400e;}
-  .lounge-tier-badge.tier-silver{background:linear-gradient(135deg,#e2e8f0,#cbd5e1);color:#475569;}
-  .lounge-tier-badge.tier-bronze{background:linear-gradient(135deg,#fed7aa,#fdba74);color:#9a3412;}
 
   /* 투표형 게시글 렌더링 */
   .lounge-poll-block{margin-bottom:14px;}
   .lounge-poll-question{margin:0 0 10px;font-size:13.5px;font-weight:600;color:var(--ink-2);}
   .lounge-poll-option-bar{
-    position:relative;border-radius:11px;background:var(--card-soft);overflow:hidden;
+    position:relative;border-radius:11px;background:var(--bg);overflow:hidden;
     margin-bottom:8px;padding:10px 14px;cursor:pointer;transition:background .15s ease;
   }
-  .lounge-poll-option-bar:hover{background:#eef0f2;}
+  .lounge-poll-option-bar:hover{background:var(--line);}
   .lounge-poll-option-bar.voted{cursor:default;}
   .lounge-poll-option-fill{
-    position:absolute;left:0;top:0;bottom:0;background:var(--brand-soft);
+    position:absolute;left:0;top:0;bottom:0;background:var(--brand-soft-2);
     border-radius:11px;transition:width .5s cubic-bezier(.22,1,.36,1);z-index:0;
   }
   .lounge-poll-option-row-inner{position:relative;z-index:1;display:flex;justify-content:space-between;gap:10px;align-items:center;}
   .lounge-poll-option-label{font-size:13px;font-weight:700;color:var(--ink-1);}
-  .lounge-poll-option-pct{font-size:12.5px;font-weight:800;color:var(--brand);flex-shrink:0;}
+  .lounge-poll-option-pct{font-size:12.5px;font-weight:800;color:var(--brand-2);flex-shrink:0;}
   .lounge-poll-total{font-size:11.5px;font-weight:600;color:var(--ink-3);}
+
+  /* 카테고리 태그 — 배경 없이 12px 옅은 회색 텍스트만, 카드 우측 상단 */
   .lounge-card-badge{
-    flex-shrink:0;font-size:11px;font-weight:700;color:var(--ink-3);
-    background:var(--card-soft);padding:5px 11px;border-radius:999px;
-    border:1px solid var(--line);white-space:nowrap;
+    flex-shrink:0;font-size:12px;font-weight:500;color:var(--ink-3);
+    background:none;padding:0;border:none;white-space:nowrap;
   }
-  .lounge-card-title{margin:0 0 6px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;word-break:keep-all;}
+  .lounge-card-title{margin:0 0 8px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;word-break:keep-all;}
   .lounge-card-text{
-    margin:0 0 14px;font-size:13.5px;font-weight:500;color:var(--ink-2);line-height:1.65;
+    margin:0 0 16px;font-size:13.5px;font-weight:500;color:var(--ink-2);line-height:1.65;
     word-break:keep-all;white-space:pre-line;
     display:-webkit-box;-webkit-line-clamp:3;line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
   }
-  .lounge-card-bottom{display:flex;align-items:center;gap:14px;}
-  .lounge-card-stat{font-size:12.5px;font-weight:600;color:var(--ink-3);display:flex;align-items:center;gap:4px;}
-  .lounge-card-stat span{font-weight:700;color:var(--ink-2);}
+  .lounge-card-bottom{display:flex;align-items:center;gap:18px;}
+  .lounge-card-stat{font-size:13px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:5px;}
+  .lounge-card-stat i{font-size:17px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
 
+  /* 좋아요/댓글 — 이모지 대신 라인 아이콘 + 숫자만, 배경 없는 미니멀 버튼 */
   .lounge-like-btn{
-    border:none;background:var(--card-soft);color:var(--ink-3);
-    font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:999px;
+    border:none;background:none;color:var(--ink-2);
+    font-size:13px;font-weight:600;padding:0;
     cursor:pointer;display:flex;align-items:center;gap:5px;
-    transition:background .15s ease, transform .15s ease;
+    transition:color .15s ease, transform .15s ease;
   }
-  .lounge-like-btn span{font-weight:800;color:inherit;}
-  .lounge-like-btn:hover{background:#eef0f2;}
+  .lounge-like-btn i{font-size:17px;--ph-duotone-secondary-opacity:0;transition:color .15s ease;}
   .lounge-like-btn:active{transform:scale(0.94);}
-  .lounge-like-btn.liked{background:rgba(240,68,82,0.10);color:#f04452;}
+  .lounge-like-btn.liked{color:#f04452;}
+  .lounge-like-btn.liked i{color:#f04452;--ph-duotone-secondary-opacity:0.25;}
 
   .lounge-empty, .lounge-comment-empty, .lounge-comment-loading{
-    background:var(--card);border-radius:var(--radius-lg);padding:48px 20px;text-align:center;
+    background:var(--card);border-radius:16px;padding:48px 20px;text-align:center;
     color:var(--ink-3);font-size:13.5px;font-weight:600;
   }
   .lounge-comment-empty, .lounge-comment-loading{background:var(--card-soft);padding:28px 16px;border-radius:14px;}
@@ -2718,45 +2752,44 @@
   .lounge-detail-overlay.open{opacity:1;pointer-events:auto;}
   .lounge-detail-modal{
     width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
-    background:#fff;border-radius:var(--radius-lg);padding:24px;
+    background:var(--card);border-radius:20px;padding:24px;
     transform:translateY(12px) scale(0.98);opacity:0;transition:transform .22s ease, opacity .22s ease;
   }
   .lounge-detail-overlay.open .lounge-detail-modal{transform:translateY(0) scale(1);opacity:1;}
-  .lounge-detail-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .lounge-detail-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
   .lounge-detail-cat-badge{
-    font-size:12px;font-weight:700;color:var(--brand);background:var(--brand-soft);
-    padding:6px 12px;border-radius:999px;
+    font-size:12px;font-weight:600;color:var(--ink-3);background:none;padding:0;
   }
   .lounge-detail-close-btn{
-    width:32px;height:32px;border-radius:10px;border:none;background:var(--card-soft);
+    width:32px;height:32px;border-radius:10px;border:none;background:var(--bg);
     color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
   }
-  .lounge-detail-close-btn:hover{background:#e5e8eb;}
+  .lounge-detail-close-btn:hover{background:var(--line);}
 
-  .lounge-detail-author-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
-  .lounge-detail-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
-  .lounge-detail-name{margin:0;font-size:14px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .lounge-detail-author-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+  .lounge-detail-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg);}
+  .lounge-detail-name{margin:0;font-size:14px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;display:flex;align-items:center;gap:6px;}
   .lounge-detail-time{margin:2px 0 0;font-size:12px;font-weight:600;color:var(--ink-3);}
-  .lounge-detail-title{margin:0 0 10px;font-size:18px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;word-break:keep-all;}
-  .lounge-detail-content{margin:0 0 20px;font-size:14px;font-weight:500;color:var(--ink-1);line-height:1.75;word-break:keep-all;white-space:pre-line;}
+  .lounge-detail-title{margin:0 0 12px;font-size:18px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;word-break:keep-all;}
+  .lounge-detail-content{margin:0 0 22px;font-size:14px;font-weight:500;color:var(--ink-2);line-height:1.75;word-break:keep-all;white-space:pre-line;}
 
   .lounge-detail-actions{
-    display:flex;align-items:center;gap:14px;padding:14px 0;
-    border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:18px;
+    display:flex;align-items:center;gap:18px;padding:16px 0;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:20px;
   }
-  .lounge-detail-comment-count{font-size:12.5px;font-weight:700;color:var(--ink-3);display:flex;align-items:center;gap:6px;}
-  .lounge-detail-comment-count span{color:var(--ink-2);font-weight:800;}
+  .lounge-detail-comment-count{font-size:13px;font-weight:600;color:var(--ink-2);display:flex;align-items:center;gap:5px;}
+  .lounge-detail-comment-count i{font-size:17px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
 
-  .lounge-comment-list{display:flex;flex-direction:column;gap:14px;margin-bottom:18px;}
+  .lounge-comment-list{display:flex;flex-direction:column;gap:16px;margin-bottom:20px;}
   .lounge-comment-item{display:flex;gap:10px;}
-  .lounge-comment-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
+  .lounge-comment-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg);}
   .lounge-comment-body{flex:1;min-width:0;background:var(--card-soft);border-radius:14px;padding:10px 14px;}
   .lounge-comment-top{display:flex;align-items:baseline;gap:8px;margin-bottom:3px;}
   .lounge-comment-name{font-size:12.5px;font-weight:800;color:var(--ink-1);}
   .lounge-comment-time{font-size:11px;font-weight:600;color:var(--ink-3);}
   .lounge-comment-text{margin:0;font-size:13px;font-weight:500;color:var(--ink-2);line-height:1.6;word-break:keep-all;white-space:pre-line;}
 
-  .lounge-comment-write{display:flex;align-items:center;gap:8px;position:sticky;bottom:0;background:#fff;padding-top:4px;}
+  .lounge-comment-write{display:flex;align-items:center;gap:8px;position:sticky;bottom:0;background:var(--card);padding-top:4px;}
   .lounge-comment-input{
     flex:1;min-width:0;border:none;outline:none;background:var(--card-soft);border-radius:999px;
     font:inherit;letter-spacing:inherit;font-size:13px;font-weight:600;color:var(--ink-1);
@@ -2774,6 +2807,7 @@
   @media (max-width:560px){
     .lounge-write-title{width:100%;}
     .lounge-detail-modal{padding:20px;max-height:92vh;}
+    .lounge-write-modal{padding:20px;}
   }
 
   /* ---------- 헤더 미니 프로필 버튼 (아바타 클릭 → 마이페이지) ---------- */
@@ -3530,48 +3564,65 @@
   </div>
 
   <div class="lounge-filter-pills" id="loungeFilterPills">
-    <button type="button" class="lounge-filter-pill active" data-category="all">🔥 전체</button>
-    <button type="button" class="lounge-filter-pill" data-category="stock">📈 주식</button>
-    <button type="button" class="lounge-filter-pill" data-category="realestate">🏢 부동산</button>
-    <button type="button" class="lounge-filter-pill" data-category="coin">🪙 코인</button>
-    <button type="button" class="lounge-filter-pill" data-category="tax-tips">🧾 절세꿀팁</button>
+    <button type="button" class="lounge-filter-pill active" data-category="all">전체</button>
+    <button type="button" class="lounge-filter-pill" data-category="stock">주식</button>
+    <button type="button" class="lounge-filter-pill" data-category="realestate">부동산</button>
+    <button type="button" class="lounge-filter-pill" data-category="coin">코인</button>
+    <button type="button" class="lounge-filter-pill" data-category="tax-tips">절세꿀팁</button>
   </div>
 
-  <div class="lounge-write-bar" id="loungeWriteBar">
-    <div class="lounge-write-top">
-      <div class="lounge-write-select-wrap">
-        <select id="loungeWriteCategory" class="lounge-write-category">
-          <option value="stock">📈 주식</option>
-          <option value="realestate">🏢 부동산</option>
-          <option value="coin">🪙 코인</option>
-          <option value="tax-tips">🧾 절세꿀팁</option>
-        </select>
-      </div>
-      <div class="lounge-write-type-toggle" id="loungeWriteTypeToggle">
-        <button type="button" class="lounge-write-type-btn active" data-type="text">일반 글</button>
-        <button type="button" class="lounge-write-type-btn" data-type="poll">📊 투표</button>
-      </div>
-    </div>
-    <input type="text" class="lounge-write-title" id="loungeWriteTitle" autocomplete="off" maxlength="60" placeholder="제목(투표는 질문)을 입력해줘">
-    <textarea class="lounge-write-content" id="loungeWriteContent" maxlength="1000" rows="2"
-      placeholder="형들의 리얼한 자산 현황이나 절세 꿀팁을 공유해 줘 (글 작성 시 +200P)"></textarea>
-
-    <div class="lounge-write-poll" id="loungeWritePoll" style="display:none;">
-      <div class="lounge-poll-option-list" id="loungePollOptionList"></div>
-      <button type="button" class="lounge-poll-add-btn" id="loungePollAddBtn">
-        <i class="ph-duotone ph-plus-circle" style="font-size:14px;vertical-align:-2px;--ph-duotone-secondary-opacity:0;"></i>
-        선택지 추가하기
-      </button>
-    </div>
-
-    <div class="lounge-write-bottom">
-      <button type="button" class="lounge-write-btn" id="loungeWriteBtn">등록</button>
-    </div>
-  </div>
+  <button type="button" class="lounge-prompt-bar" id="loungePromptBar">
+    <img class="lounge-prompt-avatar" id="loungePromptAvatar" src="https://i.pravatar.cc/150?img=32" alt="" referrerpolicy="no-referrer">
+    <span class="lounge-prompt-placeholder">금융 이야기를 나눠보세요. (글 작성 시 +200P)</span>
+    <i class="ph-duotone ph-pencil-simple-line lounge-prompt-pencil"></i>
+  </button>
 
   <div class="lounge-feed" id="loungeFeed"></div>
 
 </main>
+
+<div class="lounge-write-overlay" id="loungeWriteOverlay">
+  <div class="lounge-write-modal" role="dialog" aria-modal="true" aria-labelledby="loungeWriteModalTitle">
+    <div class="lounge-write-modal-top">
+      <h3 id="loungeWriteModalTitle">글쓰기</h3>
+      <button type="button" class="lounge-write-modal-close" id="loungeWriteModalClose" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+
+    <div class="lounge-write-bar" id="loungeWriteBar">
+      <div class="lounge-write-top">
+        <div class="lounge-write-select-wrap">
+          <select id="loungeWriteCategory" class="lounge-write-category">
+            <option value="stock">주식</option>
+            <option value="realestate">부동산</option>
+            <option value="coin">코인</option>
+            <option value="tax-tips">절세꿀팁</option>
+          </select>
+        </div>
+        <div class="lounge-write-type-toggle" id="loungeWriteTypeToggle">
+          <button type="button" class="lounge-write-type-btn active" data-type="text">일반 글</button>
+          <button type="button" class="lounge-write-type-btn" data-type="poll">투표</button>
+        </div>
+      </div>
+      <input type="text" class="lounge-write-title" id="loungeWriteTitle" autocomplete="off" maxlength="60" placeholder="제목(투표는 질문)을 입력해줘">
+      <textarea class="lounge-write-content" id="loungeWriteContent" maxlength="1000" rows="2"
+        placeholder="형들의 리얼한 자산 현황이나 절세 꿀팁을 공유해 줘 (글 작성 시 +200P)"></textarea>
+
+      <div class="lounge-write-poll" id="loungeWritePoll" style="display:none;">
+        <div class="lounge-poll-option-list" id="loungePollOptionList"></div>
+        <button type="button" class="lounge-poll-add-btn" id="loungePollAddBtn">
+          <i class="ph-duotone ph-plus-circle" style="font-size:14px;vertical-align:-2px;--ph-duotone-secondary-opacity:0;"></i>
+          선택지 추가하기
+        </button>
+      </div>
+
+      <div class="lounge-write-bottom">
+        <button type="button" class="lounge-write-btn" id="loungeWriteBtn">등록</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="lounge-detail-overlay" id="loungeDetailOverlay">
   <div class="lounge-detail-modal" role="dialog" aria-modal="true" aria-labelledby="loungeDetailCategory">
@@ -3586,11 +3637,12 @@
 
     <div class="lounge-detail-actions">
       <button type="button" class="lounge-like-btn" id="loungeDetailLikeBtn">
-        <span class="ico" id="loungeDetailLikeIcon">🤍</span> 좋아요 <span id="loungeDetailLikeCount">0</span>
+        <i class="ph-duotone ph-heart" id="loungeDetailLikeIcon"></i>
+        <span id="loungeDetailLikeCount">0</span>
       </button>
       <span class="lounge-detail-comment-count">
-        <i class="ph-duotone ph-chat-circle" style="font-size:15px;--ph-duotone-secondary-opacity:0;"></i>
-        댓글 <span id="loungeDetailCommentCount">0</span>
+        <i class="ph-duotone ph-chat-circle"></i>
+        <span id="loungeDetailCommentCount">0</span>
       </span>
     </div>
 
@@ -4579,6 +4631,7 @@
     renderHeaderAuthUI();
     if (typeof renderMyPage === "function") renderMyPage();
     if (typeof renderHomeWelcome === "function") renderHomeWelcome();
+    if (typeof renderLoungePromptBar === "function") renderLoungePromptBar();
   }
 
   // users/{uid} 문서를 실시간 구독해서 totalPoints/pointHistory가 새로고침·다른 탭에서도 즉시 반영되게 함
@@ -5320,6 +5373,11 @@
     var writeBtn = document.getElementById("loungeWriteBtn");
     var filterPills = document.querySelectorAll(".lounge-filter-pill");
 
+    var promptBar = document.getElementById("loungePromptBar");
+    var promptAvatar = document.getElementById("loungePromptAvatar");
+    var writeOverlay = document.getElementById("loungeWriteOverlay");
+    var writeModalClose = document.getElementById("loungeWriteModalClose");
+
     var writeTypeToggle = document.getElementById("loungeWriteTypeToggle");
     var writePollWrap = document.getElementById("loungeWritePoll");
     var pollOptionList = document.getElementById("loungePollOptionList");
@@ -5340,10 +5398,10 @@
     var COMMENTS_COLLECTION = "comments";
 
     var LOUNGE_CATEGORY_LABELS = {
-      "stock": "📈 주식",
-      "realestate": "🏢 부동산",
-      "coin": "🪙 코인",
-      "tax-tips": "🧾 절세꿀팁"
+      "stock": "주식",
+      "realestate": "부동산",
+      "coin": "코인",
+      "tax-tips": "절세꿀팁"
     };
     var DEFAULT_AVATAR = "https://i.pravatar.cc/150?img=32";
 
@@ -5352,10 +5410,10 @@
     // 포인트 활동량을 프록시로 삼아 등급을 산정 — 글/댓글 작성 시점의 스냅샷을 함께 저장해 매 렌더링마다
     // 작성자 문서를 추가 조회하지 않아도 되도록 함(denormalized 패턴)
     var LOUNGE_TIER_TABLE = [
-      { min: 10000, label: "💎 다이아 파일럿", className: "tier-diamond" },
-      { min: 5000,  label: "👑 골드 파일럿",   className: "tier-gold" },
-      { min: 2000,  label: "⚡ 실버 파일럿",   className: "tier-silver" },
-      { min: 0,     label: "🌱 브론즈 파일럿", className: "tier-bronze" }
+      { min: 10000, label: "다이아 파일럿" },
+      { min: 5000,  label: "골드 파일럿" },
+      { min: 2000,  label: "실버 파일럿" },
+      { min: 0,     label: "브론즈 파일럿" }
     ];
     function getTierInfo(points){
       var p = points || 0;
@@ -5364,11 +5422,15 @@
       }
       return LOUNGE_TIER_TABLE[LOUNGE_TIER_TABLE.length - 1];
     }
+    // 예전에 저장된 게시글/댓글에는 이모지가 포함된 등급 텍스트(예: "💎 다이아 파일럿")가 그대로
+    // 남아있을 수 있어, 렌더링 시점에 이모지를 한 번 더 제거해 토스 스타일 무채색 태그로 통일한다.
+    function stripEmoji(str){
+      return String(str || "").replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/gu, "").trim();
+    }
     function renderTierBadge(tierLabel){
-      if (!tierLabel) return "";
-      var match = LOUNGE_TIER_TABLE.filter(function(t){ return t.label === tierLabel; })[0];
-      var cls = match ? match.className : "";
-      return '<span class="lounge-tier-badge ' + cls + '">' + escapeHtml(tierLabel) + '</span>';
+      var clean = stripEmoji(tierLabel);
+      if (!clean) return "";
+      return '<span class="lounge-tier-badge">' + escapeHtml(clean) + '</span>';
     }
 
     var loungeActiveCategory = "all";
@@ -5439,7 +5501,7 @@
 
       return '' +
         '<div class="lounge-poll-block">' +
-          '<p class="lounge-poll-question">📊 ' + escapeHtml(post.poll.question || post.title) + '</p>' +
+          '<p class="lounge-poll-question">' + escapeHtml(post.poll.question || post.title) + '</p>' +
           optionsHtml +
           '<p class="lounge-poll-total">총 ' + totalVotes + '표 참여' + (voted ? "" : " · 클릭해서 투표하기") + '</p>' +
         '</div>';
@@ -5469,9 +5531,9 @@
           (isPoll ? renderPollBlock(post) : '<p class="lounge-card-text">' + escapeHtml(post.content) + '</p>') +
           '<div class="lounge-card-bottom">' +
             '<button type="button" class="lounge-like-btn' + (liked ? ' liked' : '') + '" data-post-id="' + post.id + '">' +
-              '<span class="ico">' + (liked ? "❤️" : "🤍") + '</span> 좋아요 <span>' + (post.likesCount || 0) + '</span>' +
+              '<i class="ph-duotone ph-heart"></i><span>' + (post.likesCount || 0) + '</span>' +
             '</button>' +
-            '<span class="lounge-card-stat">💬 댓글 <span>' + (post.commentsCount || 0) + '</span></span>' +
+            '<span class="lounge-card-stat"><i class="ph-duotone ph-chat-circle"></i><span>' + (post.commentsCount || 0) + '</span></span>' +
           '</div>' +
         '</div>';
     }
@@ -5525,6 +5587,32 @@
         subscribeToPosts();
       });
     });
+
+    // ---------- 글쓰기 모달 (프롬프트 바 클릭 시 오픈) ----------
+    function openWriteModal(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) { promptLogin(); return; }
+      writeOverlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+      writeTitle.focus();
+    }
+    function closeWriteModal(){
+      writeOverlay.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+    if (promptBar) promptBar.addEventListener("click", openWriteModal);
+    if (writeModalClose) writeModalClose.addEventListener("click", closeWriteModal);
+    if (writeOverlay) {
+      writeOverlay.addEventListener("click", function(e){
+        if (e.target === writeOverlay) closeWriteModal();
+      });
+    }
+
+    // 로그인 상태가 바뀔 때(로그인/로그아웃)마다 프롬프트 바 아바타를 실제 프로필 사진으로 갱신
+    window.renderLoungePromptBar = function(){
+      if (!promptAvatar) return;
+      promptAvatar.src = (authState.isLoggedIn && authState.userProfile.avatar) || DEFAULT_AVATAR;
+    };
+    renderLoungePromptBar();
 
     // ---------- 투표(Poll) 선택지 작성 UI ----------
     function addPollOptionRow(value){
@@ -5624,6 +5712,7 @@
         pollOptionList.innerHTML = "";
         addPollOptionRow("");
         addPollOptionRow("");
+        closeWriteModal();
         addUserPoints(200, "자산 라운지 작성 보상 200P가 적립되었습니다!", "자산 라운지 글쓰기");
       }).catch(function(error){
         console.error("게시글 작성 실패:", error);
@@ -5738,7 +5827,6 @@
 
       detailLikeBtn.classList.toggle("liked", liked);
       detailLikeBtn.dataset.postId = post.id;
-      document.getElementById("loungeDetailLikeIcon").textContent = liked ? "❤️" : "🤍";
       document.getElementById("loungeDetailLikeCount").textContent = post.likesCount || 0;
       document.getElementById("loungeDetailCommentCount").textContent = post.commentsCount || 0;
     }
