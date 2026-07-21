@@ -380,7 +380,7 @@ async function upsertCalendarEvents(events) {
       if (!ev.date || !ev.sourceId) return;
       const ref = db.collection("calendarEvents").doc(ev.source + "_" + ev.sourceId);
       batch.set(ref, Object.assign({}, ev, {
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        updatedAt: new Date()
       }), { merge: true });
       written += 1;
     });
