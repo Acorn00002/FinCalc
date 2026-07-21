@@ -3174,7 +3174,16 @@
 
 <main class="wrap app-view" id="view-home">
 
-  <!-- 1. AI 자산파일럿 서포터 (최상단 배치) -->
+  <!-- 1. 웰컴 & 포인트 배지 (한 줄, 간결하게) -->
+  <section class="home-welcome-row">
+    <p class="home-welcome-name" id="homeWelcomeName">안녕하세요, 파일럿 형님</p>
+    <button type="button" class="home-points-badge" id="homePointsBadge">
+      <span id="homePointsBadgeText">로그인하고 포인트 받기</span>
+      <i class="ph-duotone ph-caret-right"></i>
+    </button>
+  </section>
+
+  <!-- 2. AI 자산파일럿 서포터 -->
   <section class="home-ai-section">
     <form class="home-ai-card" id="homeAiForm">
       <div class="home-ai-card-head">
@@ -3225,15 +3234,6 @@
       </div>
       <div class="home-ai-answer" id="homeAiAnswer" hidden></div>
     </form>
-  </section>
-
-  <!-- 2. 웰컴 & 포인트 배지 (한 줄, 간결하게) -->
-  <section class="home-welcome-row">
-    <p class="home-welcome-name" id="homeWelcomeName">안녕하세요, 파일럿 형님</p>
-    <button type="button" class="home-points-badge" id="homePointsBadge">
-      <span id="homePointsBadgeText">로그인하고 포인트 받기</span>
-      <i class="ph-duotone ph-caret-right"></i>
-    </button>
   </section>
 
   <!-- 3. 실시간 경제 뉴스 (구글 뉴스 RSS) -->
