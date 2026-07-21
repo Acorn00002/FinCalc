@@ -2977,9 +2977,49 @@
   @media (max-width:560px){
     .mypage-logout-btn{width:100%;}
   }
+
+  /* 스플래시 화면 — 네이티브(TWA) 스플래시는 아이콘+배경색만 지원해 텍스트를 못 넣으므로,
+     아이콘+앱이름까지 온전히 보여주는 실제 스플래시는 이 웹 레이어가 담당한다.
+     배경색을 twa-manifest.json의 backgroundColor(#F2F4F6 = --bg)와 동일하게 맞춰서
+     네이티브 스플래시 → 이 화면으로 넘어갈 때 색이 튀지 않고 자연스럽게 이어지게 함. */
+  .app-splash{
+    position:fixed;inset:0;z-index:99999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;
+    background:var(--bg);
+    transition:opacity .4s ease;
+  }
+  .app-splash-icon{
+    width:88px;height:88px;
+    border-radius:22px;
+    box-shadow:0 10px 28px rgba(99,102,241,0.28);
+    animation:appSplashPop .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .app-splash-name{
+    margin:0;
+    font-size:17px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.02em;
+    animation:appSplashFadeUp .5s ease .1s both;
+  }
+  .app-splash.is-hidden{opacity:0;pointer-events:none;}
+  @keyframes appSplashPop{
+    0%{opacity:0;transform:scale(0.82);}
+    100%{opacity:1;transform:scale(1);}
+  }
+  @keyframes appSplashFadeUp{
+    0%{opacity:0;transform:translateY(6px);}
+    100%{opacity:1;transform:translateY(0);}
+  }
 </style>
 </head>
 <body>
+
+<div class="app-splash" id="appSplash" aria-hidden="true">
+  <img class="app-splash-icon" src="/icons/icon-512.png" alt="">
+  <p class="app-splash-name">자산 파일럿</p>
+</div>
 
 <div class="app-shell">
   <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
@@ -4372,7 +4412,7 @@
     var startStr = rangeStart.getFullYear() + "-" + pad2(rangeStart.getMonth() + 1) + "-" + pad2(rangeStart.getDate());
     var endStr = rangeEnd.getFullYear() + "-" + pad2(rangeEnd.getMonth() + 1) + "-" + pad2(rangeEnd.getDate());
 
-    db.collection("calendarEvents")
+    return db.collection("calendarEvents")
       .where("date", ">=", startStr)
       .where("date", "<=", endStr)
       .get()
@@ -5223,10 +5263,25 @@
     renderCalendarTimeline();
     initCalendarCheckin();
     initRewardEcosystem();
-    loadCalendarEventsFromFirestore();
+    return loadCalendarEventsFromFirestore();
   }
 
-  initFinanceCalendar();
+  // 스플래시는 최소 1.2초 유지하고, 그 사이 금융 캘린더 초기 데이터 로딩을 기다린다.
+  // 데이터 로딩이 느리거나 실패해도 최대 1.5초 안에는 무조건 넘어가도록 상한을 둬서
+  // 스플래시가 무한정 붙잡고 있는 일이 없게 한다(요구사항의 "1~2초" 범위를 지키기 위함).
+  function hideAppSplash(){
+    var splash = document.getElementById("appSplash");
+    if (!splash) return;
+    splash.classList.add("is-hidden");
+    setTimeout(function(){ splash.remove(); }, 450);
+  }
+
+  var splashMinDelay = new Promise(function(resolve){ setTimeout(resolve, 1200); });
+  var splashDataReady = Promise.race([
+    initFinanceCalendar(),
+    new Promise(function(resolve){ setTimeout(resolve, 1500); })
+  ]);
+  Promise.all([splashMinDelay, splashDataReady]).then(hideAppSplash);
 
   function syncFromHash(){
     var view = (location.hash || "").replace("#", "") || "home";
