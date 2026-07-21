@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>퇴직금 계산기 — 자산 파일럿</title>
+<meta name="description" content="근로기준법 기준 1일 평균임금과 근속연수공제를 반영한 퇴직금 및 퇴직소득세 계산기입니다.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" defer></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --bg:#f2f4f6;
+    --card:#ffffff;
+    --card-soft:#f9fafb;
+    --ink-1:#191f28;
+    --ink-2:#4e5968;
+    --ink-3:#8b95a1;
+    --line:#eef0f2;
+    --brand:#6366f1;
+    --brand-2:#3182f6;
+    --brand-soft:rgba(99,102,241,0.08);
+    --brand-soft-2:rgba(49,130,246,0.10);
+    --danger:#df484a;
+    --danger-soft:rgba(223,72,74,0.08);
+    --shadow-card:0 2px 10px rgba(15,23,42,0.04), 0 12px 32px -18px rgba(15,23,42,0.10);
+    --radius-lg:24px;
+    --radius-md:18px;
+    --ph-duotone-secondary-opacity:0.10;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink-1);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Pretendard","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    letter-spacing:-0.03em;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;letter-spacing:inherit;}
+
+  i.ph-duotone{
+    --ph-duotone-secondary-color: var(--brand);
+    color:var(--brand);
+    line-height:1;
+  }
+
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:0 20px 96px;
+  }
+  @media (min-width:640px){ .wrap{padding:0 32px 120px;} }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1040px;
+    margin:0 auto;
+    padding:22px 20px 0;
+  }
+  @media (min-width:640px){ header{padding:28px 32px 0;} }
+
+  .back-link{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .back-link i{font-size:18px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+
+  .pill-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:9px 16px 9px 13px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .pill-btn i{font-size:15px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+  .pill-btn:hover{background:#e8eaed;}
+  .pill-btn:active{transform:scale(0.96);}
+
+  /* ---------- Page heading ---------- */
+  .page-head{
+    padding:36px 2px 28px;
+  }
+  @media (min-width:640px){ .page-head{padding:44px 2px 32px;} }
+  .page-head .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    font-weight:800;
+    color:var(--brand);
+    background:var(--brand-soft);
+    padding:6px 12px;
+    border-radius:999px;
+    margin:0 0 12px;
+  }
+  .page-head h1{
+    font-size:clamp(22px,4vw,28px);
+    font-weight:800;
+    margin:0 0 20px;
+    letter-spacing:-0.01em;
+    line-height:1.4;
+    color:var(--ink-1);
+  }
+  .page-head p{
+    margin:0;
+    font-size:14px;
+    font-weight:500;
+    line-height:1.5;
+    color:var(--ink-3);
+    word-break:keep-all;
+  }
+
+  /* ---------- Shell: 2-column input / result ---------- */
+  .calc-shell{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+  @media (min-width:900px){
+    .calc-shell{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      align-items:start;
+      gap:24px;
+    }
+    .result-card{position:sticky; top:24px;}
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .card{padding:32px;} }
+
+  /* ---------- Field blocks ---------- */
+  .field-block{margin-bottom:20px;}
+  .field-block:last-of-type{margin-bottom:0;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field-block.half{flex:1;min-width:0;}
+
+  /* 모바일에서 입력 그룹 간 세로 여백을 한층 더 넉넉하게 확보 */
+  @media (max-width:768px){
+    .field-block{margin-bottom:28px !important;}
+  }
+
+  .field-label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-2);
+    margin:0 0 10px;
+    letter-spacing:-0.03em;
+  }
+  .field-help{
+    margin:8px 2px 0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+  }
+
+  /* ---------- Minimal flat date picker ---------- */
+  .date-field{
+    background:var(--card-soft);
+    border-radius:16px;
+    padding:14px 18px;
+    border:1.5px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .date-field:focus-within{border-color:var(--brand);background:#fff;}
+  .date-field input[type="date"]{
+    width:100%;
+    border:none;
+    outline:none;
+    background:transparent;
+    font:inherit;
+    letter-spacing:-0.02em;
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink-1);
+    cursor:pointer;
+  }
+  .date-field input[type="date"]::-webkit-calendar-picker-indicator{
+    filter:invert(38%) sepia(64%) saturate(3000%) hue-rotate(226deg) brightness(97%) contrast(93%);
+    opacity:0.65;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .date-field input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;}
+
+  /* ---------- Amount field (underline style) ---------- */
+  .amount-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card-soft);
+    border-radius:16px;
+    padding:16px 18px;
+    border:1.5px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .amount-field:focus-within{border-color:var(--brand);background:#fff;}
+  .amount-field input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    font:inherit;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    color:var(--ink-1);
+  }
+  .amount-field input::placeholder{color:#c2c8d1;font-weight:700;}
+  .amount-field .amount-unit{
+    flex-shrink:0;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-3);
+  }
+
+  .amount-hint{
+    margin:8px 2px 0;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--brand-2);
+  }
+
+  /* ---------- Quick add chips ---------- */
+  .quick-add-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:12px;
+  }
+  .quick-btn{
+    padding:10px 4px;
+    border-radius:12px;
+    border:none;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease, color .15s ease;
+  }
+  .quick-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .quick-btn:active{transform:scale(0.95);}
+  .quick-btn.reset{color:var(--ink-3);}
+  .quick-btn.reset:hover{background:#fdecec;color:#dc2626;}
+
+  /* ---------- Submit button ---------- */
+  .calc-submit-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:28px;
+    padding:18px 16px;
+    border-radius:var(--radius-md);
+    border:none;
+    background:var(--brand);
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .calc-submit-btn i{color:#fff;--ph-duotone-secondary-color:#fff;--ph-duotone-secondary-opacity:0.5;font-size:19px;}
+  .calc-submit-btn:hover{background:#4f46e5;}
+  .calc-submit-btn:active{transform:scale(0.98);}
+
+  /* ---------- Result card ---------- */
+  .result-card{min-height:320px;display:flex;flex-direction:column;}
+
+  .result-empty{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:48px 20px;
+  }
+  .result-empty-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .result-empty-icon i{font-size:30px;}
+  .result-empty p{
+    margin:0;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  .result-content{display:none;}
+  .result-content.show{display:block;}
+
+  /* 1년 미만 근속 — 지급 대상 아님 배너 */
+  .ineligible-banner{
+    display:none;
+    flex:1;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:48px 20px;
+  }
+  .ineligible-banner.show{display:flex;}
+  .ineligible-banner-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--card-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .ineligible-banner-icon i{font-size:30px;color:var(--ink-3);--ph-duotone-secondary-color:var(--ink-3);}
+  .ineligible-banner h3{
+    margin:0 0 8px;
+    font-size:19px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .ineligible-banner p{
+    margin:0;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  .hero-label{
+    margin:0 0 6px;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .hero-amount{
+    margin:0 0 20px;
+    font-size:clamp(28px,6vw,38px);
+    font-weight:800;
+    color:#3182f6;
+    letter-spacing:-0.03em;
+    word-break:keep-all;
+  }
+
+  /* ---------- Financial flow summary strip ---------- */
+  .flow-strip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    margin-bottom:22px;
+    padding-bottom:2px;
+  }
+  .flow-strip::-webkit-scrollbar{display:none;}
+  .flow-step{
+    flex:1;
+    min-width:96px;
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:12px 12px;
+  }
+  .flow-step-label{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    margin-bottom:4px;
+    white-space:nowrap;
+  }
+  .flow-step-value{
+    font-size:13px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+  }
+  .flow-arrow{
+    flex-shrink:0;
+    font-size:14px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+  }
+
+  /* ---------- Receipt-style itemized breakdown ---------- */
+  .receipt-list{
+    border-top:1px solid var(--line);
+    padding-top:4px;
+  }
+  .receipt-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 2px;
+    font-size:13.5px;
+    border-bottom:1px solid var(--line);
+  }
+  .receipt-row .r-label{color:var(--ink-2);font-weight:600;}
+  .receipt-row .r-value{color:var(--ink-1);font-weight:700;letter-spacing:-0.02em;flex-shrink:0;white-space:nowrap;}
+  .receipt-row.minus .r-value{color:var(--ink-3);}
+  .receipt-row.subtotal{background:var(--card-soft);margin:2px 0;border-radius:10px;padding:11px 10px;border-bottom:none;}
+  .receipt-row.subtotal .r-label,.receipt-row.subtotal .r-value{font-weight:800;color:var(--ink-1);}
+  .receipt-row.total{
+    border-bottom:none;
+    padding-top:16px;
+    margin-top:4px;
+  }
+  .receipt-row.total .r-label{color:var(--ink-1);font-weight:800;font-size:14.5px;}
+  .receipt-row.total .r-value{color:var(--brand-2);font-weight:800;font-size:17px;}
+
+  /* ---------- Insight article feed ---------- */
+  .insight-section{
+    margin-top:28px;
+    padding-top:22px;
+    border-top:1px solid var(--line);
+  }
+  .insight-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    font-weight:800;
+    color:var(--ink-1);
+    margin:0 0 14px;
+  }
+  .insight-title i{font-size:17px;--ph-duotone-secondary-opacity:0.14;}
+  .insight-feed{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .insight-card{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 16px;
+    background:var(--card-soft);
+    border-radius:16px;
+  }
+  .insight-icon{
+    width:36px;height:36px;
+    flex-shrink:0;
+    border-radius:11px;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 3px rgba(15,23,42,0.06);
+  }
+  .insight-icon i{font-size:17px;}
+  .insight-body{min-width:0;}
+  .insight-body h5{
+    margin:0 0 3px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .insight-body p{
+    margin:0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+    line-height:1.5;
+    word-break:keep-all;
+  }
+
+  /* ---------- Disclaimer ---------- */
+  .disclaimer{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    margin-top:24px;
+    padding:2px 4px;
+  }
+  .disclaimer i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;margin-top:1px;}
+  .disclaimer p{
+    margin:0;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink-3);
+    font-weight:500;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(20px);
+    background:#191f28;
+    color:#fff;
+    padding:14px 20px;
+    border-radius:14px;
+    font-size:13.5px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+    box-shadow:0 12px 30px -8px rgba(0,0,0,0.35);
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{font-size:16px;color:var(--brand-2);--ph-duotone-secondary-opacity:0.2;}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html#taxpilot">
+    <i class="ph-duotone ph-arrow-left"></i>
+    자산 파일럿
+  </a>
+  <button class="pill-btn" type="button" id="guideBtn">
+    <i class="ph-duotone ph-shield-check"></i>
+    계산 방식 안내
+  </button>
+</header>
+
+<main class="wrap">
+
+  <div class="page-head">
+    <span class="eyebrow"><i class="ph-duotone ph-hand-coins" style="font-size:14px;--ph-duotone-secondary-opacity:0;"></i>택스 파일럿 · 근로소득</span>
+    <h1>퇴직금 계산기</h1>
+    <p>근로기준법 기준 1일 평균임금과 근속연수공제를 반영해 예상 퇴직금을 계산해 드려요.</p>
+  </div>
+
+  <div class="calc-shell">
+
+    <!-- Input card -->
+    <div class="input-card card">
+
+      <div class="field-row">
+        <div class="field-block half">
+          <label class="field-label">입사일자</label>
+          <div class="date-field">
+            <input type="date" id="joinDate">
+          </div>
+        </div>
+        <div class="field-block half">
+          <label class="field-label">퇴사일자</label>
+          <div class="date-field">
+            <input type="date" id="leaveDate">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">최근 3개월 기본급 총액</label>
+        <div class="amount-field">
+          <input type="text" inputmode="numeric" id="baseWage3m" placeholder="예: 12,000,000">
+          <span class="amount-unit">원</span>
+        </div>
+        <p class="amount-hint" id="baseWage3mHint">0원</p>
+        <div class="quick-add-row">
+          <button type="button" class="quick-btn" data-target="baseWage3m" data-add="10000000">+1천만</button>
+          <button type="button" class="quick-btn" data-target="baseWage3m" data-add="1000000">+1백만</button>
+          <button type="button" class="quick-btn" data-target="baseWage3m" data-add="100000">+10만</button>
+          <button type="button" class="quick-btn reset" data-target="baseWage3m" data-reset="true">초기화</button>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">최근 3개월 기타수당 총액</label>
+        <div class="amount-field">
+          <input type="text" inputmode="numeric" id="allowance3m" placeholder="0">
+          <span class="amount-unit">원</span>
+        </div>
+        <p class="amount-hint" id="allowance3mHint">0원</p>
+        <p class="field-help">식대·직책수당·연장근로수당 등 정기적으로 지급된 수당이에요.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field-block half">
+          <label class="field-label">연간 상여금 총액</label>
+          <div class="amount-field">
+            <input type="text" inputmode="numeric" id="annualBonus" placeholder="0">
+            <span class="amount-unit">원</span>
+          </div>
+          <p class="amount-hint" id="annualBonusHint">0원</p>
+        </div>
+        <div class="field-block half">
+          <label class="field-label">연차수당</label>
+          <div class="amount-field">
+            <input type="text" inputmode="numeric" id="annualLeavePay" placeholder="0">
+            <span class="amount-unit">원</span>
+          </div>
+          <p class="amount-hint" id="annualLeavePayHint">0원</p>
+        </div>
+      </div>
+
+      <button type="button" class="calc-submit-btn" id="calcBtn">
+        <i class="ph-duotone ph-calculator"></i>
+        퇴직금 계산하기
+      </button>
+    </div>
+
+    <!-- Result card -->
+    <div class="result-card card">
+      <div class="result-empty" id="resultEmpty">
+        <span class="result-empty-icon"><i class="ph-duotone ph-hand-coins"></i></span>
+        <p>근로 정보를 입력하고<br>예상 퇴직금을 확인해보세요</p>
+      </div>
+
+      <div class="ineligible-banner" id="ineligibleBanner">
+        <span class="ineligible-banner-icon"><i class="ph-duotone ph-info"></i></span>
+        <h3>퇴직금 지급 대상이 아니에요</h3>
+        <p id="ineligibleText">근로기준법상 퇴직금은 계속근로기간 1년(365일) 이상인 근로자에게만 지급돼요.</p>
+      </div>
+
+      <div class="result-content" id="resultContent">
+        <p class="hero-label">최종 예상 세전 퇴직금</p>
+        <p class="hero-amount" id="heroAmount">0원</p>
+
+        <div class="flow-strip" id="flowStrip"></div>
+
+        <div class="receipt-list" id="receiptList"></div>
+
+        <div class="insight-section">
+          <h4 class="insight-title"><i class="ph-duotone ph-sparkle"></i>퇴직금 정산 가이드</h4>
+          <div class="insight-feed" id="insightFeed"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <i class="ph-duotone ph-info"></i>
+    <p>본 계산기는 근로기준법 기준 1일 평균임금과 근속연수공제·환산급여공제를 반영한 간편 시뮬레이션이에요. DB형/DC형 퇴직연금, 통상임금과의 비교(최저한도) 등 실제 지급액은 회사 규정과 세부 사실관계에 따라 달라질 수 있으니 정확한 금액은 인사팀 또는 세무 전문가와 확인해 주세요.</p>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <i class="ph-duotone ph-check-circle"></i>
+  <span id="toastText">계산이 완료됐어요</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Formatting helpers ---------- */
+  var digitsOnly = function(str){ return (str || "").replace(/[^0-9]/g, ""); };
+
+  function formatWon(n){
+    var sign = n < 0 ? "-" : "";
+    n = Math.round(Math.abs(n));
+    return sign + n.toLocaleString("ko-KR") + "원";
+  }
+
+  function toKoreanUnit(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    var rest = n % 10000;
+    var out = "";
+    if (eok) out += eok.toLocaleString("ko-KR") + "억 ";
+    if (man) out += man.toLocaleString("ko-KR") + "만 ";
+    if (rest) out += rest.toLocaleString("ko-KR") + " ";
+    return out.trim() + "원";
+  }
+
+  function toKoreanUnitShort(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    if (eok && man) return eok + "억 " + man.toLocaleString("ko-KR") + "만원";
+    if (eok) return eok + "억원";
+    if (man) return man.toLocaleString("ko-KR") + "만원";
+    return n.toLocaleString("ko-KR") + "원";
+  }
+
+  /* ---------- 종합소득세 8단계 누진세율표 (퇴직소득세 환산산출세액 계산에 재사용, 실제 법과 동일한 구조) ---------- */
+  var TAX_BRACKETS = [
+    { limit:14000000,    rate:0.06, deduction:0 },
+    { limit:50000000,    rate:0.15, deduction:1260000 },
+    { limit:88000000,    rate:0.24, deduction:5760000 },
+    { limit:150000000,   rate:0.35, deduction:15440000 },
+    { limit:300000000,   rate:0.38, deduction:19940000 },
+    { limit:500000000,   rate:0.40, deduction:25940000 },
+    { limit:1000000000,  rate:0.42, deduction:35940000 },
+    { limit:Infinity,    rate:0.45, deduction:65940000 }
+  ];
+  function getCalculatedTax(taxBase){
+    for (var i = 0; i < TAX_BRACKETS.length; i++) {
+      if (taxBase <= TAX_BRACKETS[i].limit) {
+        return Math.max(0, taxBase * TAX_BRACKETS[i].rate - TAX_BRACKETS[i].deduction);
+      }
+    }
+    return 0;
+  }
+
+  /* ---------- 근속연수공제 (근속연수 구간별 매핑) ---------- */
+  function getServiceYearDeduction(years){
+    if (years <= 5) return Math.max(1000000, years * 1000000);
+    if (years <= 10) return 5000000 + (years - 5) * 2000000;
+    if (years <= 20) return 15000000 + (years - 10) * 2500000;
+    return 40000000 + (years - 20) * 3000000;
+  }
+
+  /* ---------- 환산급여공제 (환산급여 구간별 누진공제) ---------- */
+  function getConvertedIncomeDeduction(convertedIncome){
+    if (convertedIncome <= 8000000) return convertedIncome;
+    if (convertedIncome <= 70000000) return 8000000 + (convertedIncome - 8000000) * 0.6;
+    if (convertedIncome <= 100000000) return 45200000 + (convertedIncome - 70000000) * 0.55;
+    if (convertedIncome <= 300000000) return 61200000 + (convertedIncome - 100000000) * 0.45;
+    return 151200000 + (convertedIncome - 300000000) * 0.35;
+  }
+
+  /* ---------- 퇴직소득세 간이 산출 (근속연수공제 → 환산급여 → 환산급여공제 → 누진세율 → 근속연수 환산) ---------- */
+  function getSeveranceTaxApprox(severancePay, years){
+    var serviceYears = Math.max(1, Math.round(years)); // 1년 미만 절사 없이 최소 1년으로 간주
+    var serviceDeduction = getServiceYearDeduction(serviceYears);
+    var afterServiceDeduction = Math.max(0, severancePay - serviceDeduction);
+    var convertedIncome = afterServiceDeduction * 12 / serviceYears;
+    var convertedDeduction = getConvertedIncomeDeduction(convertedIncome);
+    var taxBase = Math.max(0, convertedIncome - convertedDeduction);
+    var convertedTax = getCalculatedTax(taxBase);
+    var calculatedTax = convertedTax * serviceYears / 12;
+    var localTax = calculatedTax * 0.1;
+    return { calculatedTax: calculatedTax, localTax: localTax, total: calculatedTax + localTax };
+  }
+
+  /* ---------- 퇴직금 정산 가이드 아티클 (고정 콘텐츠) ---------- */
+  var GUIDE_ARTICLES = [
+    { icon:"ph-clock-countdown", title:"퇴직금 지급 기한과 지연이자 받는 법", desc:"퇴직일로부터 14일 이내 지급이 원칙이고, 늦어지면 연 20%의 지연이자가 붙어요." },
+    { icon:"ph-piggy-bank", title:"IRP 계좌로 퇴직금 이체 시 절세 혜택", desc:"IRP로 받으면 퇴직소득세가 이연되고, 나중에 연금으로 받으면 세금이 최대 30% 줄어요." },
+    { icon:"ph-scales", title:"평균임금 vs 통상임금, 어떤 게 유리할까요", desc:"둘 중 더 높은 금액을 기준으로 퇴직금을 계산해야 근로자에게 유리해요." },
+    { icon:"ph-calendar-x", title:"1년 미만 근속자는 퇴직금을 못 받나요", desc:"법정 퇴직금은 1년 이상 근속이 기본 요건이라, 그 이하는 회사 내규를 확인해야 해요." }
+  ];
+
+  /* ---------- DOM refs ---------- */
+  var joinDateInput = document.getElementById("joinDate");
+  var leaveDateInput = document.getElementById("leaveDate");
+  var baseWage3mInput = document.getElementById("baseWage3m");
+  var baseWage3mHint = document.getElementById("baseWage3mHint");
+  var allowance3mInput = document.getElementById("allowance3m");
+  var allowance3mHint = document.getElementById("allowance3mHint");
+  var annualBonusInput = document.getElementById("annualBonus");
+  var annualBonusHint = document.getElementById("annualBonusHint");
+  var annualLeavePayInput = document.getElementById("annualLeavePay");
+  var annualLeavePayHint = document.getElementById("annualLeavePayHint");
+  var calcBtn = document.getElementById("calcBtn");
+
+  var resultEmpty = document.getElementById("resultEmpty");
+  var ineligibleBanner = document.getElementById("ineligibleBanner");
+  var resultContent = document.getElementById("resultContent");
+  var heroAmount = document.getElementById("heroAmount");
+  var flowStrip = document.getElementById("flowStrip");
+  var receiptList = document.getElementById("receiptList");
+  var insightFeed = document.getElementById("insightFeed");
+
+  /* ---------- Live formatting ---------- */
+  function liveFormat(el, hintEl){
+    el.addEventListener("input", function(){
+      var raw = digitsOnly(el.value);
+      el.value = raw ? Number(raw).toLocaleString("ko-KR") : "";
+      if (hintEl) hintEl.textContent = toKoreanUnit(Number(raw) || 0);
+    });
+  }
+  liveFormat(baseWage3mInput, baseWage3mHint);
+  liveFormat(allowance3mInput, allowance3mHint);
+  liveFormat(annualBonusInput, annualBonusHint);
+  liveFormat(annualLeavePayInput, annualLeavePayHint);
+
+  /* ---------- Quick add buttons ---------- */
+  document.querySelectorAll(".quick-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var targetId = btn.getAttribute("data-target");
+      var input = document.getElementById(targetId);
+      var hintEl = document.getElementById(targetId + "Hint");
+      if (!input) return;
+      if (btn.dataset.reset) {
+        input.value = "";
+        if (hintEl) hintEl.textContent = "0원";
+        input.focus();
+        return;
+      }
+      var cur = Number(digitsOnly(input.value)) || 0;
+      var next = cur + Number(btn.dataset.add);
+      input.value = next.toLocaleString("ko-KR");
+      if (hintEl) hintEl.textContent = toKoreanUnit(next);
+    });
+  });
+
+  /* ---------- Core calculation ---------- */
+  function calculateSeverancePay(){
+    var joinDate = new Date(joinDateInput.value);
+    var leaveDate = new Date(leaveDateInput.value);
+
+    if (isNaN(joinDate.getTime()) || isNaN(leaveDate.getTime())) {
+      showToast("ph-warning-circle", "입사일자와 퇴사일자를 입력해주세요");
+      return;
+    }
+    if (leaveDate <= joinDate) {
+      showToast("ph-warning-circle", "퇴사일자는 입사일자보다 뒤여야 해요");
+      return;
+    }
+
+    var baseWage3m = Number(digitsOnly(baseWage3mInput.value)) || 0;
+    var allowance3m = Number(digitsOnly(allowance3mInput.value)) || 0;
+    var annualBonus = Number(digitsOnly(annualBonusInput.value)) || 0;
+    var annualLeavePay = Number(digitsOnly(annualLeavePayInput.value)) || 0;
+
+    var DAY_MS = 24 * 60 * 60 * 1000;
+
+    /* 1) 재직일수 D — 입사일자와 퇴사일자의 정확한 총 일수 */
+    var D = Math.round((leaveDate - joinDate) / DAY_MS);
+
+    /* 재직일수가 365일 미만이면 법정 퇴직금 지급 대상이 아님 */
+    if (D < 365) {
+      renderIneligible(D);
+      return;
+    }
+
+    /* 퇴사일 기준 직전 3개월의 실제 총 일수 M (달력 기준 자동 연산) */
+    var threeMonthsAgo = new Date(leaveDate.getTime());
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    var M = Math.round((leaveDate - threeMonthsAgo) / DAY_MS);
+
+    /* 2) 1일 평균임금 = (최근 3개월 임금총액 + 상여금×3/12 + 연차수당×3/12) / M */
+    var totalWage3m = baseWage3m + allowance3m;
+    var bonusPortion = annualBonus * (3 / 12);
+    var leavePayPortion = annualLeavePay * (3 / 12);
+    var averageWage = (totalWage3m + bonusPortion + leavePayPortion) / M;
+
+    /* 3) 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365) */
+    var severancePay = averageWage * 30 * (D / 365);
+
+    /* 퇴직소득세 간이 산출 (근속연수공제 반영 프레임워크) */
+    var years = D / 365;
+    var taxResult = getSeveranceTaxApprox(severancePay, years);
+    var netSeverancePay = Math.max(0, severancePay - taxResult.total);
+
+    renderResult({
+      D: D, M: M, years: years, averageWage: averageWage, severancePay: severancePay,
+      severanceTax: taxResult.calculatedTax, severanceLocalTax: taxResult.localTax,
+      severanceTaxTotal: taxResult.total, netSeverancePay: netSeverancePay
+    });
+
+    showToast("ph-check-circle", "퇴직금 계산이 완료됐어요");
+  }
+
+  /* ---------- Render: 1년 미만 근속 — 지급 대상 아님 ---------- */
+  function renderIneligible(D){
+    resultEmpty.style.display = "none";
+    resultContent.classList.remove("show");
+    ineligibleBanner.classList.add("show");
+    document.getElementById("ineligibleText").innerHTML =
+      "현재 입력된 재직일수는 <b>" + D + "일</b>이에요. 근로기준법상 퇴직금은 계속근로기간 1년(365일) 이상인 근로자에게만 지급돼요.";
+  }
+
+  /* ---------- Render: financial flow strip ---------- */
+  function renderFlowStrip(data){
+    var steps = [
+      { label:"재직일수", value: data.D + "일" },
+      { label:"1일 평균임금", value: toKoreanUnitShort(data.averageWage) },
+      { label:"기본 퇴직금", value: toKoreanUnitShort(data.severancePay) },
+      { label:"예상 퇴직소득세", value: toKoreanUnitShort(data.severanceTaxTotal) }
+    ];
+    flowStrip.innerHTML = steps.map(function(step, idx){
+      var arrow = idx > 0 ? '<i class="ph-duotone ph-caret-right flow-arrow"></i>' : '';
+      return arrow +
+        '<div class="flow-step">' +
+          '<span class="flow-step-label">' + step.label + '</span>' +
+          '<span class="flow-step-value">' + step.value + '</span>' +
+        '</div>';
+    }).join("");
+  }
+
+  /* ---------- Render: receipt-style breakdown ---------- */
+  function addRow(label, value, cls){
+    var row = document.createElement("div");
+    row.className = "receipt-row" + (cls ? (" " + cls) : "");
+    row.innerHTML =
+      '<span class="r-label">' + label + '</span>' +
+      '<span class="r-value">' + value + '</span>';
+    receiptList.appendChild(row);
+  }
+
+  function renderResult(data){
+    ineligibleBanner.classList.remove("show");
+    resultEmpty.style.display = "none";
+    resultContent.classList.add("show");
+
+    heroAmount.textContent = formatWon(data.severancePay);
+    renderFlowStrip(data);
+
+    receiptList.innerHTML = "";
+    addRow("재직일수", data.D.toLocaleString("ko-KR") + "일 (약 " + data.years.toFixed(1) + "년)");
+    addRow("최근 3개월 실제 일수", data.M + "일");
+    addRow("1일 평균임금", formatWon(data.averageWage), "subtotal");
+    addRow("기본 퇴직금 (세전)", formatWon(data.severancePay), "subtotal");
+    addRow("퇴직소득세", "- " + formatWon(data.severanceTax), "minus");
+    addRow("지방소득세 (10%)", "- " + formatWon(data.severanceLocalTax), "minus");
+    addRow("실수령 예상 퇴직금", formatWon(data.netSeverancePay), "total");
+
+    renderInsightFeed();
+  }
+
+  function renderInsightFeed(){
+    insightFeed.innerHTML = GUIDE_ARTICLES.map(function(item){
+      return '' +
+        '<div class="insight-card">' +
+          '<span class="insight-icon"><i class="ph-duotone ' + item.icon + '"></i></span>' +
+          '<div class="insight-body">' +
+            '<h5>' + item.title + '</h5>' +
+            '<p>' + item.desc + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  calcBtn.addEventListener("click", calculateSeverancePay);
+
+  /* ---------- Toast ---------- */
+  var toast = document.getElementById("toast");
+  var toastText = document.getElementById("toastText");
+  var toastTimer = null;
+  function showToast(icon, text){
+    toastText.textContent = text;
+    toast.querySelector("i").className = "ph-duotone " + icon;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 2200);
+  }
+
+  document.getElementById("guideBtn").addEventListener("click", function(){
+    showToast("ph-shield-check", "근속연수공제·환산급여공제 기준 간편 계산이에요");
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "functions",
+  "description": "자산 파일럿 내부 API 라우트 (Firebase Cloud Functions)",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
+  "dependencies": {
+    "firebase-functions": "^5.0.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

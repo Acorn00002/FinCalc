@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>상속세 계산기 — 자산 파일럿</title>
+<meta name="description" content="기초공제·일괄공제·배우자상속공제·금융재산상속공제 자동 비교 로직을 반영한 대한민국 상속세 계산기입니다.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" defer></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --bg:#f2f4f6;
+    --card:#ffffff;
+    --card-soft:#f9fafb;
+    --ink-1:#191f28;
+    --ink-2:#4e5968;
+    --ink-3:#8b95a1;
+    --line:#eef0f2;
+    --brand:#6366f1;
+    --brand-2:#3182f6;
+    --brand-soft:rgba(99,102,241,0.08);
+    --brand-soft-2:rgba(49,130,246,0.10);
+    --danger:#df484a;
+    --danger-soft:rgba(223,72,74,0.08);
+    --shadow-card:0 2px 10px rgba(15,23,42,0.04), 0 12px 32px -18px rgba(15,23,42,0.10);
+    --radius-lg:24px;
+    --radius-md:18px;
+    --ph-duotone-secondary-opacity:0.10;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink-1);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Pretendard","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    letter-spacing:-0.03em;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;letter-spacing:inherit;}
+
+  i.ph-duotone{
+    --ph-duotone-secondary-color: var(--brand);
+    color:var(--brand);
+    line-height:1;
+  }
+
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:0 20px 96px;
+  }
+  @media (min-width:640px){ .wrap{padding:0 32px 120px;} }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1040px;
+    margin:0 auto;
+    padding:22px 20px 0;
+  }
+  @media (min-width:640px){ header{padding:28px 32px 0;} }
+
+  .back-link{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .back-link i{font-size:18px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+
+  .pill-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:9px 16px 9px 13px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .pill-btn i{font-size:15px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+  .pill-btn:hover{background:#e8eaed;}
+  .pill-btn:active{transform:scale(0.96);}
+
+  /* ---------- Page heading ---------- */
+  .page-head{
+    padding:36px 2px 28px;
+  }
+  @media (min-width:640px){ .page-head{padding:44px 2px 32px;} }
+  .page-head .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    font-weight:800;
+    color:var(--brand);
+    background:var(--brand-soft);
+    padding:6px 12px;
+    border-radius:999px;
+    margin:0 0 12px;
+  }
+  .page-head h1{
+    font-size:clamp(22px,4vw,28px);
+    font-weight:800;
+    margin:0 0 20px;
+    letter-spacing:-0.01em;
+    line-height:1.4;
+    color:var(--ink-1);
+  }
+  .page-head p{
+    margin:0;
+    font-size:14px;
+    font-weight:500;
+    line-height:1.5;
+    color:var(--ink-3);
+    word-break:keep-all;
+  }
+
+  /* ---------- Shell: 2-column input / result ---------- */
+  .calc-shell{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+  @media (min-width:900px){
+    .calc-shell{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      align-items:start;
+      gap:24px;
+    }
+    .result-card{position:sticky; top:24px;}
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .card{padding:32px;} }
+
+  /* ---------- Group sections (15 fields → 3 groups) ---------- */
+  .group-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+    font-weight:800;
+    color:var(--brand);
+    letter-spacing:-0.02em;
+    margin:0 0 18px;
+  }
+  .group-block + .group-block{
+    margin-top:28px;
+    padding-top:26px;
+    border-top:1px solid var(--line);
+  }
+  .group-title .num{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:20px;height:20px;
+    flex-shrink:0;
+    border-radius:50%;
+    background:var(--brand-soft);
+    color:var(--brand);
+    font-size:11px;
+    font-weight:800;
+  }
+
+  /* ---------- Field blocks ---------- */
+  .field-block{margin-bottom:20px;}
+  .field-block:last-of-type{margin-bottom:0;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field-block.half{flex:1;min-width:0;}
+
+  /* 모바일에서 입력 그룹 간 세로 여백을 한층 더 넉넉하게 확보 */
+  @media (max-width:768px){
+    .field-block{margin-bottom:28px !important;}
+  }
+
+  .field-label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-2);
+    margin:0 0 10px;
+    letter-spacing:-0.03em;
+  }
+  .field-help{
+    margin:8px 2px 0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+  }
+
+  /* ---------- Pill sliding toggle tabs ---------- */
+  .toggle-tabs{
+    display:flex;
+    background:#f2f4f6;
+    border-radius:30px;
+    padding:4px;
+    gap:4px;
+  }
+  .toggle-tab{
+    flex:1;
+    text-align:center;
+    padding:11px 0;
+    border-radius:26px;
+    border:none;
+    background:transparent;
+    color:var(--ink-3);
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .18s cubic-bezier(.4,0,.2,1), color .18s ease, box-shadow .18s ease;
+  }
+  .toggle-tab.active{
+    background:#ffffff;
+    color:var(--ink-1);
+    box-shadow:0 2px 8px rgba(15,23,42,0.08);
+  }
+
+  /* ---------- Stepper chip (인적공제 인원수 증감) ---------- */
+  .stepper-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:12px 14px;
+    background:var(--card-soft);
+    border-radius:14px;
+  }
+  .stepper-row + .stepper-row{margin-top:8px;}
+  .stepper-label{font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .stepper-sub{display:block;font-size:11px;font-weight:500;color:var(--ink-3);margin-top:1px;}
+  .stepper-control{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-shrink:0;
+  }
+  .stepper-chip-btn{
+    width:28px;height:28px;
+    border-radius:9px;
+    border:none;
+    background:#ffffff;
+    color:var(--ink-1);
+    font-size:15px;
+    font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    box-shadow:0 1px 3px rgba(15,23,42,0.08);
+    transition:background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .stepper-chip-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .stepper-chip-btn:active{transform:scale(0.9);}
+  .stepper-chip-value{
+    min-width:18px;
+    text-align:center;
+    font-size:14px;
+    font-weight:800;
+    color:var(--ink-1);
+  }
+
+  /* ---------- Amount field (underline style) ---------- */
+  .amount-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card-soft);
+    border-radius:16px;
+    padding:16px 18px;
+    border:1.5px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .amount-field:focus-within{border-color:var(--brand);background:#fff;}
+  .amount-field input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    font:inherit;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    color:var(--ink-1);
+  }
+  .amount-field input::placeholder{color:#c2c8d1;font-weight:700;}
+  .amount-field .amount-unit{
+    flex-shrink:0;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-3);
+  }
+
+  .amount-hint{
+    margin:8px 2px 0;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--brand-2);
+  }
+
+  /* ---------- Quick add chips ---------- */
+  .quick-add-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:12px;
+  }
+  .quick-btn{
+    padding:10px 4px;
+    border-radius:12px;
+    border:none;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease, color .15s ease;
+  }
+  .quick-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .quick-btn:active{transform:scale(0.95);}
+  .quick-btn.reset{color:var(--ink-3);}
+  .quick-btn.reset:hover{background:#fdecec;color:#dc2626;}
+
+  /* ---------- Submit button ---------- */
+  .calc-submit-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:28px;
+    padding:18px 16px;
+    border-radius:var(--radius-md);
+    border:none;
+    background:var(--brand);
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .calc-submit-btn i{color:#fff;--ph-duotone-secondary-color:#fff;--ph-duotone-secondary-opacity:0.5;font-size:19px;}
+  .calc-submit-btn:hover{background:#4f46e5;}
+  .calc-submit-btn:active{transform:scale(0.98);}
+
+  /* ---------- Result card ---------- */
+  .result-card{min-height:320px;display:flex;flex-direction:column;}
+
+  .result-empty{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:48px 20px;
+  }
+  .result-empty-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--danger-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .result-empty-icon i{font-size:30px;color:var(--danger);--ph-duotone-secondary-color:var(--danger);}
+  .result-empty p{
+    margin:0;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  .result-content{display:none;}
+  .result-content.show{display:block;}
+
+  .hero-label{
+    margin:0 0 6px;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .hero-amount{
+    margin:0 0 20px;
+    font-size:clamp(28px,6vw,38px);
+    font-weight:800;
+    color:#df484a;
+    letter-spacing:-0.03em;
+    word-break:keep-all;
+  }
+
+  /* ---------- Financial flow summary strip (총 상속재산 → 공제액 → 과세표준 → 산출세액) ---------- */
+  .flow-strip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    margin-bottom:22px;
+    padding-bottom:2px;
+  }
+  .flow-strip::-webkit-scrollbar{display:none;}
+  .flow-step{
+    flex:1;
+    min-width:96px;
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:12px 12px;
+  }
+  .flow-step-label{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    margin-bottom:4px;
+    white-space:nowrap;
+  }
+  .flow-step-value{
+    font-size:13px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+  }
+  .flow-arrow{
+    flex-shrink:0;
+    font-size:14px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+  }
+
+  /* ---------- Receipt-style itemized breakdown ---------- */
+  .receipt-list{
+    border-top:1px solid var(--line);
+    padding-top:4px;
+  }
+  .receipt-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 2px;
+    font-size:13.5px;
+    border-bottom:1px solid var(--line);
+  }
+  .receipt-row .r-label{color:var(--ink-2);font-weight:600;}
+  .receipt-row .r-value{color:var(--ink-1);font-weight:700;letter-spacing:-0.02em;flex-shrink:0;white-space:nowrap;}
+  .receipt-row.minus .r-value{color:var(--ink-3);}
+  .receipt-row.plus .r-value{color:var(--danger);}
+  .receipt-row.subtotal{background:var(--card-soft);margin:2px 0;border-radius:10px;padding:11px 10px;border-bottom:none;}
+  .receipt-row.subtotal .r-label,.receipt-row.subtotal .r-value{font-weight:800;color:var(--ink-1);}
+  .receipt-row.total{
+    border-bottom:none;
+    padding-top:16px;
+    margin-top:4px;
+  }
+  .receipt-row.total .r-label{color:var(--ink-1);font-weight:800;font-size:14.5px;}
+  .receipt-row.total .r-value{color:var(--danger);font-weight:800;font-size:17px;}
+
+  /* ---------- Insight article feed ---------- */
+  .insight-section{
+    margin-top:28px;
+    padding-top:22px;
+    border-top:1px solid var(--line);
+  }
+  .insight-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    font-weight:800;
+    color:var(--ink-1);
+    margin:0 0 14px;
+  }
+  .insight-title i{font-size:17px;--ph-duotone-secondary-opacity:0.14;}
+  .insight-feed{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .insight-card{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 16px;
+    background:var(--card-soft);
+    border-radius:16px;
+  }
+  .insight-icon{
+    width:36px;height:36px;
+    flex-shrink:0;
+    border-radius:11px;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 3px rgba(15,23,42,0.06);
+  }
+  .insight-icon i{font-size:17px;}
+  .insight-body{min-width:0;}
+  .insight-body h5{
+    margin:0 0 3px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .insight-body p{
+    margin:0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+    line-height:1.5;
+    word-break:keep-all;
+  }
+
+  /* ---------- Disclaimer ---------- */
+  .disclaimer{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    margin-top:24px;
+    padding:2px 4px;
+  }
+  .disclaimer i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;margin-top:1px;}
+  .disclaimer p{
+    margin:0;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink-3);
+    font-weight:500;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(20px);
+    background:#191f28;
+    color:#fff;
+    padding:14px 20px;
+    border-radius:14px;
+    font-size:13.5px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+    box-shadow:0 12px 30px -8px rgba(0,0,0,0.35);
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{font-size:16px;color:var(--brand-2);--ph-duotone-secondary-opacity:0.2;}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html#taxpilot">
+    <i class="ph-duotone ph-arrow-left"></i>
+    자산 파일럿
+  </a>
+  <button class="pill-btn" type="button" id="guideBtn">
+    <i class="ph-duotone ph-shield-check"></i>
+    계산 방식 안내
+  </button>
+</header>
+
+<main class="wrap">
+
+  <div class="page-head">
+    <span class="eyebrow"><i class="ph-duotone ph-hand-heart" style="font-size:14px;--ph-duotone-secondary-opacity:0;"></i>택스 파일럿 · 상속·증여</span>
+    <h1>상속세 계산기</h1>
+    <p>일괄공제·배우자상속공제·금융재산상속공제를 자동으로 비교해 예상 상속세를 계산해 드려요.</p>
+  </div>
+
+  <div class="calc-shell">
+
+    <!-- Input card -->
+    <div class="input-card card">
+
+      <!-- 그룹 1: 상속 자산 -->
+      <div class="group-block">
+        <h3 class="group-title"><span class="num">1</span>상속 자산</h3>
+
+        <div class="field-block">
+          <label class="field-label" id="totalEstateLabel">상속재산가액</label>
+          <div class="amount-field">
+            <input type="text" inputmode="numeric" id="totalEstate" placeholder="예: 1,000,000,000">
+            <span class="amount-unit">원</span>
+          </div>
+          <p class="amount-hint" id="totalEstateHint">0원</p>
+          <div class="quick-add-row">
+            <button type="button" class="quick-btn" data-target="totalEstate" data-add="1000000000">+10억</button>
+            <button type="button" class="quick-btn" data-target="totalEstate" data-add="100000000">+1억</button>
+            <button type="button" class="quick-btn" data-target="totalEstate" data-add="10000000">+1천만</button>
+            <button type="button" class="quick-btn reset" data-target="totalEstate" data-reset="true">초기화</button>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="field-label">금융상속재산액</label>
+          <div class="amount-field">
+            <input type="text" inputmode="numeric" id="financialAsset" placeholder="0">
+            <span class="amount-unit">원</span>
+          </div>
+          <p class="amount-hint" id="financialAssetHint">0원</p>
+          <p class="field-help">예금·주식 등 상속재산 중 금융재산 순액이에요. 금융재산상속공제 계산에 쓰여요.</p>
+        </div>
+      </div>
+
+      <!-- 그룹 2: 가족 현황 (인적공제) -->
+      <div class="group-block">
+        <h3 class="group-title"><span class="num">2</span>가족 현황 (인적공제)</h3>
+
+        <div class="field-block">
+          <label class="field-label">배우자 유무</label>
+          <div class="toggle-tabs" id="spouseTabs">
+            <button type="button" class="toggle-tab active" data-value="yes">있음</button>
+            <button type="button" class="toggle-tab" data-value="no">없음</button>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <div class="stepper-row">
+            <span class="stepper-label">자녀 수<span class="stepper-sub">1인당 5,000만원 공제</span></span>
+            <div class="stepper-control">
+              <button type="button" class="stepper-chip-btn" data-step="childCount" data-dir="-1">–</button>
+              <span class="stepper-chip-value" id="childCountValue">1</span>
+              <button type="button" class="stepper-chip-btn" data-step="childCount" data-dir="1">+</button>
+            </div>
+          </div>
+          <div class="stepper-row">
+            <span class="stepper-label">연로자 수<span class="stepper-sub">65세 이상 · 1인당 5,000만원</span></span>
+            <div class="stepper-control">
+              <button type="button" class="stepper-chip-btn" data-step="elderlyCount" data-dir="-1">–</button>
+              <span class="stepper-chip-value" id="elderlyCountValue">0</span>
+              <button type="button" class="stepper-chip-btn" data-step="elderlyCount" data-dir="1">+</button>
+            </div>
+          </div>
+          <div class="stepper-row">
+            <span class="stepper-label">미성년자 수<span class="stepper-sub">19세 미만 · 1인당 1,000만원</span></span>
+            <div class="stepper-control">
+              <button type="button" class="stepper-chip-btn" data-step="minorCount" data-dir="-1">–</button>
+              <span class="stepper-chip-value" id="minorCountValue">0</span>
+              <button type="button" class="stepper-chip-btn" data-step="minorCount" data-dir="1">+</button>
+            </div>
+          </div>
+          <div class="stepper-row">
+            <span class="stepper-label">장애인 수<span class="stepper-sub">1인당 기대여명 20년 기준 2억원</span></span>
+            <div class="stepper-control">
+              <button type="button" class="stepper-chip-btn" data-step="disabledCount" data-dir="-1">–</button>
+              <span class="stepper-chip-value" id="disabledCountValue">0</span>
+              <button type="button" class="stepper-chip-btn" data-step="disabledCount" data-dir="1">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 그룹 3: 공제/비용 -->
+      <div class="group-block">
+        <h3 class="group-title"><span class="num">3</span>공제/비용</h3>
+
+        <div class="field-row">
+          <div class="field-block half">
+            <label class="field-label">채무 금액</label>
+            <div class="amount-field">
+              <input type="text" inputmode="numeric" id="debtAmount" placeholder="0">
+              <span class="amount-unit">원</span>
+            </div>
+          </div>
+          <div class="field-block half">
+            <label class="field-label">장례 비용</label>
+            <div class="amount-field">
+              <input type="text" inputmode="numeric" id="funeralCost" placeholder="0">
+              <span class="amount-unit">원</span>
+            </div>
+          </div>
+        </div>
+        <p class="field-help" style="margin-top:-8px;margin-bottom:20px;">장례비용은 최소 500만원이 보장되고, 최대 1,000만원까지만 공제돼요.</p>
+
+        <div class="field-block">
+          <label class="field-label">기타 공제액</label>
+          <div class="amount-field">
+            <input type="text" inputmode="numeric" id="otherDeduction" placeholder="0">
+            <span class="amount-unit">원</span>
+          </div>
+        </div>
+
+        <div class="field-block">
+          <label class="field-label">과거 10년 이내 증여 여부</label>
+          <div class="toggle-tabs" id="priorGiftTabs">
+            <button type="button" class="toggle-tab active" data-value="no">없음</button>
+            <button type="button" class="toggle-tab" data-value="yes">있음 (상속재산 합산)</button>
+          </div>
+          <p class="field-help">상속개시일 전 10년 이내 상속인에게 준 증여재산은 상속재산에 합산돼요.</p>
+        </div>
+
+        <div class="field-row" id="priorGiftBlock" style="display:none;">
+          <div class="field-block half">
+            <label class="field-label">10년 이내 사전증여재산가액</label>
+            <div class="amount-field">
+              <input type="text" inputmode="numeric" id="priorGiftAmount" placeholder="0">
+              <span class="amount-unit">원</span>
+            </div>
+          </div>
+          <div class="field-block half">
+            <label class="field-label">그때 납부한 증여세액</label>
+            <div class="amount-field">
+              <input type="text" inputmode="numeric" id="priorGiftTaxPaid" placeholder="0">
+              <span class="amount-unit">원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="calc-submit-btn" id="calcBtn">
+        <i class="ph-duotone ph-calculator"></i>
+        상속세 계산하기
+      </button>
+    </div>
+
+    <!-- Result card -->
+    <div class="result-card card">
+      <div class="result-empty" id="resultEmpty">
+        <span class="result-empty-icon"><i class="ph-duotone ph-hand-heart"></i></span>
+        <p>상속 정보를 입력하고<br>예상 상속세를 확인해보세요</p>
+      </div>
+
+      <div class="result-content" id="resultContent">
+        <p class="hero-label">최종 예상 상속세 총납부액</p>
+        <p class="hero-amount" id="heroAmount">0원</p>
+
+        <div class="flow-strip" id="flowStrip"></div>
+
+        <div class="receipt-list" id="receiptList"></div>
+
+        <div class="insight-section">
+          <h4 class="insight-title"><i class="ph-duotone ph-sparkle"></i>자산 파일럿 세무 인사이트</h4>
+          <div class="insight-feed" id="insightFeed"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <i class="ph-duotone ph-info"></i>
+    <p>본 계산기는 기초공제·일괄공제·배우자상속공제·금융재산상속공제 등 주요 공제 항목을 반영한 간편 시뮬레이션이에요. 배우자의 실제 법정상속분, 재해손실공제 등 세부 사실관계에 따라 실제 세액은 달라질 수 있으니 정확한 금액은 세무 전문가와 상담 후 신고해 주세요.</p>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <i class="ph-duotone ph-check-circle"></i>
+  <span id="toastText">계산이 완료됐어요</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Formatting helpers ---------- */
+  var digitsOnly = function(str){ return (str || "").replace(/[^0-9]/g, ""); };
+
+  function formatWon(n){
+    var sign = n < 0 ? "-" : "";
+    n = Math.round(Math.abs(n));
+    return sign + n.toLocaleString("ko-KR") + "원";
+  }
+
+  function toKoreanUnit(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    var rest = n % 10000;
+    var out = "";
+    if (eok) out += eok.toLocaleString("ko-KR") + "억 ";
+    if (man) out += man.toLocaleString("ko-KR") + "만 ";
+    if (rest) out += rest.toLocaleString("ko-KR") + " ";
+    return out.trim() + "원";
+  }
+
+  function toKoreanUnitShort(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    if (eok && man) return eok + "억 " + man.toLocaleString("ko-KR") + "만원";
+    if (eok) return eok + "억원";
+    if (man) return man.toLocaleString("ko-KR") + "만원";
+    return n.toLocaleString("ko-KR") + "원";
+  }
+
+  /* ---------- 상속세 누진세율표 (과세표준 기준, 누진공제 방식 — 증여세와 동일한 5단계 구조) ---------- */
+  var INHERITANCE_TAX_BRACKETS = [
+    { limit:100000000,   rate:0.10, deduction:0 },
+    { limit:500000000,   rate:0.20, deduction:10000000 },
+    { limit:1000000000,  rate:0.30, deduction:60000000 },
+    { limit:3000000000,  rate:0.40, deduction:160000000 },
+    { limit:Infinity,    rate:0.50, deduction:460000000 }
+  ];
+  function getCalculatedTax(taxBase){
+    for (var i = 0; i < INHERITANCE_TAX_BRACKETS.length; i++) {
+      if (taxBase <= INHERITANCE_TAX_BRACKETS[i].limit) {
+        return Math.max(0, taxBase * INHERITANCE_TAX_BRACKETS[i].rate - INHERITANCE_TAX_BRACKETS[i].deduction);
+      }
+    }
+    return 0;
+  }
+
+  /* ---------- 금융재산상속공제: 금융재산 순액 구간별 자동 계산 ---------- */
+  function getFinancialAssetDeduction(financialNet){
+    if (financialNet <= 0) return 0;
+    if (financialNet <= 20000000) return financialNet;        // 2천만 이하: 전액 공제
+    if (financialNet <= 100000000) return 20000000;            // 2천만~1억: 2천만원 고정 공제
+    if (financialNet <= 1000000000) return financialNet * 0.2; // 1억~10억: 20% 공제
+    return 200000000;                                          // 10억 초과: 2억원 한도 캡
+  }
+
+  /* ---------- 배우자상속공제: 최소 5억 보장, 법정상속분 한도 내 최대 30억 ---------- */
+  function getSpouseDeduction(hasSpouse, childCount, totalEstate){
+    if (!hasSpouse) return 0;
+    if (childCount === 0) {
+      // 배우자 단독(또는 직계존속과 공동)상속 — 간이 가정: 배우자가 상속재산 전액에 대한 지분을 갖는 것으로 근사
+      return Math.min(Math.max(totalEstate, 500000000), 3000000000);
+    }
+    // 민법상 법정상속분: 자녀 1인당 지분 1, 배우자는 자녀 지분의 1.5배
+    var totalShares = childCount + 1.5;
+    var spouseShare = 1.5 / totalShares;
+    var legalPortion = totalEstate * spouseShare;
+    return Math.min(Math.max(legalPortion, 500000000), 3000000000);
+  }
+
+  /* ---------- 세무 인사이트 아티클 (고정 콘텐츠) ---------- */
+  var INSIGHT_ARTICLES = [
+    { icon:"ph-newspaper-clipping", title:"2026년 개정 상속세법 요약", desc:"배우자상속공제 한도와 인적공제 확대 등 최근 개정 사항을 3분 만에 정리했어요." },
+    { icon:"ph-heart", title:"배우자상속공제, 이렇게 활용하면 세금이 줄어요", desc:"법정상속분 한도 내에서 배우자 몫을 잘 배분하면 절세 효과가 커져요." },
+    { icon:"ph-clock-counter-clockwise", title:"10년 이내 사전증여, 상속재산에 합산돼요", desc:"상속개시 전 미리 증여한 재산은 상속세 계산 시 다시 합산되니 주의하세요." },
+    { icon:"ph-flower-lotus", title:"장례비용도 공제받을 수 있어요", desc:"실제 지출이 500만원 미만이어도 500만원은 기본으로 공제돼요." }
+  ];
+
+  /* ---------- DOM refs ---------- */
+  var totalEstateInput = document.getElementById("totalEstate");
+  var totalEstateHint = document.getElementById("totalEstateHint");
+  var financialAssetInput = document.getElementById("financialAsset");
+  var financialAssetHint = document.getElementById("financialAssetHint");
+  var spouseTabs = document.getElementById("spouseTabs");
+  var debtAmountInput = document.getElementById("debtAmount");
+  var funeralCostInput = document.getElementById("funeralCost");
+  var otherDeductionInput = document.getElementById("otherDeduction");
+  var priorGiftTabs = document.getElementById("priorGiftTabs");
+  var priorGiftBlock = document.getElementById("priorGiftBlock");
+  var priorGiftAmountInput = document.getElementById("priorGiftAmount");
+  var priorGiftTaxPaidInput = document.getElementById("priorGiftTaxPaid");
+  var calcBtn = document.getElementById("calcBtn");
+
+  var resultEmpty = document.getElementById("resultEmpty");
+  var resultContent = document.getElementById("resultContent");
+  var heroAmount = document.getElementById("heroAmount");
+  var flowStrip = document.getElementById("flowStrip");
+  var receiptList = document.getElementById("receiptList");
+  var insightFeed = document.getElementById("insightFeed");
+
+  var state = { childCount: 1, elderlyCount: 0, minorCount: 0, disabledCount: 0 };
+
+  /* ---------- Toggle tabs ---------- */
+  function setupTabs(container, onChange){
+    var btns = container.querySelectorAll(".toggle-tab");
+    btns.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        btns.forEach(function(b){ b.classList.remove("active"); });
+        btn.classList.add("active");
+        if (onChange) onChange(btn.dataset.value);
+      });
+    });
+  }
+  function getActiveTab(container){
+    var active = container.querySelector(".toggle-tab.active");
+    return active ? active.dataset.value : null;
+  }
+
+  setupTabs(spouseTabs);
+  setupTabs(priorGiftTabs, function(value){
+    priorGiftBlock.style.display = value === "yes" ? "flex" : "none";
+  });
+
+  /* ---------- Stepper chips (자녀/연로자/미성년자/장애인 수) ---------- */
+  document.querySelectorAll(".stepper-chip-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var key = btn.dataset.step;
+      var dir = Number(btn.dataset.dir);
+      state[key] = Math.max(0, state[key] + dir);
+      document.getElementById(key + "Value").textContent = state[key];
+    });
+  });
+
+  /* ---------- Live formatting ---------- */
+  function liveFormat(el, hintEl){
+    el.addEventListener("input", function(){
+      var raw = digitsOnly(el.value);
+      el.value = raw ? Number(raw).toLocaleString("ko-KR") : "";
+      if (hintEl) hintEl.textContent = toKoreanUnit(Number(raw) || 0);
+    });
+  }
+  liveFormat(totalEstateInput, totalEstateHint);
+  liveFormat(financialAssetInput, financialAssetHint);
+  liveFormat(debtAmountInput, null);
+  liveFormat(funeralCostInput, null);
+  liveFormat(otherDeductionInput, null);
+  liveFormat(priorGiftAmountInput, null);
+  liveFormat(priorGiftTaxPaidInput, null);
+  totalEstateInput.addEventListener("keydown", function(e){ if (e.key === "Enter") calculateInheritanceTax(); });
+
+  /* ---------- Quick add buttons ---------- */
+  document.querySelectorAll(".quick-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var targetId = btn.getAttribute("data-target");
+      var input = document.getElementById(targetId);
+      if (!input) return;
+      if (btn.dataset.reset) {
+        input.value = "";
+        totalEstateHint.textContent = "0원";
+        input.focus();
+        return;
+      }
+      var cur = Number(digitsOnly(input.value)) || 0;
+      var next = cur + Number(btn.dataset.add);
+      input.value = next.toLocaleString("ko-KR");
+      totalEstateHint.textContent = toKoreanUnit(next);
+    });
+  });
+
+  /* ---------- Core calculation ---------- */
+  function calculateInheritanceTax(){
+    var hasSpouse = getActiveTab(spouseTabs) === "yes";
+    var priorGiftCombine = getActiveTab(priorGiftTabs) === "yes";
+
+    var totalEstate = Number(digitsOnly(totalEstateInput.value)) || 0;
+    var financialAsset = Number(digitsOnly(financialAssetInput.value)) || 0;
+    var debtAmount = Number(digitsOnly(debtAmountInput.value)) || 0;
+    var funeralCostRaw = Number(digitsOnly(funeralCostInput.value)) || 0;
+    var otherDeduction = Number(digitsOnly(otherDeductionInput.value)) || 0;
+    var priorGiftAmount = priorGiftCombine ? (Number(digitsOnly(priorGiftAmountInput.value)) || 0) : 0;
+    var priorGiftTaxPaid = priorGiftCombine ? (Number(digitsOnly(priorGiftTaxPaidInput.value)) || 0) : 0;
+
+    var childCount = state.childCount;
+    var elderlyCount = state.elderlyCount;
+    var minorCount = state.minorCount;
+    var disabledCount = state.disabledCount;
+
+    if (totalEstate <= 0) {
+      showToast("ph-warning-circle", "상속재산가액을 입력해주세요");
+      totalEstateInput.focus();
+      return;
+    }
+
+    /* 10년 이내 사전증여재산 합산 시, 법정상속분 계산의 기준이 되는 총 상속재산도 함께 늘어남 */
+    var combinedEstate = totalEstate + priorGiftAmount;
+
+    /* 1) 장례비용공제: 최소 500만원 보장, 최대 1,000만원 한도 */
+    var funeralDeduction = Math.min(Math.max(funeralCostRaw, 5000000), 10000000);
+
+    /* 2) 상속세 과세가액 = 상속재산가액(+사전증여 합산) - 채무금액 - 장례비용공제 - 기타공제액 */
+    var taxableValue = Math.max(0, combinedEstate - debtAmount - funeralDeduction - otherDeduction);
+
+    /* 3) 상속공제 — 기초+인적공제 vs 일괄공제 자동 Max 비교 */
+    var basicDeduction = 200000000; // 기초공제 2억원
+    var personalDeduction =
+      (childCount * 50000000) +
+      (minorCount * 10000000) +
+      (elderlyCount * 50000000) +
+      (disabledCount * 10000000 * 20); // 장애인: 1,000만원 * 기대여명연수(기본 20년 가정)
+    var basicPlusPersonal = basicDeduction + personalDeduction;
+
+    var isSpouseSoleHeir = hasSpouse && childCount === 0 && elderlyCount === 0 && minorCount === 0 && disabledCount === 0;
+    var unifiedDeduction = 500000000; // 일괄공제 5억원
+    var combinedBasicDeduction = isSpouseSoleHeir
+      ? basicPlusPersonal            // 배우자 단독상속: 일괄공제 제외, 기초+인적공제만 적용
+      : Math.max(basicPlusPersonal, unifiedDeduction); // 그 외: 기초+인적 vs 일괄공제 중 큰 값 자동 선택
+
+    /* 4) 배우자상속공제 (최소 5억, 법정상속분 한도 내 최대 30억) */
+    var spouseDeduction = getSpouseDeduction(hasSpouse, childCount, combinedEstate);
+
+    /* 5) 금융재산상속공제 (금융재산 순액 구간별) */
+    var financialDeduction = getFinancialAssetDeduction(financialAsset);
+
+    var totalDeduction = combinedBasicDeduction + spouseDeduction + financialDeduction;
+
+    /* 6) 과세표준 = 상속세 과세가액 - 상속공제 총합계 (0 미만이면 0) */
+    var taxBase = Math.max(0, taxableValue - totalDeduction);
+
+    /* 7) 산출세액 = 과세표준 * 세율 - 누진공제액 */
+    var calculatedTax = getCalculatedTax(taxBase);
+
+    /* 8) 기납부 증여세액공제 (10년 합산 시 과거 납부세액 차감, 이중과세 방지) */
+    var priorTaxCredit = priorGiftCombine ? priorGiftTaxPaid : 0;
+    var afterPriorCredit = Math.max(0, calculatedTax - priorTaxCredit);
+
+    /* 9) 신고세액공제 (법정 기한 내 자진신고 시 3%) */
+    var reportingCredit = afterPriorCredit * 0.03;
+
+    /* 10) 최종 총납부세액 */
+    var totalPayable = Math.max(0, afterPriorCredit - reportingCredit);
+
+    renderResult({
+      totalEstate: totalEstate, financialAsset: financialAsset, priorGiftCombine: priorGiftCombine,
+      priorGiftAmount: priorGiftAmount, combinedEstate: combinedEstate,
+      debtAmount: debtAmount, funeralDeduction: funeralDeduction, otherDeduction: otherDeduction,
+      taxableValue: taxableValue,
+      hasSpouse: hasSpouse, childCount: childCount, elderlyCount: elderlyCount, minorCount: minorCount, disabledCount: disabledCount,
+      basicDeduction: basicDeduction, personalDeduction: personalDeduction, isSpouseSoleHeir: isSpouseSoleHeir,
+      combinedBasicDeduction: combinedBasicDeduction, spouseDeduction: spouseDeduction, financialDeduction: financialDeduction,
+      totalDeduction: totalDeduction, taxBase: taxBase, calculatedTax: calculatedTax,
+      priorTaxCredit: priorTaxCredit, reportingCredit: reportingCredit, totalPayable: totalPayable
+    });
+
+    showToast("ph-check-circle", "상속세 계산이 완료됐어요");
+  }
+
+  /* ---------- Render: financial flow strip ---------- */
+  function renderFlowStrip(data){
+    var steps = [
+      { label:"총 상속재산", value: data.combinedEstate },
+      { label:"공제액 합계", value: data.totalDeduction },
+      { label:"과세표준", value: data.taxBase },
+      { label:"산출세액", value: data.calculatedTax }
+    ];
+    flowStrip.innerHTML = steps.map(function(step, idx){
+      var arrow = idx > 0 ? '<i class="ph-duotone ph-caret-right flow-arrow"></i>' : '';
+      return arrow +
+        '<div class="flow-step">' +
+          '<span class="flow-step-label">' + step.label + '</span>' +
+          '<span class="flow-step-value">' + toKoreanUnitShort(step.value) + '</span>' +
+        '</div>';
+    }).join("");
+  }
+
+  /* ---------- Render: receipt-style breakdown ---------- */
+  function addRow(label, value, cls){
+    var row = document.createElement("div");
+    row.className = "receipt-row" + (cls ? (" " + cls) : "");
+    row.innerHTML =
+      '<span class="r-label">' + label + '</span>' +
+      '<span class="r-value">' + value + '</span>';
+    receiptList.appendChild(row);
+  }
+
+  function renderResult(data){
+    resultEmpty.style.display = "none";
+    resultContent.classList.add("show");
+
+    heroAmount.textContent = formatWon(data.totalPayable);
+    renderFlowStrip(data);
+
+    receiptList.innerHTML = "";
+    addRow("상속재산가액", formatWon(data.totalEstate));
+    if (data.priorGiftCombine && data.priorGiftAmount > 0) {
+      addRow("10년 이내 사전증여 합산액", "+ " + formatWon(data.priorGiftAmount), "plus");
+    }
+    if (data.debtAmount > 0) addRow("채무 금액", "- " + formatWon(data.debtAmount), "minus");
+    addRow("장례비용공제", "- " + formatWon(data.funeralDeduction), "minus");
+    if (data.otherDeduction > 0) addRow("기타 공제액", "- " + formatWon(data.otherDeduction), "minus");
+    addRow("상속세 과세가액", formatWon(data.taxableValue), "subtotal");
+
+    addRow(data.isSpouseSoleHeir ? "기초공제 + 인적공제" : "기초·인적공제 vs 일괄공제 (자동 최대 선택)", "- " + formatWon(data.combinedBasicDeduction), "minus");
+    if (data.hasSpouse) addRow("배우자상속공제", "- " + formatWon(data.spouseDeduction), "minus");
+    if (data.financialDeduction > 0) addRow("금융재산상속공제", "- " + formatWon(data.financialDeduction), "minus");
+    addRow("상속공제 합계", formatWon(data.totalDeduction), "subtotal");
+    addRow("과세표준", formatWon(data.taxBase), "subtotal");
+
+    addRow("산출세액", formatWon(data.calculatedTax));
+    if (data.priorGiftCombine && data.priorTaxCredit > 0) {
+      addRow("기납부 증여세액공제", "- " + formatWon(data.priorTaxCredit), "minus");
+    }
+    addRow("신고세액공제 (3%)", "- " + formatWon(data.reportingCredit), "minus");
+    addRow("최종 예상 상속세 총납부액", formatWon(data.totalPayable), "total");
+
+    renderInsightFeed();
+  }
+
+  function renderInsightFeed(){
+    insightFeed.innerHTML = INSIGHT_ARTICLES.map(function(item){
+      return '' +
+        '<div class="insight-card">' +
+          '<span class="insight-icon"><i class="ph-duotone ' + item.icon + '"></i></span>' +
+          '<div class="insight-body">' +
+            '<h5>' + item.title + '</h5>' +
+            '<p>' + item.desc + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  calcBtn.addEventListener("click", calculateInheritanceTax);
+
+  /* ---------- Toast ---------- */
+  var toast = document.getElementById("toast");
+  var toastText = document.getElementById("toastText");
+  var toastTimer = null;
+  function showToast(icon, text){
+    toastText.textContent = text;
+    toast.querySelector("i").className = "ph-duotone " + icon;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 2200);
+  }
+
+  document.getElementById("guideBtn").addEventListener("click", function(){
+    showToast("ph-shield-check", "기초·일괄·배우자·금융재산상속공제 자동 비교 기준 간편 계산이에요");
+  });
+})();
+</script>
+
+</body>
+</html>

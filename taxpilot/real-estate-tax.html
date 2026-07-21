@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>양도소득세 계산기 — 자산 파일럿</title>
+<meta name="description" content="1세대 1주택 비과세, 장기보유특별공제, 8단계 누진세율표를 반영한 부동산 양도소득세 계산기입니다.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" defer></script>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<style>
+  :root{
+    --bg:#f2f4f6;
+    --card:#ffffff;
+    --card-soft:#f9fafb;
+    --ink-1:#191f28;
+    --ink-2:#4e5968;
+    --ink-3:#8b95a1;
+    --line:#eef0f2;
+    --brand:#6366f1;
+    --brand-2:#3182f6;
+    --brand-soft:rgba(99,102,241,0.08);
+    --brand-soft-2:rgba(49,130,246,0.10);
+    --danger:#df484a;
+    --danger-soft:rgba(223,72,74,0.08);
+    --good:#059669;
+    --good-soft:rgba(5,150,105,0.10);
+    --shadow-card:0 2px 10px rgba(15,23,42,0.04), 0 12px 32px -18px rgba(15,23,42,0.10);
+    --radius-lg:24px;
+    --radius-md:18px;
+    --ph-duotone-secondary-opacity:0.10;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink-1);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,"Pretendard","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    letter-spacing:-0.03em;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;letter-spacing:inherit;}
+
+  i.ph-duotone{
+    --ph-duotone-secondary-color: var(--brand);
+    color:var(--brand);
+    line-height:1;
+  }
+
+  .wrap{
+    max-width:1040px;
+    margin:0 auto;
+    padding:0 20px 96px;
+  }
+  @media (min-width:640px){ .wrap{padding:0 32px 120px;} }
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1040px;
+    margin:0 auto;
+    padding:22px 20px 0;
+  }
+  @media (min-width:640px){ header{padding:28px 32px 0;} }
+
+  .back-link{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .back-link i{font-size:18px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+
+  .pill-btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:9px 16px 9px 13px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .pill-btn i{font-size:15px;color:var(--ink-2);--ph-duotone-secondary-opacity:0;}
+  .pill-btn:hover{background:#e8eaed;}
+  .pill-btn:active{transform:scale(0.96);}
+
+  /* ---------- Page heading ---------- */
+  .page-head{
+    padding:36px 2px 28px;
+  }
+  @media (min-width:640px){ .page-head{padding:44px 2px 32px;} }
+  .page-head .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12.5px;
+    font-weight:800;
+    color:var(--brand);
+    background:var(--brand-soft);
+    padding:6px 12px;
+    border-radius:999px;
+    margin:0 0 12px;
+  }
+  .page-head h1{
+    font-size:clamp(22px,4vw,28px);
+    font-weight:800;
+    margin:0 0 20px;
+    letter-spacing:-0.01em;
+    line-height:1.4;
+    color:var(--ink-1);
+  }
+  .page-head p{
+    margin:0;
+    font-size:14px;
+    font-weight:500;
+    line-height:1.5;
+    color:var(--ink-3);
+    word-break:keep-all;
+  }
+
+  /* ---------- Shell: 2-column input / result ---------- */
+  .calc-shell{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+  @media (min-width:900px){
+    .calc-shell{
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      align-items:start;
+      gap:24px;
+    }
+    .result-card{position:sticky; top:24px;}
+  }
+
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .card{padding:32px;} }
+
+  /* ---------- Field blocks ---------- */
+  .field-block{margin-bottom:20px;}
+  .field-block:last-of-type{margin-bottom:0;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field-block.half{flex:1;min-width:0;}
+
+  /* 모바일에서 입력 그룹 간 세로 여백을 한층 더 넉넉하게 확보 */
+  @media (max-width:768px){
+    .field-block{margin-bottom:28px !important;}
+  }
+
+  .field-label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-2);
+    margin:0 0 10px;
+    letter-spacing:-0.03em;
+  }
+  .field-help{
+    margin:8px 2px 0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+  }
+
+  /* ---------- Pill sliding toggle tabs ---------- */
+  .toggle-tabs{
+    display:flex;
+    background:#f2f4f6;
+    border-radius:30px;
+    padding:4px;
+    gap:4px;
+  }
+  .toggle-tab{
+    flex:1;
+    text-align:center;
+    padding:11px 4px;
+    border-radius:26px;
+    border:none;
+    background:transparent;
+    color:var(--ink-3);
+    font-size:13.5px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .18s cubic-bezier(.4,0,.2,1), color .18s ease, box-shadow .18s ease;
+  }
+  .toggle-tab.active{
+    background:#ffffff;
+    color:var(--ink-1);
+    box-shadow:0 2px 8px rgba(15,23,42,0.08);
+  }
+
+  /* ---------- Minimal flat date picker ---------- */
+  .date-field{
+    background:var(--card-soft);
+    border-radius:16px;
+    padding:14px 18px;
+    border:1.5px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .date-field:focus-within{border-color:var(--brand);background:#fff;}
+  .date-field input[type="date"]{
+    width:100%;
+    border:none;
+    outline:none;
+    background:transparent;
+    font:inherit;
+    letter-spacing:-0.02em;
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink-1);
+    cursor:pointer;
+  }
+  .date-field input[type="date"]::-webkit-calendar-picker-indicator{
+    filter:invert(38%) sepia(64%) saturate(3000%) hue-rotate(226deg) brightness(97%) contrast(93%);
+    opacity:0.65;
+    cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .date-field input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;}
+
+  /* ---------- Amount field (underline style) ---------- */
+  .amount-field{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card-soft);
+    border-radius:16px;
+    padding:16px 18px;
+    border:1.5px solid transparent;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .amount-field:focus-within{border-color:var(--brand);background:#fff;}
+  .amount-field input{
+    flex:1;
+    min-width:0;
+    border:none;
+    outline:none;
+    background:transparent;
+    font:inherit;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    color:var(--ink-1);
+  }
+  .amount-field input::placeholder{color:#c2c8d1;font-weight:700;}
+  .amount-field .amount-unit{
+    flex-shrink:0;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-3);
+  }
+
+  .amount-hint{
+    margin:8px 2px 0;
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--brand-2);
+  }
+
+  /* ---------- Quick add chips ---------- */
+  .quick-add-row{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+    margin-top:12px;
+  }
+  .quick-btn{
+    padding:10px 4px;
+    border-radius:12px;
+    border:none;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease, color .15s ease;
+  }
+  .quick-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .quick-btn:active{transform:scale(0.95);}
+  .quick-btn.reset{color:var(--ink-3);}
+  .quick-btn.reset:hover{background:#fdecec;color:#dc2626;}
+
+  /* ---------- Submit button ---------- */
+  .calc-submit-btn{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin-top:28px;
+    padding:18px 16px;
+    border-radius:var(--radius-md);
+    border:none;
+    background:var(--brand);
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .calc-submit-btn i{color:#fff;--ph-duotone-secondary-color:#fff;--ph-duotone-secondary-opacity:0.5;font-size:19px;}
+  .calc-submit-btn:hover{background:#4f46e5;}
+  .calc-submit-btn:active{transform:scale(0.98);}
+
+  /* ---------- Result card ---------- */
+  .result-card{min-height:320px;display:flex;flex-direction:column;}
+
+  .result-empty{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:48px 20px;
+  }
+  .result-empty-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--danger-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .result-empty-icon i{font-size:30px;color:var(--danger);--ph-duotone-secondary-color:var(--danger);}
+  .result-empty p{
+    margin:0;
+    font-size:15px;
+    font-weight:600;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  .result-content{display:none;}
+  .result-content.show{display:block;}
+
+  /* 1세대 1주택 완전 비과세 배너 */
+  .exempt-banner{
+    display:none;
+    flex:1;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:48px 20px;
+  }
+  .exempt-banner.show{display:flex;}
+  .exempt-banner-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--good-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .exempt-banner-icon i{font-size:30px;color:var(--good);--ph-duotone-secondary-color:var(--good);}
+  .exempt-banner h3{
+    margin:0 0 8px;
+    font-size:22px;
+    font-weight:800;
+    color:var(--good);
+    letter-spacing:-0.03em;
+  }
+  .exempt-banner p{
+    margin:0;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  .hero-label{
+    margin:0 0 6px;
+    font-size:14px;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .hero-amount{
+    margin:0 0 20px;
+    font-size:clamp(28px,6vw,38px);
+    font-weight:800;
+    color:#df484a;
+    letter-spacing:-0.03em;
+    word-break:keep-all;
+  }
+
+  /* ---------- Financial flow summary strip ---------- */
+  .flow-strip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    margin-bottom:22px;
+    padding-bottom:2px;
+  }
+  .flow-strip::-webkit-scrollbar{display:none;}
+  .flow-step{
+    flex:1;
+    min-width:96px;
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:12px 12px;
+  }
+  .flow-step-label{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    margin-bottom:4px;
+    white-space:nowrap;
+  }
+  .flow-step-value{
+    font-size:13px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+  }
+  .flow-arrow{
+    flex-shrink:0;
+    font-size:14px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+  }
+
+  /* ---------- Receipt-style itemized breakdown ---------- */
+  .receipt-list{
+    border-top:1px solid var(--line);
+    padding-top:4px;
+  }
+  .receipt-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:10px 2px;
+    font-size:13.5px;
+    border-bottom:1px solid var(--line);
+  }
+  .receipt-row .r-label{color:var(--ink-2);font-weight:600;}
+  .receipt-row .r-value{color:var(--ink-1);font-weight:700;letter-spacing:-0.02em;flex-shrink:0;white-space:nowrap;}
+  .receipt-row.minus .r-value{color:var(--ink-3);}
+  .receipt-row.plus .r-value{color:var(--danger);}
+  .receipt-row.subtotal{background:var(--card-soft);margin:2px 0;border-radius:10px;padding:11px 10px;border-bottom:none;}
+  .receipt-row.subtotal .r-label,.receipt-row.subtotal .r-value{font-weight:800;color:var(--ink-1);}
+  .receipt-row.total{
+    border-bottom:none;
+    padding-top:16px;
+    margin-top:4px;
+  }
+  .receipt-row.total .r-label{color:var(--ink-1);font-weight:800;font-size:14.5px;}
+  .receipt-row.total .r-value{color:var(--danger);font-weight:800;font-size:17px;}
+
+  /* ---------- Insight article feed ---------- */
+  .insight-section{
+    margin-top:28px;
+    padding-top:22px;
+    border-top:1px solid var(--line);
+  }
+  .insight-title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14.5px;
+    font-weight:800;
+    color:var(--ink-1);
+    margin:0 0 14px;
+  }
+  .insight-title i{font-size:17px;--ph-duotone-secondary-opacity:0.14;}
+  .insight-feed{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .insight-card{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px 16px;
+    background:var(--card-soft);
+    border-radius:16px;
+  }
+  .insight-icon{
+    width:36px;height:36px;
+    flex-shrink:0;
+    border-radius:11px;
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 1px 3px rgba(15,23,42,0.06);
+  }
+  .insight-icon i{font-size:17px;}
+  .insight-body{min-width:0;}
+  .insight-body h5{
+    margin:0 0 3px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .insight-body p{
+    margin:0;
+    font-size:12px;
+    font-weight:500;
+    color:var(--ink-3);
+    line-height:1.5;
+    word-break:keep-all;
+  }
+
+  /* ---------- Disclaimer ---------- */
+  .disclaimer{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    margin-top:24px;
+    padding:2px 4px;
+  }
+  .disclaimer i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;margin-top:1px;}
+  .disclaimer p{
+    margin:0;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink-3);
+    font-weight:500;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(20px);
+    background:#191f28;
+    color:#fff;
+    padding:14px 20px;
+    border-radius:14px;
+    font-size:13.5px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+    box-shadow:0 12px 30px -8px rgba(0,0,0,0.35);
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{font-size:16px;color:var(--brand-2);--ph-duotone-secondary-opacity:0.2;}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../index.html#taxpilot">
+    <i class="ph-duotone ph-arrow-left"></i>
+    자산 파일럿
+  </a>
+  <button class="pill-btn" type="button" id="guideBtn">
+    <i class="ph-duotone ph-shield-check"></i>
+    계산 방식 안내
+  </button>
+</header>
+
+<main class="wrap">
+
+  <div class="page-head">
+    <span class="eyebrow"><i class="ph-duotone ph-receipt" style="font-size:14px;--ph-duotone-secondary-opacity:0;"></i>택스 파일럿 · 부동산 양도</span>
+    <h1>양도소득세 계산기</h1>
+    <p>1세대 1주택 비과세와 장기보유특별공제, 8단계 누진세율표를 반영해 예상 세액을 계산해 드려요.</p>
+  </div>
+
+  <div class="calc-shell">
+
+    <!-- Input card -->
+    <div class="input-card card">
+
+      <div class="field-block">
+        <label class="field-label">대상 주택수</label>
+        <div class="toggle-tabs" id="houseCountTabs">
+          <button type="button" class="toggle-tab active" data-value="1">1주택</button>
+          <button type="button" class="toggle-tab" data-value="2">2주택</button>
+          <button type="button" class="toggle-tab" data-value="3">3주택 이상</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-block half">
+          <label class="field-label">조정대상지역</label>
+          <div class="toggle-tabs" id="regulatedAreaTabs">
+            <button type="button" class="toggle-tab" data-value="yes">예</button>
+            <button type="button" class="toggle-tab active" data-value="no">아니오</button>
+          </div>
+        </div>
+        <div class="field-block half">
+          <label class="field-label">거주 여부</label>
+          <div class="toggle-tabs" id="residenceTabs">
+            <button type="button" class="toggle-tab active" data-value="yes">거주함</button>
+            <button type="button" class="toggle-tab" data-value="no">거주 안 함</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">기본공제 적용 여부</label>
+        <div class="toggle-tabs" id="basicDeductionTabs">
+          <button type="button" class="toggle-tab active" data-value="yes">적용 (연 250만원)</button>
+          <button type="button" class="toggle-tab" data-value="no">미적용</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-block half">
+          <label class="field-label">취득일자</label>
+          <div class="date-field">
+            <input type="date" id="acquisitionDate">
+          </div>
+        </div>
+        <div class="field-block half">
+          <label class="field-label">양도일자</label>
+          <div class="date-field">
+            <input type="date" id="transferDate">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">양도가액</label>
+        <div class="amount-field">
+          <input type="text" inputmode="numeric" id="transferValue" placeholder="예: 900,000,000">
+          <span class="amount-unit">원</span>
+        </div>
+        <p class="amount-hint" id="transferValueHint">0원</p>
+        <div class="quick-add-row">
+          <button type="button" class="quick-btn" data-target="transferValue" data-add="1000000000">+10억</button>
+          <button type="button" class="quick-btn" data-target="transferValue" data-add="100000000">+1억</button>
+          <button type="button" class="quick-btn" data-target="transferValue" data-add="10000000">+1천만</button>
+          <button type="button" class="quick-btn reset" data-target="transferValue" data-reset="true">초기화</button>
+        </div>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">취득가액</label>
+        <div class="amount-field">
+          <input type="text" inputmode="numeric" id="acquisitionValue" placeholder="0">
+          <span class="amount-unit">원</span>
+        </div>
+        <p class="amount-hint" id="acquisitionValueHint">0원</p>
+      </div>
+
+      <div class="field-block">
+        <label class="field-label">필요경비</label>
+        <div class="amount-field">
+          <input type="text" inputmode="numeric" id="necessaryExpense" placeholder="0">
+          <span class="amount-unit">원</span>
+        </div>
+        <p class="amount-hint" id="necessaryExpenseHint">0원</p>
+        <p class="field-help">중개수수료, 취득세, 리모델링 비용 등 자본적 지출을 입력해요.</p>
+      </div>
+
+      <button type="button" class="calc-submit-btn" id="calcBtn">
+        <i class="ph-duotone ph-calculator"></i>
+        양도소득세 계산하기
+      </button>
+    </div>
+
+    <!-- Result card -->
+    <div class="result-card card">
+      <div class="result-empty" id="resultEmpty">
+        <span class="result-empty-icon"><i class="ph-duotone ph-receipt"></i></span>
+        <p>양도 정보를 입력하고<br>예상 세액을 확인해보세요</p>
+      </div>
+
+      <div class="exempt-banner" id="exemptBanner">
+        <span class="exempt-banner-icon"><i class="ph-duotone ph-check-circle"></i></span>
+        <h3>비과세 대상이에요</h3>
+        <p id="exemptBannerText">1세대 1주택 요건을 충족해서<br>양도소득세를 내지 않아도 돼요.</p>
+      </div>
+
+      <div class="result-content" id="resultContent">
+        <p class="hero-label">최종 예상 양도소득세 총납부액</p>
+        <p class="hero-amount" id="heroAmount">0원</p>
+
+        <div class="flow-strip" id="flowStrip"></div>
+
+        <div class="receipt-list" id="receiptList"></div>
+
+        <div class="insight-section">
+          <h4 class="insight-title"><i class="ph-duotone ph-sparkle"></i>자산 파일럿 양도세 가이드</h4>
+          <div class="insight-feed" id="insightFeed"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <i class="ph-duotone ph-info"></i>
+    <p>본 계산기는 일반 자산 기준 장기보유특별공제(3년 이상 연 2%, 최대 30%)와 8단계 누진세율표를 반영한 간편 시뮬레이션이에요. 1세대 1주택자의 실제 장기보유특별공제(최대 80%)나 다주택 중과세율 등 세부 사실관계에 따라 실제 세액은 크게 달라질 수 있으니 정확한 금액은 세무 전문가와 상담 후 신고해 주세요.</p>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">
+  <i class="ph-duotone ph-check-circle"></i>
+  <span id="toastText">계산이 완료됐어요</span>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Formatting helpers ---------- */
+  var digitsOnly = function(str){ return (str || "").replace(/[^0-9]/g, ""); };
+
+  function formatWon(n){
+    var sign = n < 0 ? "-" : "";
+    n = Math.round(Math.abs(n));
+    return sign + n.toLocaleString("ko-KR") + "원";
+  }
+
+  function toKoreanUnit(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    var rest = n % 10000;
+    var out = "";
+    if (eok) out += eok.toLocaleString("ko-KR") + "억 ";
+    if (man) out += man.toLocaleString("ko-KR") + "만 ";
+    if (rest) out += rest.toLocaleString("ko-KR") + " ";
+    return out.trim() + "원";
+  }
+
+  function toKoreanUnitShort(n){
+    n = Math.max(0, Math.round(n));
+    if (n === 0) return "0원";
+    var eok = Math.floor(n / 100000000);
+    var man = Math.floor((n % 100000000) / 10000);
+    if (eok && man) return eok + "억 " + man.toLocaleString("ko-KR") + "만원";
+    if (eok) return eok + "억원";
+    if (man) return man.toLocaleString("ko-KR") + "만원";
+    return n.toLocaleString("ko-KR") + "원";
+  }
+
+  /* ---------- 양도소득세 8단계 누진세율표 (과세표준 기준, 누진공제 방식) ---------- */
+  var CGT_TAX_BRACKETS = [
+    { limit:14000000,    rate:0.06, deduction:0 },
+    { limit:50000000,    rate:0.15, deduction:1260000 },
+    { limit:88000000,    rate:0.24, deduction:5760000 },
+    { limit:150000000,   rate:0.35, deduction:15440000 },
+    { limit:300000000,   rate:0.38, deduction:19940000 },
+    { limit:500000000,   rate:0.40, deduction:25940000 },
+    { limit:1000000000,  rate:0.42, deduction:35940000 },
+    { limit:Infinity,    rate:0.45, deduction:65940000 }
+  ];
+  function getCalculatedTax(taxBase){
+    for (var i = 0; i < CGT_TAX_BRACKETS.length; i++) {
+      if (taxBase <= CGT_TAX_BRACKETS[i].limit) {
+        return Math.max(0, taxBase * CGT_TAX_BRACKETS[i].rate - CGT_TAX_BRACKETS[i].deduction);
+      }
+    }
+    return 0;
+  }
+
+  /* ---------- 양도세 가이드 아티클 (고정 콘텐츠) ---------- */
+  var GUIDE_ARTICLES = [
+    { icon:"ph-house-line", title:"1세대 1주택 비과세 꿀팁", desc:"1주택자가 2년 이상 보유(조정대상지역은 2년 거주 추가)하고 양도가액 12억원 이하면 세금이 0원이에요." },
+    { icon:"ph-receipt", title:"필요경비로 인정받는 항목 리스트", desc:"중개수수료, 취득세, 등기비용, 리모델링 등 자본적 지출은 필요경비로 공제받을 수 있어요." },
+    { icon:"ph-calendar-check", title:"장기보유특별공제, 보유기간이 핵심이에요", desc:"3년 이상 보유부터 매년 2%씩, 최대 30%까지 양도차익에서 공제돼요." },
+    { icon:"ph-warning-octagon", title:"다주택자는 중과세율을 꼭 확인하세요", desc:"조정대상지역 내 다주택 양도는 기본세율에 추가 중과세율이 붙을 수 있어요." }
+  ];
+
+  /* ---------- DOM refs ---------- */
+  var houseCountTabs = document.getElementById("houseCountTabs");
+  var regulatedAreaTabs = document.getElementById("regulatedAreaTabs");
+  var residenceTabs = document.getElementById("residenceTabs");
+  var basicDeductionTabs = document.getElementById("basicDeductionTabs");
+  var acquisitionDateInput = document.getElementById("acquisitionDate");
+  var transferDateInput = document.getElementById("transferDate");
+  var transferValueInput = document.getElementById("transferValue");
+  var transferValueHint = document.getElementById("transferValueHint");
+  var acquisitionValueInput = document.getElementById("acquisitionValue");
+  var acquisitionValueHint = document.getElementById("acquisitionValueHint");
+  var necessaryExpenseInput = document.getElementById("necessaryExpense");
+  var necessaryExpenseHint = document.getElementById("necessaryExpenseHint");
+  var calcBtn = document.getElementById("calcBtn");
+
+  var resultEmpty = document.getElementById("resultEmpty");
+  var exemptBanner = document.getElementById("exemptBanner");
+  var exemptBannerText = document.getElementById("exemptBannerText");
+  var resultContent = document.getElementById("resultContent");
+  var heroAmount = document.getElementById("heroAmount");
+  var flowStrip = document.getElementById("flowStrip");
+  var receiptList = document.getElementById("receiptList");
+  var insightFeed = document.getElementById("insightFeed");
+
+  /* ---------- Toggle tabs ---------- */
+  function setupTabs(container){
+    var btns = container.querySelectorAll(".toggle-tab");
+    btns.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        btns.forEach(function(b){ b.classList.remove("active"); });
+        btn.classList.add("active");
+      });
+    });
+  }
+  function getActiveTab(container){
+    var active = container.querySelector(".toggle-tab.active");
+    return active ? active.dataset.value : null;
+  }
+  setupTabs(houseCountTabs);
+  setupTabs(regulatedAreaTabs);
+  setupTabs(residenceTabs);
+  setupTabs(basicDeductionTabs);
+
+  /* ---------- Live formatting ---------- */
+  function liveFormat(el, hintEl){
+    el.addEventListener("input", function(){
+      var raw = digitsOnly(el.value);
+      el.value = raw ? Number(raw).toLocaleString("ko-KR") : "";
+      if (hintEl) hintEl.textContent = toKoreanUnit(Number(raw) || 0);
+    });
+  }
+  liveFormat(transferValueInput, transferValueHint);
+  liveFormat(acquisitionValueInput, acquisitionValueHint);
+  liveFormat(necessaryExpenseInput, necessaryExpenseHint);
+
+  /* ---------- Quick add buttons ---------- */
+  document.querySelectorAll(".quick-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var targetId = btn.getAttribute("data-target");
+      var input = document.getElementById(targetId);
+      if (!input) return;
+      if (btn.dataset.reset) {
+        input.value = "";
+        transferValueHint.textContent = "0원";
+        input.focus();
+        return;
+      }
+      var cur = Number(digitsOnly(input.value)) || 0;
+      var next = cur + Number(btn.dataset.add);
+      input.value = next.toLocaleString("ko-KR");
+      transferValueHint.textContent = toKoreanUnit(next);
+    });
+  });
+
+  /* ---------- Core calculation ---------- */
+  function calculateCapitalGainsTax(){
+    var houseCount = getActiveTab(houseCountTabs);           // '1' | '2' | '3'
+    var isRegulatedArea = getActiveTab(regulatedAreaTabs) === "yes";
+    var isResident = getActiveTab(residenceTabs) === "yes";
+    var applyBasicDeduction = getActiveTab(basicDeductionTabs) === "yes";
+
+    var acquisitionDate = new Date(acquisitionDateInput.value);
+    var transferDate = new Date(transferDateInput.value);
+    var transferValue = Number(digitsOnly(transferValueInput.value)) || 0;
+    var acquisitionValue = Number(digitsOnly(acquisitionValueInput.value)) || 0;
+    var necessaryExpense = Number(digitsOnly(necessaryExpenseInput.value)) || 0;
+
+    if (transferValue <= 0) {
+      showToast("ph-warning-circle", "양도가액을 입력해주세요");
+      transferValueInput.focus();
+      return;
+    }
+    if (isNaN(acquisitionDate.getTime()) || isNaN(transferDate.getTime())) {
+      showToast("ph-warning-circle", "취득일자와 양도일자를 입력해주세요");
+      return;
+    }
+
+    /* 보유기간(년) — 취득일자와 양도일자의 차이 */
+    var holdingYears = Math.max(0, (transferDate - acquisitionDate) / (365.25 * 24 * 60 * 60 * 1000));
+    var holdingYearsFloor = Math.floor(holdingYears);
+
+    /* 1) 양도차익 = 양도가액 - 취득가액 - 필요경비 */
+    var gain = Math.max(0, transferValue - acquisitionValue - necessaryExpense);
+
+    /* 1세대 1주택 비과세 판정: 1주택 + 보유 2년 이상 + (조정대상지역이면 거주요건 충족) */
+    var isOneHouse = houseCount === "1";
+    var meetsHoldingReq = holdingYears >= 2;
+    var meetsResidenceReq = !isRegulatedArea || isResident;
+    var qualifiesForExemption = isOneHouse && meetsHoldingReq && meetsResidenceReq;
+    var EXEMPTION_CAP = 1200000000; // 양도가액 12억원 기준
+
+    if (qualifiesForExemption && transferValue <= EXEMPTION_CAP) {
+      // 양도가액 12억 이하는 전액 비과세
+      renderExemptResult();
+      showToast("ph-check-circle", "1세대 1주택 비과세 대상이에요");
+      return;
+    }
+
+    /* 12억 초과분만 과세 대상으로 안분, 비과세 요건 미충족 시에는 전체 양도차익이 과세대상 */
+    var taxableGain = gain;
+    if (qualifiesForExemption && transferValue > EXEMPTION_CAP) {
+      taxableGain = gain * (transferValue - EXEMPTION_CAP) / transferValue;
+    }
+
+    /* 2) 장기보유특별공제 — 일반 자산 기준: 3년 이상 보유부터 연 2%씩, 최대 30% 캡 */
+    var ltDeductionRate = holdingYearsFloor >= 3 ? Math.min(holdingYearsFloor * 0.02, 0.30) : 0;
+    var ltDeduction = taxableGain * ltDeductionRate;
+    var gainAmount = Math.max(0, taxableGain - ltDeduction); // 양도소득금액
+
+    /* 3) 과세표준 = 양도소득금액 - 기본공제(연 250만원, 적용 시) */
+    var basicDeductionAmount = applyBasicDeduction ? 2500000 : 0;
+    var taxBase = Math.max(0, gainAmount - basicDeductionAmount);
+
+    /* 4) 산출세액 = 과세표준 * 세율 - 누진공제액 (8단계 누진세율) */
+    var calculatedTax = getCalculatedTax(taxBase);
+
+    /* 5) 지방소득세 = 산출세액의 10%, 총납부액 = 산출세액 + 지방소득세 */
+    var localTax = calculatedTax * 0.1;
+    var totalPayable = calculatedTax + localTax;
+
+    renderResult({
+      houseCount: houseCount, holdingYearsFloor: holdingYearsFloor,
+      transferValue: transferValue, acquisitionValue: acquisitionValue, necessaryExpense: necessaryExpense,
+      gain: gain, qualifiesForExemption: qualifiesForExemption, taxableGain: taxableGain,
+      ltDeductionRate: ltDeductionRate, ltDeduction: ltDeduction, gainAmount: gainAmount,
+      basicDeductionAmount: basicDeductionAmount, taxBase: taxBase,
+      calculatedTax: calculatedTax, localTax: localTax, totalPayable: totalPayable
+    });
+
+    showToast("ph-check-circle", "양도소득세 계산이 완료됐어요");
+  }
+
+  /* ---------- Render: 1세대 1주택 완전 비과세 ---------- */
+  function renderExemptResult(){
+    resultEmpty.style.display = "none";
+    resultContent.classList.remove("show");
+    exemptBanner.classList.add("show");
+    exemptBannerText.innerHTML = "1세대 1주택 요건(2년 이상 보유" +
+      (getActiveTab(regulatedAreaTabs) === "yes" ? " · 2년 이상 거주" : "") +
+      ")을 충족하고<br>양도가액이 12억원 이하라 <b style=\"color:var(--good)\">양도소득세를 내지 않아도 돼요.</b>";
+  }
+
+  /* ---------- Render: financial flow strip ---------- */
+  function renderFlowStrip(data){
+    var steps = [
+      { label:"양도가액", value: data.transferValue },
+      { label:"양도차익", value: data.gain },
+      { label:"장특공제", value: data.ltDeduction },
+      { label:"과세표준", value: data.taxBase },
+      { label:"산출세액", value: data.calculatedTax }
+    ];
+    flowStrip.innerHTML = steps.map(function(step, idx){
+      var arrow = idx > 0 ? '<i class="ph-duotone ph-caret-right flow-arrow"></i>' : '';
+      return arrow +
+        '<div class="flow-step">' +
+          '<span class="flow-step-label">' + step.label + '</span>' +
+          '<span class="flow-step-value">' + toKoreanUnitShort(step.value) + '</span>' +
+        '</div>';
+    }).join("");
+  }
+
+  /* ---------- Render: receipt-style breakdown ---------- */
+  function addRow(label, value, cls){
+    var row = document.createElement("div");
+    row.className = "receipt-row" + (cls ? (" " + cls) : "");
+    row.innerHTML =
+      '<span class="r-label">' + label + '</span>' +
+      '<span class="r-value">' + value + '</span>';
+    receiptList.appendChild(row);
+  }
+
+  function renderResult(data){
+    exemptBanner.classList.remove("show");
+    resultEmpty.style.display = "none";
+    resultContent.classList.add("show");
+
+    heroAmount.textContent = formatWon(data.totalPayable);
+    renderFlowStrip(data);
+
+    receiptList.innerHTML = "";
+    addRow("양도가액", formatWon(data.transferValue));
+    addRow("취득가액", "- " + formatWon(data.acquisitionValue), "minus");
+    addRow("필요경비", "- " + formatWon(data.necessaryExpense), "minus");
+    addRow("양도차익", formatWon(data.gain), "subtotal");
+    if (data.qualifiesForExemption) {
+      addRow("과세대상 양도차익 (12억 초과분 안분)", formatWon(data.taxableGain), "subtotal");
+    }
+    addRow("장기보유특별공제 (" + data.holdingYearsFloor + "년 · " + (data.ltDeductionRate * 100).toFixed(0) + "%)", "- " + formatWon(data.ltDeduction), "minus");
+    addRow("양도소득금액", formatWon(data.gainAmount), "subtotal");
+    if (data.basicDeductionAmount > 0) addRow("기본공제", "- " + formatWon(data.basicDeductionAmount), "minus");
+    addRow("과세표준", formatWon(data.taxBase), "subtotal");
+    addRow("산출세액", formatWon(data.calculatedTax));
+    addRow("지방소득세 (10%)", "+ " + formatWon(data.localTax), "plus");
+    addRow("최종 예상 양도소득세 총납부액", formatWon(data.totalPayable), "total");
+
+    renderInsightFeed();
+  }
+
+  function renderInsightFeed(){
+    insightFeed.innerHTML = GUIDE_ARTICLES.map(function(item){
+      return '' +
+        '<div class="insight-card">' +
+          '<span class="insight-icon"><i class="ph-duotone ' + item.icon + '"></i></span>' +
+          '<div class="insight-body">' +
+            '<h5>' + item.title + '</h5>' +
+            '<p>' + item.desc + '</p>' +
+          '</div>' +
+        '</div>';
+    }).join("");
+  }
+
+  calcBtn.addEventListener("click", calculateCapitalGainsTax);
+
+  /* ---------- Toast ---------- */
+  var toast = document.getElementById("toast");
+  var toastText = document.getElementById("toastText");
+  var toastTimer = null;
+  function showToast(icon, text){
+    toastText.textContent = text;
+    toast.querySelector("i").className = "ph-duotone " + icon;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 2200);
+  }
+
+  document.getElementById("guideBtn").addEventListener("click", function(){
+    showToast("ph-shield-check", "1세대1주택 비과세·장기보유특별공제·8단계 누진세율 기준 간편 계산이에요");
+  });
+})();
+</script>
+
+</body>
+</html>

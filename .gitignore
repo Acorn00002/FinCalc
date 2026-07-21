@@ -1,0 +1,20 @@
+# Env / secrets — 프로젝트 어디에 있든 실제 키가 담긴 .env는 절대 커밋하지 않는다
+.env
+.env.*
+!.env.example
+functions/.env
+functions/.env.*
+!functions/.env.example
+
+# Firebase Functions
+functions/node_modules/
+functions/lib/
+
+# Firebase local state
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Local tooling config — 이 저장소의 실제 산출물이 아님
+.claude/

@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 마이페이지 포인트/히스토리 — 본인 것만 읽고 쓸 수 있어야 함
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 자산 라운지 게시글 — 로그인 없이도 피드는 보이게(공개), 작성은 로그인 + 본인 uid로만,
+    // 좋아요/투표는 다른 로그인 사용자도 count/필드를 업데이트해야 하므로 update는 로그인 여부만 검사
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+
+    // 댓글 — 게시글과 동일한 패턴
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update: if false;
+      allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
+    }
+  }
+}
