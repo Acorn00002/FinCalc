@@ -3272,22 +3272,20 @@
         <button class="hub-pill" data-filter="tax" type="button">세금</button>
         <button class="hub-pill" data-filter="stock" type="button">주식</button>
         <button class="hub-pill" data-filter="realestate" type="button">부동산</button>
-        <button class="hub-pill" data-filter="loan" type="button">대출</button>
-        <button class="hub-pill" data-filter="global" type="button">해외투자</button>
       </div>
 
       <div class="calc-grid" id="calcGrid">
-        <a class="calc-card" data-category="finance" data-search="일반 복리 계산기" onclick="openFinCalc('compound-simple')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="일반 복리 계산기" onclick="openFinCalc('compound-simple')" role="button" tabindex="0">
           <span class="calc-icon"><i class="ph-duotone ph-chart-line-up"></i></span>
           <h3>일반 복리 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="finance" data-search="적립식 복리 SIP" onclick="openFinCalc('compound-periodic')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="적립식 복리 SIP" onclick="openFinCalc('compound-periodic')" role="button" tabindex="0">
           <span class="calc-icon"><i class="ph-duotone ph-piggy-bank"></i></span>
           <h3>적립식 복리 (SIP)</h3>
         </a>
 
-        <a class="calc-card" data-category="finance" data-search="목표 자산 계산 Goal" onclick="openFinCalc('goal-planner')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="목표 자산 계산 Goal" onclick="openFinCalc('goal-planner')" role="button" tabindex="0">
           <span class="calc-icon"><i class="ph-duotone ph-target"></i></span>
           <h3>목표 자산 계산 (Goal)</h3>
         </a>
@@ -3302,7 +3300,7 @@
           <h3>켈리 공식 최적화</h3>
         </a>
 
-        <a class="calc-card" data-category="finance" data-search="수익률 퍼센트 계산기" onclick="openFinCalc('roi')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="수익률 퍼센트 계산기" onclick="openFinCalc('roi')" role="button" tabindex="0">
           <span class="calc-icon"><i class="ph-duotone ph-percent"></i></span>
           <h3>수익률 / 퍼센트</h3>
         </a>
@@ -3378,25 +3376,25 @@
           <h3>예금중도해지 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="finance" data-search="은퇴자금 계산기 노후 필요자금 은퇴시뮬레이터" onclick="openFinCalc('retirement')" role="button" tabindex="0">
+        <a class="calc-card" data-category="labor" data-search="은퇴자금 계산기 노후 필요자금 은퇴시뮬레이터" onclick="openFinCalc('retirement')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-hourglass-high"></i></span>
           <h3>은퇴자금 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="loan" data-search="대출한도 계산기 LTV DSR 규제" onclick="openFinCalc('loan-limit')" role="button" tabindex="0">
+        <a class="calc-card" data-category="finance" data-search="대출한도 계산기 LTV DSR 규제" onclick="openFinCalc('loan-limit')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-bank"></i></span>
           <h3>대출한도 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="realestate" data-search="취득세 계산기 주택 다주택 중과세율" onclick="openFinCalc('apt-buy')" role="button" tabindex="0">
+        <a class="calc-card" data-category="tax" data-search="취득세 계산기 주택 다주택 중과세율" onclick="openFinCalc('apt-buy')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-house-line"></i></span>
           <h3>취득세 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="realestate" data-search="보유세 계산기 재산세 종합부동산세 종부세 공시가격" onclick="openFinCalc('apt-tax')" role="button" tabindex="0">
+        <a class="calc-card" data-category="tax" data-search="보유세 계산기 재산세 종합부동산세 종부세 공시가격" onclick="openFinCalc('apt-tax')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-buildings"></i></span>
           <h3>보유세 계산기</h3>
@@ -3432,19 +3430,19 @@
           <h3>내집마련 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="global" data-search="해외주식 양도소득세 계산기 기본공제 250만원" onclick="openFinCalc('global-stock-tax')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="해외주식 양도소득세 계산기 기본공제 250만원" onclick="openFinCalc('global-stock-tax')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-globe-hemisphere-west"></i></span>
           <h3>해외주식 양도세 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="global" data-search="해외주식 실수령액 계산기 환율 수수료" onclick="openFinCalc('global-net')" role="button" tabindex="0">
+        <a class="calc-card" data-category="stock" data-search="해외주식 실수령액 계산기 환율 수수료" onclick="openFinCalc('global-net')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-currency-circle-dollar"></i></span>
           <h3>해외주식 실수령 계산기</h3>
         </a>
 
-        <a class="calc-card" data-category="global" data-search="재무함수 계산기 현재가치 미래가치 순현재가치 PV FV NPV" onclick="openFinCalc('fin-func')" role="button" tabindex="0">
+        <a class="calc-card" data-category="finance" data-search="재무함수 계산기 현재가치 미래가치 순현재가치 PV FV NPV" onclick="openFinCalc('fin-func')" role="button" tabindex="0">
           <span class="calc-soon-badge new">New</span>
           <span class="calc-icon"><i class="ph-duotone ph-function"></i></span>
           <h3>재무함수 계산기</h3>
