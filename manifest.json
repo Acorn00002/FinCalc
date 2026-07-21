@@ -1,0 +1,18 @@
+{
+  "name": "자산 파일럿",
+  "short_name": "자산파일럿",
+  "description": "자산관리를 가장 쉽게, 빠르게! 주식 물타기·평단가 계산부터 복리·세금 계산기, 실시간 자산 라운지 커뮤니티까지.",
+  "start_url": "/?utm_source=twa",
+  "id": "/?utm_source=twa",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f2f4f6",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "lang": "ko-KR",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
