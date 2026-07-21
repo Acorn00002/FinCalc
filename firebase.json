@@ -13,7 +13,8 @@
     ],
     "rewrites": [
       { "source": "/api/news", "function": "newsProxy" },
-      { "source": "/api/ask-ai", "function": "aiAsk" }
+      { "source": "/api/ask-ai", "function": "aiAsk" },
+      { "source": "/api/sync-calendar", "function": "syncFinancialCalendarManual" }
     ]
   },
   "functions": [

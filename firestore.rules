@@ -23,5 +23,12 @@ service cloud.firestore {
       allow update: if false;
       allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
     }
+
+    // 금융 캘린더 — DART/청약홈 자동 수집 파이프라인(Cloud Functions, Admin SDK)만 쓸 수 있고
+    // 클라이언트는 읽기만 가능. Admin SDK는 이 규칙을 우회하므로 write는 항상 false로 막아둔다.
+    match /calendarEvents/{eventId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

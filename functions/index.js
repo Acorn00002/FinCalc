@@ -1,4 +1,5 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
@@ -189,5 +190,238 @@ exports.aiAsk = onRequest({ cors: true, region: "asia-northeast3" }, async (req,
       }
     }
     res.status(502).json({ error: "AI 응답 생성에 실패했습니다. 포인트는 차감되지 않았습니다." });
+  }
+});
+
+// ---------- 금융 캘린더 자동 수집 (DART 공시 + 청약홈 청약 일정) ----------
+// 경제지표(FOMC, 실업수당청구건수 등) 발표 일정은 무료로 제공하는 국내 공공 API가 없어
+// 이 파이프라인 범위에서 제외했다 — index.html의 MANUAL_CALENDAR_EVENTS로 계속 수동 관리한다.
+// DART는 국내 상장사 공시만 다루므로, 해외(미국) 기업 실적/배당 일정도 이 파이프라인 대상이 아니다.
+//
+// 두 API 모두 신규 발급 키가 필요하다 (아직 미발급 — 발급 후 functions/.env에 채워 넣을 것):
+//   - DART_API_KEY: https://opendart.fss.or.kr 회원가입 → 오픈API 이용 → 인증키 신청 (즉시 발급)
+//   - DATA_GO_KR_API_KEY: https://www.data.go.kr 회원가입 → "한국부동산원_청약홈 분양정보 조회 서비스"
+//     검색 → 활용신청 (승인 대기가 필요할 수 있음). 승인 후 마이페이지 > 활용신청 현황 > 상세보기에서
+//     정확한 "요청 URL"을 확인해 CHEONGYAKHOME_API_URL 값이 다르면 아래 상수를 그 값으로 교체할 것.
+// 키가 없는 동안에는 해당 소스만 조용히 건너뛰고 나머지는 정상 동작한다.
+
+const DART_API_KEY = process.env.DART_API_KEY || "";
+const DATA_GO_KR_API_KEY = process.env.DATA_GO_KR_API_KEY || "";
+const CALENDAR_SYNC_SECRET = process.env.CALENDAR_SYNC_SECRET || "";
+
+const DART_LIST_URL = "https://opendart.fss.or.kr/api/list.json";
+const CHEONGYAKHOME_API_URL =
+  process.env.CHEONGYAKHOME_API_URL ||
+  "https://apis.data.go.kr/1613000/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail";
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+
+// DART가 요구하는 YYYYMMDD 형식 (오늘 기준 offsetDays만큼 이동)
+function dartDateCompact(offsetDays) {
+  const d = new Date();
+  d.setDate(d.getDate() + (offsetDays || 0));
+  return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
+}
+
+// "20260722" → "2026-07-22" (캘린더 표준 스키마는 대시 포함 형식을 쓴다)
+function toDashedDate(yyyymmdd) {
+  if (!yyyymmdd || String(yyyymmdd).length !== 8) return null;
+  const s = String(yyyymmdd);
+  return s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8);
+}
+
+// 코스피(Y) / 코스닥(K) 각각 최근 2일치 공시를 조회 — 스케줄러가 매일 실행되지만,
+// 하루 정도 밀리거나 한 번 실패해도 다음날 재수집되도록 창을 넉넉히 둔다(upsert라 중복 걱정 없음).
+async function fetchDartDisclosuresForMarket(corpCls) {
+  const events = [];
+  const bgnDe = dartDateCompact(-2);
+  const endDe = dartDateCompact(0);
+  const pageCount = 100;
+  let pageNo = 1;
+
+  for (;;) {
+    const url = DART_LIST_URL +
+      "?crtfc_key=" + encodeURIComponent(DART_API_KEY) +
+      "&bgn_de=" + bgnDe +
+      "&end_de=" + endDe +
+      "&corp_cls=" + corpCls +
+      "&page_no=" + pageNo +
+      "&page_count=" + pageCount;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("DART API 응답 오류(" + corpCls + "):", res.status);
+      break;
+    }
+    const data = await res.json();
+
+    if (data.status === "013") break; // 조회된 데이터 없음 — 정상 케이스
+    if (data.status !== "000") {
+      console.error("DART API 오류(" + corpCls + "):", data.status, data.message);
+      break;
+    }
+
+    const list = data.list || [];
+    list.forEach((item) => {
+      const reportName = item.report_nm || "";
+      let type = null;
+      if (reportName.indexOf("배당") > -1) type = "배당";
+      else if (
+        reportName.indexOf("사업보고서") > -1 ||
+        reportName.indexOf("분기보고서") > -1 ||
+        reportName.indexOf("반기보고서") > -1
+      ) type = "실적";
+      if (!type) return; // 배당/실적과 무관한 일반 공시는 캘린더에 올리지 않는다
+
+      const dashedDate = toDashedDate(item.rcept_dt);
+      if (!dashedDate || !item.rcept_no) return;
+
+      events.push({
+        sourceId: item.rcept_no,
+        date: dashedDate,
+        category: "stock",
+        type: type,
+        title: item.corp_name + " " + reportName.replace(/\s*\([^)]*\)\s*$/, "").trim(),
+        meta: (corpCls === "Y" ? "코스피" : "코스닥") + " · " + (item.stock_code || ""),
+        status: null,
+        flag: "kr",
+        company: item.corp_name,
+        logo: null,
+        source: "dart",
+        sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + item.rcept_no
+      });
+    });
+
+    if (list.length < pageCount) break;
+    pageNo += 1;
+    if (pageNo > 10) break; // 안전장치 — 이틀치 공시가 1000건을 넘는 경우는 사실상 없음
+  }
+
+  return events;
+}
+
+async function fetchDartDisclosures() {
+  if (!DART_API_KEY) {
+    console.warn("DART_API_KEY가 설정되지 않아 DART 공시 수집을 건너뜁니다.");
+    return [];
+  }
+  const [kospi, kosdaq] = await Promise.all([
+    fetchDartDisclosuresForMarket("Y"),
+    fetchDartDisclosuresForMarket("K")
+  ]);
+  return kospi.concat(kosdaq);
+}
+
+// 청약홈(한국부동산원) APT 분양정보 — data.go.kr 표준 응답 포맷(response.body.items)을 기본으로 하되,
+// 서비스별로 조금씩 다른 실제 필드명 후보들도 함께 대비해둔다. 활용신청 승인 후 실제 응답을 보고
+// 아래 필드 매핑(houseNm/pblancNo/rceptBgnde 등)을 문서와 대조해 필요시 조정할 것.
+async function fetchCheongyakhomeSubscriptions() {
+  if (!DATA_GO_KR_API_KEY) {
+    console.warn("DATA_GO_KR_API_KEY가 설정되지 않아 청약홈 청약 일정 수집을 건너뜁니다.");
+    return [];
+  }
+
+  const url = CHEONGYAKHOME_API_URL +
+    "?serviceKey=" + DATA_GO_KR_API_KEY +
+    "&page=1&perPage=100&type=json";
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error("청약홈 API 응답 오류:", res.status);
+    return [];
+  }
+  const data = await res.json();
+  const items = (data.response && data.response.body && data.response.body.items) ||
+    data.data || data.items || [];
+
+  const events = [];
+  items.forEach((item) => {
+    const houseName = item.houseNm || item.HOUSE_NM || item.title;
+    const noticeId = item.pblancNo || item.PBLANC_NO || item.id;
+    const receptionDateRaw = item.rceptBgnde || item.RCEPT_BGNDE || item.date;
+    if (!houseName || !receptionDateRaw) return;
+
+    const dashedDate = String(receptionDateRaw).length === 8
+      ? toDashedDate(receptionDateRaw)
+      : String(receptionDateRaw);
+    if (!dashedDate) return;
+
+    events.push({
+      sourceId: String(noticeId || (houseName + receptionDateRaw)),
+      date: dashedDate,
+      category: "realestate",
+      type: "청약",
+      title: houseName + " 청약",
+      meta: item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || "",
+      status: null,
+      flag: "kr",
+      company: null,
+      logo: null,
+      source: "cheongyakhome",
+      sourceUrl: "https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=" +
+        (item.houseManageNo || item.HOUSE_MANAGE_NO || "")
+    });
+  });
+
+  return events;
+}
+
+// sourceId 기반 결정론적 문서 ID(예: "dart_20260722000123")로 set(merge:true) 하기 때문에
+// 같은 이벤트를 다시 수집해도 새 문서가 늘어나지 않고 필드만 갱신된다 — 이것이 중복 수집 방지 + upsert의 핵심.
+async function upsertCalendarEvents(events) {
+  if (!events.length) return 0;
+  const batchSize = 400; // Firestore 배치 최대 500건 제한에 여유를 둠
+  let written = 0;
+
+  for (let i = 0; i < events.length; i += batchSize) {
+    const chunk = events.slice(i, i + batchSize);
+    const batch = db.batch();
+    chunk.forEach((ev) => {
+      if (!ev.date || !ev.sourceId) return;
+      const ref = db.collection("calendarEvents").doc(ev.source + "_" + ev.sourceId);
+      batch.set(ref, Object.assign({}, ev, {
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }), { merge: true });
+      written += 1;
+    });
+    await batch.commit();
+  }
+  return written;
+}
+
+async function runCalendarSync() {
+  const [dartEvents, cheongyakhomeEvents] = await Promise.all([
+    fetchDartDisclosures().catch((err) => { console.error("DART 수집 실패:", err); return []; }),
+    fetchCheongyakhomeSubscriptions().catch((err) => { console.error("청약홈 수집 실패:", err); return []; })
+  ]);
+
+  const written = await upsertCalendarEvents(dartEvents.concat(cheongyakhomeEvents));
+  const summary = { dart: dartEvents.length, cheongyakhome: cheongyakhomeEvents.length, written: written };
+  console.log("금융 캘린더 동기화 완료:", JSON.stringify(summary));
+  return summary;
+}
+
+// 매일 새벽 2시(KST) 자동 실행
+exports.syncFinancialCalendar = onSchedule(
+  { schedule: "0 2 * * *", timeZone: "Asia/Seoul", region: "asia-northeast3" },
+  async () => {
+    await runCalendarSync();
+  }
+);
+
+// 수동 실행용 — API 키를 새로 넣은 뒤 새벽 2시까지 기다리지 않고 바로 테스트하고 싶을 때 사용.
+// ?secret=CALENDAR_SYNC_SECRET 쿼리 파라미터로 보호한다 (공개 엔드포인트를 무단으로 반복 호출하면
+// DART/공공데이터포털의 일일 호출 한도를 낭비할 수 있어 반드시 비밀값 없이는 실행되지 않게 막아둠).
+exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (!CALENDAR_SYNC_SECRET || req.query.secret !== CALENDAR_SYNC_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  try {
+    const result = await runCalendarSync();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("수동 캘린더 동기화 실패:", error);
+    res.status(500).json({ error: "동기화 중 오류가 발생했습니다." });
   }
 });

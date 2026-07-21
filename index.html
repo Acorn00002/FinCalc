@@ -4336,7 +4336,11 @@
   switchFinanceCategory(currentFinanceCat);
 
   // ---------- 금융 캘린더: 월별 금융 스케줄러 ----------
-  var CALENDAR_EVENTS = [
+  // 경제지표(FOMC, 실업수당청구건수 등)는 자동 수집 API가 없어 계속 수동으로 관리한다.
+  // 주식(DART 공시)·부동산(청약홈) 일정은 Cloud Functions 배치(functions/index.js의
+  // syncFinancialCalendar)가 매일 새벽 2시 자동 수집해 Firestore calendarEvents 컬렉션에 저장하고,
+  // 아래 loadCalendarEventsFromFirestore()가 그 데이터를 불러와 이 수동 목록과 합쳐서 보여준다.
+  var MANUAL_CALENDAR_EVENTS = [
     { date: "2026-07-20", category: "stock", type: "배당", title: "오리온 배당락일", meta: "코스피 · 271560", status: null, flag: "kr", company: "오리온" },
     { date: "2026-07-20", category: "stock", type: "배당", title: "맥코믹 앤 컴퍼니 무의결권주 배당지급일", meta: "미국 MKC · 13:00", status: null, flag: "us", company: "맥코믹", logo: "https://www.google.com/s2/favicons?domain=mccormick.com&sz=64" },
     { date: "2026-07-20", category: "realestate", type: "청약", title: "강원 춘천 리버뷰 아이파크 청약", meta: "09:00", status: null, flag: "kr" },
@@ -4356,6 +4360,34 @@
     { date: "2026-07-30", category: "stock", type: "실적", title: "미국 메타 2026년 2분기 실적발표", meta: "META · 05:00", status: "예정", flag: "us", company: "메타", logo: "https://www.google.com/s2/favicons?domain=meta.com&sz=64" },
     { date: "2026-07-30", category: "stock", type: "배당", title: "E1 배당락일", meta: "017940", status: null, flag: "kr", company: "E1" }
   ];
+
+  var CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.slice();
+
+  // Firestore calendarEvents에서 자동 수집된 일정을 불러와 수동 목록과 합친다.
+  // DART/청약홈 API 키가 아직 없으면 컬렉션이 비어있으므로, 이 시점에는 그냥 수동 목록만 계속 보인다.
+  function loadCalendarEventsFromFirestore(){
+    var today = new Date();
+    var rangeStart = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+    var rangeEnd = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+    var startStr = rangeStart.getFullYear() + "-" + pad2(rangeStart.getMonth() + 1) + "-" + pad2(rangeStart.getDate());
+    var endStr = rangeEnd.getFullYear() + "-" + pad2(rangeEnd.getMonth() + 1) + "-" + pad2(rangeEnd.getDate());
+
+    db.collection("calendarEvents")
+      .where("date", ">=", startStr)
+      .where("date", "<=", endStr)
+      .get()
+      .then(function(snapshot){
+        if (snapshot.empty) return;
+        var fetched = [];
+        snapshot.forEach(function(doc){ fetched.push(doc.data()); });
+        CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.concat(fetched);
+        renderCalendarGrid();
+        renderCalendarTimeline();
+      })
+      .catch(function(error){
+        console.error("금융 캘린더 자동 수집 데이터 로드 실패:", error);
+      });
+  }
 
   var CALENDAR_CATEGORY_META = {
     "economy":    { label: "경제",   color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
@@ -5191,6 +5223,7 @@
     renderCalendarTimeline();
     initCalendarCheckin();
     initRewardEcosystem();
+    loadCalendarEventsFromFirestore();
   }
 
   initFinanceCalendar();
