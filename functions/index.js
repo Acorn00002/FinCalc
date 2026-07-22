@@ -321,18 +321,20 @@ async function fetchCheongyakhomeSubscriptions() {
     return [];
   }
 
-  const url = CHEONGYAKHOME_API_URL +
-    "?serviceKey=" + DATA_GO_KR_API_KEY +
-    "&page=1&perPage=100&type=json";
+  // odcloud.kr(공공데이터포털 신규 표준) 계열 API는 apis.data.go.kr과 달리 serviceKey 쿼리 파라미터가 아니라
+  // "Authorization: Infuser {키}" 헤더로 인증한다 — 실제 호출로 두 방식을 직접 대조해 확인했다.
+  const url = CHEONGYAKHOME_API_URL + "?page=1&perPage=100";
 
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY }
+  });
   if (!res.ok) {
-    console.error("청약홈 API 응답 오류:", res.status);
+    console.error("청약홈 API 응답 오류:", res.status, await res.text());
     return [];
   }
   const data = await res.json();
-  const items = (data.response && data.response.body && data.response.body.items) ||
-    data.data || data.items || [];
+  const items = data.data || (data.response && data.response.body && data.response.body.items) ||
+    data.items || [];
 
   const events = [];
   items.forEach((item) => {
