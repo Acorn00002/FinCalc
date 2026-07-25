@@ -3046,11 +3046,11 @@
     border-radius:22px;
     overflow:hidden;
     box-shadow:0 10px 28px rgba(99,102,241,0.28);
-    animation:appSplashShellFade 2.3s cubic-bezier(.45,0,.2,1) forwards;
+    animation:appSplashShellFade 2.5s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-icon-arrow{
     transform-origin:56% 54%;
-    animation:appSplashArrowLaunch 2.3s cubic-bezier(.45,0,.2,1) forwards;
+    animation:appSplashArrowLaunch 2.5s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-name{
     margin:0;
@@ -3058,7 +3058,7 @@
     font-weight:800;
     color:var(--ink-1);
     letter-spacing:-0.02em;
-    animation:appSplashNameInOut 2.3s ease forwards;
+    animation:appSplashNameInOut 2.5s ease forwards;
   }
   @keyframes appSplashIconIn{
     0%{opacity:0;transform:scale(.8);}
@@ -5419,7 +5419,7 @@
   if (appSplashArrow) {
     appSplashArrow.addEventListener("animationend", hideAppSplash, { once: true });
   } else {
-    setTimeout(hideAppSplash, 2300);
+    setTimeout(hideAppSplash, 2500);
   }
 
   function syncFromHash(){
