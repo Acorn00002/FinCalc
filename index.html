@@ -2991,14 +2991,29 @@
     background:var(--bg);
     overflow:hidden;
   }
-  .app-splash-icon{
+  /* 아이콘을 배경+원(shell)과 화살표(arrow) 두 레이어로 분리해서, 화살표만 자기가 가리키는
+     대각선(우상단) 방향으로 따로 튀어나가고 나머지는 자리에서 페이드아웃되게 한다 —
+     아이콘 전체가 통째로 확대되는 게 아니라 "화살표가 뚫고 나가며 화면이 열리는" 느낌을 만든다. */
+  .app-splash-icon-wrap{
+    position:relative;
     width:88px;height:88px;
+    animation:appSplashIconIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .app-splash-icon-shell,
+  .app-splash-icon-arrow{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    display:block;
+  }
+  .app-splash-icon-shell{
     border-radius:22px;
+    overflow:hidden;
     box-shadow:0 10px 28px rgba(99,102,241,0.28);
-    /* 등장 → 살짝 뒤로 빠지는 조준 동작(anticipation) → 슈웅 튀어나가며 화면 전체로 확장(burst)
-       하나의 타임라인(1.3초)으로 이어서, 다 끝나면 아이콘이 화면을 가득 채우며 사라져
-       그 뒤에 이미 떠 있던 홈 화면이 "확 열리는" 것처럼 드러나게 한다. */
-    animation:appSplashBurst 1.3s cubic-bezier(.45,0,.2,1) forwards;
+    animation:appSplashShellFade 1.3s cubic-bezier(.45,0,.2,1) forwards;
+  }
+  .app-splash-icon-arrow{
+    transform-origin:56% 54%;
+    animation:appSplashArrowLaunch 1.3s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-name{
     margin:0;
@@ -3008,12 +3023,18 @@
     letter-spacing:-0.02em;
     animation:appSplashNameInOut 1.3s ease forwards;
   }
-  @keyframes appSplashBurst{
-    0%   { opacity:0; transform:scale(.8); }
-    14%  { opacity:1; transform:scale(1); }     /* 아이콘 등장, 잠깐 정지 */
-    38%  { opacity:1; transform:scale(.86); }   /* 뒤로 살짝 빠짐 — 조준 동작 */
-    60%  { opacity:1; transform:scale(1.2); }   /* 슈웅 튀어나감 — 오버슈트 */
-    100% { opacity:0; transform:scale(16); }    /* 화면 전체로 확장되며 사라짐 */
+  @keyframes appSplashIconIn{
+    0%{opacity:0;transform:scale(.8);}
+    100%{opacity:1;transform:scale(1);}
+  }
+  @keyframes appSplashShellFade{
+    0%, 40% { opacity:1; }
+    100%    { opacity:0; }
+  }
+  @keyframes appSplashArrowLaunch{
+    0%, 28% { opacity:1; transform:translate(0,0) scale(1) rotate(0deg); }
+    42%     { opacity:1; transform:translate(-3px,3px) scale(.9) rotate(-6deg); }   /* 조준 — 반대 방향으로 살짝 웅크림 */
+    100%    { opacity:0; transform:translate(170px,-170px) scale(2.6) rotate(8deg); } /* 화살표 방향(우상단)으로 대각선 발사 */
   }
   @keyframes appSplashNameInOut{
     0%   { opacity:0; transform:translateY(6px); }
@@ -3027,7 +3048,15 @@
 <body>
 
 <div class="app-splash" id="appSplash" aria-hidden="true">
-  <img class="app-splash-icon" src="/icons/icon-512.png" alt="">
+  <div class="app-splash-icon-wrap">
+    <svg class="app-splash-icon-shell" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" fill="#6366f1"/>
+      <circle cx="16" cy="16" r="11.5" fill="none" stroke="#ffffff" stroke-width="1.8"/>
+    </svg>
+    <svg class="app-splash-icon-arrow" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M21.8 8.6 7.4 16.3 14.7 18.6 16.3 25.6Z" fill="#ffffff"/>
+    </svg>
+  </div>
   <p class="app-splash-name">자산 파일럿</p>
 </div>
 
@@ -5287,9 +5316,9 @@
   }
 
   initFinanceCalendar();
-  var appSplashIcon = document.querySelector(".app-splash-icon");
-  if (appSplashIcon) {
-    appSplashIcon.addEventListener("animationend", hideAppSplash, { once: true });
+  var appSplashArrow = document.querySelector(".app-splash-icon-arrow");
+  if (appSplashArrow) {
+    appSplashArrow.addEventListener("animationend", hideAppSplash, { once: true });
   } else {
     setTimeout(hideAppSplash, 1300);
   }
