@@ -4503,6 +4503,7 @@
         CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.concat(fetched);
         renderCalendarGrid();
         renderCalendarTimeline();
+        scrollToTodayInCalendar(false);
       })
       .catch(function(error){
         console.error("금융 캘린더 자동 수집 데이터 로드 실패:", error);
@@ -4563,8 +4564,9 @@
     return '<span class="calendar-event-icon-circle economy-icon">' + flagEmoji + '</span>';
   }
 
-  var calendarViewYear = 2026;
-  var calendarViewMonth = 6;
+  // 하드코딩된 특정 연/월이 아니라 항상 "오늘이 속한 달"로 열리도록 실제 현재 날짜를 기준으로 초기화한다.
+  var calendarViewYear = new Date().getFullYear();
+  var calendarViewMonth = new Date().getMonth();
   var calendarActiveFilter = "all";
   var calendarSelectedDay = null;
 
@@ -4634,6 +4636,26 @@
     }, 1600);
   }
 
+  // 지금 보고 있는 달이 "오늘이 속한 달"일 때만, 오늘 날짜 카드(없으면 오늘 이후 가장 가까운 날짜 카드)를
+  // 화면 맨 위로 스크롤한다. 다른 달을 수동으로 넘겨 보고 있을 때는 임의로 스크롤을 건드리지 않는다.
+  function scrollToTodayInCalendar(smooth){
+    var today = new Date();
+    if (calendarViewYear !== today.getFullYear() || calendarViewMonth !== today.getMonth()) return;
+
+    var todayStr = formatDateYMD(today);
+    var groupEl = document.getElementById("calDate-" + todayStr);
+
+    if (!groupEl) {
+      var groups = document.querySelectorAll(".calendar-date-group");
+      for (var i = 0; i < groups.length; i++) {
+        var ds = groups[i].id.slice("calDate-".length);
+        if (ds >= todayStr) { groupEl = groups[i]; break; }
+      }
+    }
+    if (!groupEl) return;
+    groupEl.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+  }
+
   function renderCalendarFilters(){
     var wrap = document.getElementById("calendarFilterPills");
     if (!wrap) return;
@@ -4677,7 +4699,9 @@
       if (!grouped[ev.date]) { grouped[ev.date] = []; order.push(ev.date); }
       grouped[ev.date].push(ev);
     });
+    // 최신(가까운 미래/오늘) 날짜가 화면 맨 위에 오도록 내림차순 정렬 — 지난 날짜일수록 아래로 내려간다.
     order.sort();
+    order.reverse();
 
     wrap.innerHTML = order.map(function(dateStr){
       var d = new Date(dateStr + "T00:00:00");
@@ -5399,9 +5423,38 @@
     renderCalendarFilters();
     renderCalendarGrid();
     renderCalendarTimeline();
+    scrollToTodayInCalendar(false);
     initCalendarCheckin();
     initRewardEcosystem();
+    initCalendarDailyRefresh();
     return loadCalendarEventsFromFirestore();
+  }
+
+  // 자정이 지나 날짜가 바뀌는 걸 감지해 "오늘" 표시/스크롤을 자동으로 최신화한다.
+  // 사용자가 이미 다른 달로 직접 이동해 보고 있었다면 그 위치를 강제로 바꾸지 않고,
+  // 달력 그리드의 오늘 표시(dot/하이라이트)만 다시 그려서 정확하게 유지한다.
+  var calendarLastKnownDateStr = formatDateYMD(new Date());
+  function checkCalendarDateRollover(){
+    var now = new Date();
+    var nowStr = formatDateYMD(now);
+    if (nowStr === calendarLastKnownDateStr) return;
+
+    var prevDate = new Date(calendarLastKnownDateStr + "T00:00:00");
+    var wasViewingPrevTodayMonth =
+      calendarViewYear === prevDate.getFullYear() && calendarViewMonth === prevDate.getMonth();
+    calendarLastKnownDateStr = nowStr;
+
+    if (wasViewingPrevTodayMonth) {
+      calendarViewYear = now.getFullYear();
+      calendarViewMonth = now.getMonth();
+      calendarSelectedDay = null;
+    }
+    renderCalendarGrid();
+    renderCalendarTimeline();
+    if (wasViewingPrevTodayMonth) scrollToTodayInCalendar(true);
+  }
+  function initCalendarDailyRefresh(){
+    setInterval(checkCalendarDateRollover, 60000);
   }
 
   // 스플래시는 화살표 발사 애니메이션(2.3초) 타임라인에 맞춰 정확히 그 시점에 DOM에서 제거한다.
