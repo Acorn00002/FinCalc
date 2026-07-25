@@ -5,7 +5,7 @@ function parseNumber(str) {
 }
 
 function formatResult(number) {
-    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(number);
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(number);
 }
 
 function getCurrencySymbol() {
