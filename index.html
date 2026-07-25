@@ -3014,11 +3014,11 @@
     border-radius:22px;
     overflow:hidden;
     box-shadow:0 10px 28px rgba(99,102,241,0.28);
-    animation:appSplashShellFade 1.3s cubic-bezier(.45,0,.2,1) forwards;
+    animation:appSplashShellFade 2.3s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-icon-arrow{
     transform-origin:56% 54%;
-    animation:appSplashArrowLaunch 1.3s cubic-bezier(.45,0,.2,1) forwards;
+    animation:appSplashArrowLaunch 2.3s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-name{
     margin:0;
@@ -3026,7 +3026,7 @@
     font-weight:800;
     color:var(--ink-1);
     letter-spacing:-0.02em;
-    animation:appSplashNameInOut 1.3s ease forwards;
+    animation:appSplashNameInOut 2.3s ease forwards;
   }
   @keyframes appSplashIconIn{
     0%{opacity:0;transform:scale(.8);}
@@ -5308,9 +5308,9 @@
     return loadCalendarEventsFromFirestore();
   }
 
-  // 스플래시는 appSplashBurst 애니메이션(1.3초) 타임라인에 맞춰 정확히 그 시점에 DOM에서 제거한다.
+  // 스플래시는 화살표 발사 애니메이션(2.3초) 타임라인에 맞춰 정확히 그 시점에 DOM에서 제거한다.
   // 금융 캘린더 초기 데이터 로딩은 별도로 백그라운드에서 계속 진행되며(아래 initFinanceCalendar()),
-  // 로딩이 느려도 연출 전체 시간(1.2~1.5초)이 늘어지지 않도록 스플래시 유지 시간과는 분리했다.
+  // 로딩이 느려도 연출 전체 시간이 늘어지지 않도록 스플래시 유지 시간과는 분리했다.
   // 데이터는 도착하는 즉시 renderCalendarGrid/Timeline이 다시 그려주므로 홈 화면 진입 후에도 자연스럽게 반영된다.
   function hideAppSplash(){
     var splash = document.getElementById("appSplash");
@@ -5323,7 +5323,7 @@
   if (appSplashArrow) {
     appSplashArrow.addEventListener("animationend", hideAppSplash, { once: true });
   } else {
-    setTimeout(hideAppSplash, 1300);
+    setTimeout(hideAppSplash, 2300);
   }
 
   function syncFromHash(){
