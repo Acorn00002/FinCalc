@@ -2882,7 +2882,30 @@
   }
   .mypage-profile-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
   .mypage-profile-text{flex:1;min-width:160px;}
+  .mypage-profile-name-row{display:flex;align-items:center;gap:4px;}
   .mypage-profile-name{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .mypage-name-edit-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:22px;height:22px;margin-bottom:4px;
+    border-radius:6px;border:none;background:transparent;
+    color:var(--ink-3);cursor:pointer;flex-shrink:0;
+    transition:background .15s ease, color .15s ease;
+  }
+  .mypage-name-edit-btn:hover{background:var(--card-soft);color:var(--brand);}
+  .mypage-name-edit-btn i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .mypage-profile-name-input{
+    width:100%;max-width:220px;
+    margin:0 0 4px;
+    padding:5px 10px;
+    border-radius:8px;
+    border:1.5px solid var(--brand);
+    background:var(--card);
+    color:var(--ink-1);
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    font-family:inherit;
+  }
   .mypage-profile-email{margin:0;font-size:12.5px;font-weight:600;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .mypage-logout-btn{
     flex-shrink:0;background:var(--card-soft);color:var(--ink-2);border:none;
@@ -2929,24 +2952,33 @@
   .mypage-section-title{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
 
   .mypage-theme-section{margin-bottom:20px;}
-  .theme-option-group{display:flex;flex-direction:column;gap:8px;}
+  .theme-option-group{
+    display:flex;
+    gap:4px;
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:4px;
+  }
   .theme-option{
+    flex:1;
     display:flex;
     align-items:center;
-    gap:10px;
-    background:var(--card);
-    border-radius:14px;
-    padding:14px 16px;
+    justify-content:center;
+    gap:6px;
+    padding:9px 0;
+    border-radius:10px;
     cursor:pointer;
-    box-shadow:var(--shadow-card);
-    transition:box-shadow .15s ease;
+    transition:background .15s ease, box-shadow .15s ease;
   }
-  .theme-option input[type="radio"]{width:18px;height:18px;accent-color:var(--brand);flex-shrink:0;cursor:pointer;}
-  .theme-option-label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--ink-2);}
-  .theme-option-label i{font-size:17px;--ph-duotone-secondary-opacity:0;color:var(--ink-3);}
-  .theme-option:has(input:checked){box-shadow:0 0 0 2px var(--brand-soft), var(--shadow-card);}
+  .theme-option input[type="radio"]{position:absolute;width:0;height:0;opacity:0;pointer-events:none;}
+  .theme-option-label{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink-3);white-space:nowrap;}
+  .theme-option-label i{font-size:15px;--ph-duotone-secondary-opacity:0;color:var(--ink-3);}
+  .theme-option:has(input:checked){background:var(--card);box-shadow:0 1px 3px rgba(15,23,42,0.08);}
   .theme-option:has(input:checked) .theme-option-label{color:var(--ink-1);}
   .theme-option:has(input:checked) .theme-option-label i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+  @media (max-width:360px){
+    .theme-option-label span{display:none;}
+  }
 
   .mypage-shop-grid{display:grid;grid-template-columns:1fr;gap:12px;}
   @media (min-width:560px){ .mypage-shop-grid{grid-template-columns:repeat(3,1fr);} }
@@ -3770,15 +3802,15 @@
     <div class="theme-option-group" id="themeOptionGroup">
       <label class="theme-option">
         <input type="radio" name="themePref" value="system">
-        <span class="theme-option-label"><i class="ph-duotone ph-circle-half"></i>시스템 설정 맞춤</span>
+        <span class="theme-option-label"><i class="ph-duotone ph-circle-half"></i><span>시스템</span></span>
       </label>
       <label class="theme-option">
         <input type="radio" name="themePref" value="light">
-        <span class="theme-option-label"><i class="ph-duotone ph-sun"></i>라이트 모드</span>
+        <span class="theme-option-label"><i class="ph-duotone ph-sun"></i><span>라이트</span></span>
       </label>
       <label class="theme-option">
         <input type="radio" name="themePref" value="dark">
-        <span class="theme-option-label"><i class="ph-duotone ph-moon"></i>다크 모드</span>
+        <span class="theme-option-label"><i class="ph-duotone ph-moon"></i><span>다크</span></span>
       </label>
     </div>
   </div>
@@ -3803,7 +3835,13 @@
     <div class="mypage-profile-card">
       <img class="mypage-profile-avatar" id="mypageAvatar" src="" alt="프로필 이미지" referrerpolicy="no-referrer">
       <div class="mypage-profile-text">
-        <p class="mypage-profile-name" id="mypageName">-</p>
+        <div class="mypage-profile-name-row">
+          <p class="mypage-profile-name" id="mypageName">-</p>
+          <button type="button" class="mypage-name-edit-btn" id="mypageNameEditBtn" aria-label="닉네임 수정">
+            <i class="ph-duotone ph-pencil-simple"></i>
+          </button>
+        </div>
+        <input type="text" class="mypage-profile-name-input" id="mypageNameInput" maxlength="20" hidden>
         <p class="mypage-profile-email" id="mypageEmail">-</p>
       </div>
       <button type="button" class="mypage-logout-btn" id="mypageLogoutBtn">로그아웃</button>
@@ -4778,6 +4816,10 @@
         authState.userPoints = typeof data.totalPoints === "number" ? data.totalPoints : DEFAULT_USER_POINTS;
         // 최신 내역이 위로 오도록 뒤집어서 저장 (Firestore에는 발생 순서 그대로 append됨)
         authState.pointHistory = Array.isArray(data.pointHistory) ? data.pointHistory.slice().reverse() : [];
+        // 사용자가 마이페이지에서 닉네임을 직접 바꿔둔 적이 있으면 구글 계정 이름 대신 그걸 우선한다
+        if (typeof data.nickname === "string" && data.nickname.trim()) {
+          authState.userProfile.name = data.nickname.trim();
+        }
         syncAuthUI();
       } else {
         // 첫 로그인: 기본 포인트 + '구글 로그인 보너스' 히스토리 한 건으로 문서를 새로 만듦
@@ -5293,6 +5335,60 @@
         }
       });
     });
+  })();
+
+  // ---------- 닉네임 변경 (마이페이지) ----------
+  // 구글 계정 이름을 users/{uid} 문서의 nickname 필드로 덮어써서 저장한다.
+  // 이 값은 subscribeToUserDoc()이 authState.userProfile.name에 우선 반영하므로,
+  // 로그인마다 구글 이름으로 되돌아가지 않고 다음 로그인에도 유지된다.
+  (function initNicknameEdit(){
+    var nameEl = document.getElementById("mypageName");
+    var inputEl = document.getElementById("mypageNameInput");
+    var editBtn = document.getElementById("mypageNameEditBtn");
+    if (!nameEl || !inputEl || !editBtn) return;
+
+    function enterEditMode(){
+      if (!authState.isLoggedIn) {
+        showToast("로그인 후 닉네임을 바꿀 수 있어요", "ph-lock-simple");
+        return;
+      }
+      inputEl.value = authState.userProfile.name;
+      nameEl.hidden = true;
+      editBtn.hidden = true;
+      inputEl.hidden = false;
+      inputEl.focus();
+      inputEl.select();
+    }
+
+    function exitEditMode(){
+      inputEl.hidden = true;
+      nameEl.hidden = false;
+      editBtn.hidden = false;
+    }
+
+    function saveNickname(){
+      var newName = inputEl.value.trim().slice(0, 20);
+      exitEditMode();
+      if (!newName || newName === authState.userProfile.name) return;
+
+      var user = firebaseAuth.currentUser;
+      if (!user) return;
+      db.collection("users").doc(user.uid).set({ nickname: newName }, { merge: true })
+        .then(function(){
+          showToast("닉네임이 변경됐어요", "ph-check-circle");
+        })
+        .catch(function(error){
+          console.error("닉네임 변경 실패:", error);
+          showToast("닉네임 변경에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        });
+    }
+
+    editBtn.addEventListener("click", enterEditMode);
+    inputEl.addEventListener("keydown", function(e){
+      if (e.key === "Enter") inputEl.blur();
+      else if (e.key === "Escape") { inputEl.value = authState.userProfile.name; exitEditMode(); }
+    });
+    inputEl.addEventListener("blur", saveNickname);
   })();
 
   function initRewardEcosystem(){
