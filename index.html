@@ -2989,13 +2989,16 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:18px;
     background:var(--bg);
-    transition:opacity .4s ease;
+    overflow:hidden;
   }
   .app-splash-icon{
     width:88px;height:88px;
     border-radius:22px;
     box-shadow:0 10px 28px rgba(99,102,241,0.28);
-    animation:appSplashPop .5s cubic-bezier(.34,1.56,.64,1);
+    /* 등장 → 살짝 뒤로 빠지는 조준 동작(anticipation) → 슈웅 튀어나가며 화면 전체로 확장(burst)
+       하나의 타임라인(1.3초)으로 이어서, 다 끝나면 아이콘이 화면을 가득 채우며 사라져
+       그 뒤에 이미 떠 있던 홈 화면이 "확 열리는" 것처럼 드러나게 한다. */
+    animation:appSplashBurst 1.3s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-name{
     margin:0;
@@ -3003,16 +3006,21 @@
     font-weight:800;
     color:var(--ink-1);
     letter-spacing:-0.02em;
-    animation:appSplashFadeUp .5s ease .1s both;
+    animation:appSplashNameInOut 1.3s ease forwards;
   }
-  .app-splash.is-hidden{opacity:0;pointer-events:none;}
-  @keyframes appSplashPop{
-    0%{opacity:0;transform:scale(0.82);}
-    100%{opacity:1;transform:scale(1);}
+  @keyframes appSplashBurst{
+    0%   { opacity:0; transform:scale(.8); }
+    14%  { opacity:1; transform:scale(1); }     /* 아이콘 등장, 잠깐 정지 */
+    38%  { opacity:1; transform:scale(.86); }   /* 뒤로 살짝 빠짐 — 조준 동작 */
+    60%  { opacity:1; transform:scale(1.2); }   /* 슈웅 튀어나감 — 오버슈트 */
+    100% { opacity:0; transform:scale(16); }    /* 화면 전체로 확장되며 사라짐 */
   }
-  @keyframes appSplashFadeUp{
-    0%{opacity:0;transform:translateY(6px);}
-    100%{opacity:1;transform:translateY(0);}
+  @keyframes appSplashNameInOut{
+    0%   { opacity:0; transform:translateY(6px); }
+    14%  { opacity:1; transform:translateY(0); }
+    42%  { opacity:1; transform:translateY(0); }
+    58%  { opacity:0; transform:translateY(0); } /* 아이콘이 튀어나가기 전에 먼저 사라짐 */
+    100% { opacity:0; }
   }
 </style>
 </head>
@@ -5268,22 +5276,23 @@
     return loadCalendarEventsFromFirestore();
   }
 
-  // 스플래시는 최소 1.2초 유지하고, 그 사이 금융 캘린더 초기 데이터 로딩을 기다린다.
-  // 데이터 로딩이 느리거나 실패해도 최대 1.5초 안에는 무조건 넘어가도록 상한을 둬서
-  // 스플래시가 무한정 붙잡고 있는 일이 없게 한다(요구사항의 "1~2초" 범위를 지키기 위함).
+  // 스플래시는 appSplashBurst 애니메이션(1.3초) 타임라인에 맞춰 정확히 그 시점에 DOM에서 제거한다.
+  // 금융 캘린더 초기 데이터 로딩은 별도로 백그라운드에서 계속 진행되며(아래 initFinanceCalendar()),
+  // 로딩이 느려도 연출 전체 시간(1.2~1.5초)이 늘어지지 않도록 스플래시 유지 시간과는 분리했다.
+  // 데이터는 도착하는 즉시 renderCalendarGrid/Timeline이 다시 그려주므로 홈 화면 진입 후에도 자연스럽게 반영된다.
   function hideAppSplash(){
     var splash = document.getElementById("appSplash");
     if (!splash) return;
-    splash.classList.add("is-hidden");
-    setTimeout(function(){ splash.remove(); }, 450);
+    if (splash.parentNode) splash.parentNode.removeChild(splash);
   }
 
-  var splashMinDelay = new Promise(function(resolve){ setTimeout(resolve, 1200); });
-  var splashDataReady = Promise.race([
-    initFinanceCalendar(),
-    new Promise(function(resolve){ setTimeout(resolve, 1500); })
-  ]);
-  Promise.all([splashMinDelay, splashDataReady]).then(hideAppSplash);
+  initFinanceCalendar();
+  var appSplashIcon = document.querySelector(".app-splash-icon");
+  if (appSplashIcon) {
+    appSplashIcon.addEventListener("animationend", hideAppSplash, { once: true });
+  } else {
+    setTimeout(hideAppSplash, 1300);
+  }
 
   function syncFromHash(){
     var view = (location.hash || "").replace("#", "") || "home";
