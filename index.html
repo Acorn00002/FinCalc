@@ -2101,6 +2101,24 @@
     font-weight:700;
     color:var(--ink-3);
   }
+  .calendar-date-today-badge{
+    font-size:10.5px;font-weight:800;color:#fff;
+    background:var(--brand);padding:2px 7px;border-radius:999px;
+    letter-spacing:-0.02em;
+  }
+  .calendar-date-count{
+    margin-left:auto;flex-shrink:0;
+    font-size:11.5px;font-weight:700;color:var(--ink-3);
+    background:var(--card-soft);padding:3px 9px;border-radius:999px;
+  }
+  .calendar-date-chevron{
+    font-size:15px;color:var(--ink-3);flex-shrink:0;
+    transition:transform .2s ease;
+    --ph-duotone-secondary-opacity:0;
+  }
+  .calendar-date-group.is-past .calendar-date-heading{cursor:pointer;}
+  .calendar-date-group.is-collapsed .calendar-date-chevron{transform:rotate(-90deg);}
+  .calendar-date-group.is-collapsed .calendar-date-events{display:none;}
 
   .calendar-date-events{
     display:flex;
@@ -4569,6 +4587,8 @@
   var calendarViewMonth = new Date().getMonth();
   var calendarActiveFilter = "all";
   var calendarSelectedDay = null;
+  // 클릭으로 펼친 지난 날짜를 기억해뒀다가 재렌더링(필터 전환 등) 후에도 펼침 상태가 유지되게 한다.
+  var calendarExpandedPastDates = {};
 
   function renderCalendarGrid(){
     var grid = document.getElementById("calendarGrid");
@@ -4628,6 +4648,10 @@
     var dateStr = year + "-" + pad2(month + 1) + "-" + pad2(day);
     var groupEl = document.getElementById("calDate-" + dateStr);
     if (!groupEl) return;
+    if (groupEl.classList.contains("is-collapsed")) {
+      calendarExpandedPastDates[dateStr] = true;
+      groupEl.classList.remove("is-collapsed");
+    }
     groupEl.scrollIntoView({ behavior: "smooth", block: "center" });
     var rows = groupEl.querySelectorAll(".calendar-event-row");
     rows.forEach(function(row){ row.classList.add("calendar-event-highlight"); });
@@ -4699,14 +4723,28 @@
       if (!grouped[ev.date]) { grouped[ev.date] = []; order.push(ev.date); }
       grouped[ev.date].push(ev);
     });
-    // 최신(가까운 미래/오늘) 날짜가 화면 맨 위에 오도록 내림차순 정렬 — 지난 날짜일수록 아래로 내려간다.
-    order.sort();
-    order.reverse();
 
-    wrap.innerHTML = order.map(function(dateStr){
+    // 오늘 → 다가올 일정(오름차순) → 지난 일정(내림차순, 접힘) 순서로 재배열한다.
+    // "최신 날짜가 위"가 아니라 "오늘이 항상 최상단"이 되도록, 오늘을 기준으로 미래/과거를 따로 나눠 붙인다.
+    var todayStr = formatDateYMD(new Date());
+    var todayGroup = [], futureDates = [], pastDates = [];
+    order.forEach(function(dateStr){
+      if (dateStr === todayStr) todayGroup.push(dateStr);
+      else if (dateStr > todayStr) futureDates.push(dateStr);
+      else pastDates.push(dateStr);
+    });
+    futureDates.sort();
+    pastDates.sort();
+    pastDates.reverse(); // 가장 최근 과거가 먼저 오도록
+    var finalOrder = todayGroup.concat(futureDates).concat(pastDates);
+
+    wrap.innerHTML = finalOrder.map(function(dateStr){
       var d = new Date(dateStr + "T00:00:00");
       var dayNum = d.getDate();
       var weekday = CALENDAR_WEEKDAY_FULL_KO[d.getDay()];
+      var isToday = dateStr === todayStr;
+      var isPast = dateStr < todayStr;
+      var isExpanded = !isPast || !!calendarExpandedPastDates[dateStr];
 
       var rowsHtml = grouped[dateStr].map(function(ev){
         var catMeta = CALENDAR_CATEGORY_META[ev.category];
@@ -4724,15 +4762,32 @@
           '</div>';
       }).join("");
 
+      var groupClass = "calendar-date-group" + (isPast ? " is-past" : "") + (isPast && !isExpanded ? " is-collapsed" : "");
+      var headingExtra =
+        (isToday ? '<span class="calendar-date-today-badge">오늘</span>' : "") +
+        (isPast ? '<span class="calendar-date-count">' + grouped[dateStr].length + '건</span><i class="ph-duotone ph-caret-down calendar-date-chevron"></i>' : "");
+
       return '' +
-        '<div class="calendar-date-group" id="calDate-' + dateStr + '">' +
+        '<div class="' + groupClass + '" id="calDate-' + dateStr + '" data-date="' + dateStr + '">' +
           '<div class="calendar-date-heading">' +
             '<span class="calendar-date-num">' + dayNum + '</span>' +
             '<span class="calendar-date-weekday">' + weekday + '</span>' +
+            headingExtra +
           '</div>' +
           '<div class="calendar-date-events">' + rowsHtml + '</div>' +
         '</div>';
     }).join("");
+
+    // 지난 날짜 헤딩만 클릭해서 펼치고/접을 수 있게 한다 (오늘·미래는 항상 펼쳐진 상태).
+    wrap.querySelectorAll(".calendar-date-group.is-past .calendar-date-heading").forEach(function(heading){
+      heading.addEventListener("click", function(){
+        var group = heading.parentElement;
+        var ds = group.getAttribute("data-date");
+        var nowExpanded = !calendarExpandedPastDates[ds];
+        calendarExpandedPastDates[ds] = nowExpanded;
+        group.classList.toggle("is-collapsed", !nowExpanded);
+      });
+    });
   }
 
   function changeCalendarMonth(delta){
@@ -5152,6 +5207,11 @@
     setTimeout(function(){
       var targetEl = document.getElementById("calendarEvent-" + targetIdx);
       if (!targetEl) return;
+      var parentGroup = targetEl.closest(".calendar-date-group");
+      if (parentGroup && parentGroup.classList.contains("is-collapsed")) {
+        calendarExpandedPastDates[parentGroup.getAttribute("data-date")] = true;
+        parentGroup.classList.remove("is-collapsed");
+      }
       targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
       targetEl.classList.add("calendar-event-highlight");
       setTimeout(function(){ targetEl.classList.remove("calendar-event-highlight"); }, 1600);
