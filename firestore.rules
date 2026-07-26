@@ -5,6 +5,17 @@ service cloud.firestore {
     // 마이페이지 포인트/히스토리 — 본인 것만 읽고 쓸 수 있어야 함
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // 캘린더 일정 알림(🔔) 구독 — 본인이 직접 켜고 끄는 서브컬렉션이라 관리자 비밀값 없이 본인만 허용.
+      // dispatchEventReminders(Admin SDK)가 collectionGroup으로 전체를 훑어 D-1/D-Day 발송에 사용한다.
+      match /eventReminders/{eventId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // 개인 일정(비공개) — 본인만 보고 쓸 수 있는 캘린더 메모/일정
+      match /personalEvents/{eventId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // 자산 라운지 게시글 — 로그인 없이도 피드는 보이게(공개), 작성은 로그인 + 본인 uid로만,

@@ -534,3 +534,126 @@ exports.dispatchScheduledPushes = onSchedule(
     }
   }
 );
+
+// ---------- 금융 캘린더 관리자 CRUD (정부지원금 / 부동산청약 / 공모주 등) ----------
+// calendarEvents는 firestore.rules에서 클라이언트 write를 전부 막아뒀으므로, 수동 등록도
+// DART/청약홈 자동 수집과 동일하게 Admin SDK를 쓰는 이 함수를 거쳐야 한다.
+// 별도 관리자 계정 체계가 없어 SEND_PUSH_SECRET을 그대로 재사용한다(같은 사람이 관리하는 값이라 자연스러움).
+exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 요청만 지원합니다." });
+    return;
+  }
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+
+  const { id, date, category, type, title, meta, status, flag, link, details } = req.body || {};
+  if (!date || !category || !title) {
+    res.status(400).json({ error: "date, category, title은 필수입니다." });
+    return;
+  }
+
+  const docData = {
+    date,
+    category,
+    type: type || "",
+    title,
+    meta: meta || "",
+    status: status || null,
+    flag: flag || "kr",
+    link: link || "",
+    details: details && typeof details === "object" ? details : null,
+    source: "admin",
+    updatedAt: new Date()
+  };
+
+  try {
+    if (id) {
+      await db.collection("calendarEvents").doc(id).set(docData, { merge: true });
+      res.status(200).json({ id });
+      return;
+    }
+    const ref = await db.collection("calendarEvents").add(Object.assign({ createdAt: new Date() }, docData));
+    res.status(200).json({ id: ref.id });
+  } catch (error) {
+    console.error("일정 저장 실패:", error);
+    res.status(500).json({ error: "저장 중 오류가 발생했습니다." });
+  }
+});
+
+exports.deleteCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 요청만 지원합니다." });
+    return;
+  }
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  const { id } = req.body || {};
+  if (!id) {
+    res.status(400).json({ error: "id가 필요합니다." });
+    return;
+  }
+  try {
+    await db.collection("calendarEvents").doc(id).delete();
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error("일정 삭제 실패:", error);
+    res.status(500).json({ error: "삭제 중 오류가 발생했습니다." });
+  }
+});
+
+// ---------- D-Day 일정 알림(🔔) 발송 ----------
+// 사용자가 특정 일정에 알림을 켜면 users/{uid}/eventReminders/{eventId} 문서가 생기고(클라이언트가 직접
+// 자기 서브컬렉션에 쓰는 것이라 관리자 비밀값이 필요 없음 — firestore.rules에서 본인 uid만 허용),
+// 이 함수가 매일 아침 그 목록 전체(collectionGroup)를 훑어 D-1/D-Day인 것만 골라 해당 유저에게만 발송한다.
+async function dispatchPushToUser(uid, title, body, link) {
+  const tokensSnap = await db.collection("fcmTokens").where("uid", "==", uid).get();
+  const tokens = tokensSnap.docs.map((doc) => doc.id);
+  if (!tokens.length) return;
+
+  const response = await admin.messaging().sendEachForMulticast({
+    notification: { title, body },
+    data: { link: link || "" },
+    tokens
+  });
+  const staleTokens = [];
+  response.responses.forEach((r, idx) => {
+    if (!r.success && r.error && r.error.code === "messaging/registration-token-not-registered") {
+      staleTokens.push(tokens[idx]);
+    }
+  });
+  await Promise.all(staleTokens.map((token) => db.collection("fcmTokens").doc(token).delete().catch(() => {})));
+}
+
+exports.dispatchEventReminders = onSchedule(
+  { schedule: "0 8 * * *", timeZone: "Asia/Seoul", region: "asia-northeast3" },
+  async () => {
+    const todayStr = new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" }); // YYYY-MM-DD
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+
+    const snapshot = await db.collectionGroup("eventReminders").get();
+    if (snapshot.empty) return;
+
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      if (!data.eventDate || (data.eventDate !== todayStr && data.eventDate !== tomorrowStr)) continue;
+
+      const uid = doc.ref.parent.parent.id;
+      const isToday = data.eventDate === todayStr;
+      const title = isToday ? "오늘 마감/예정: " + (data.eventTitle || "일정") : "내일 마감/예정: " + (data.eventTitle || "일정");
+      const body = data.eventMeta || "자산 파일럿 캘린더에서 자세히 확인해보세요.";
+
+      try {
+        await dispatchPushToUser(uid, title, body, "#calendar");
+      } catch (error) {
+        console.error("일정 알림 발송 실패(uid " + uid + "):", error);
+      }
+    }
+  }
+);

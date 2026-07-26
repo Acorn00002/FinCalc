@@ -332,6 +332,55 @@
   .notif-center-dismiss i{font-size:13px;--ph-duotone-secondary-opacity:0;}
   .notif-center-empty{padding:36px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-3);}
 
+  /* 캘린더 일정 상세 모달 */
+  .calendar-detail-overlay-v2{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:240;
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  .calendar-detail-overlay-v2[hidden]{display:none;}
+  .calendar-detail-modal-v2{
+    width:100%;max-width:480px;max-height:82vh;overflow-y:auto;
+    background:var(--card);border-radius:20px 20px 0 0;padding:22px;
+    animation:pushSoftAskIn .25s ease both;
+  }
+  @media (min-width:560px){
+    .calendar-detail-overlay-v2{align-items:center;padding:20px;}
+    .calendar-detail-modal-v2{border-radius:20px;}
+  }
+  .calendar-detail-top-v2{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .calendar-detail-cat-v2{font-size:12px;font-weight:800;padding:4px 10px;border-radius:999px;}
+  .calendar-detail-close-v2{
+    width:30px;height:30px;border-radius:9px;border:none;background:var(--bg);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  }
+  .calendar-detail-close-v2:hover{background:var(--line);}
+  #calDetailTitle{margin:0 0 4px;font-size:17px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;line-height:1.4;}
+  .calendar-detail-date-v2{margin:0 0 16px;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .calendar-detail-fields-v2{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+  .calendar-detail-field-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;}
+  .calendar-detail-field-label{color:var(--ink-3);font-weight:600;flex-shrink:0;}
+  .calendar-detail-field-value{color:var(--ink-1);font-weight:700;text-align:right;}
+  .calendar-detail-link-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;box-sizing:border-box;padding:13px;margin-bottom:10px;
+    background:var(--card-soft);color:var(--brand);border-radius:12px;
+    font-size:13.5px;font-weight:700;text-decoration:none;
+  }
+  .calendar-detail-link-v2[hidden]{display:none;}
+  .calendar-detail-link-v2 i{font-size:14px;}
+  .calendar-detail-remind-btn-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;background:var(--brand);color:#fff;border:none;border-radius:12px;
+    padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .calendar-detail-remind-btn-v2.is-on{background:var(--card-soft);color:var(--brand);}
+  .calendar-detail-remind-btn-v2 i{font-size:16px;}
+  .calendar-detail-delete-btn-v2{
+    width:100%;background:none;border:none;color:#f04452;font-size:12.5px;font-weight:700;
+    padding:12px;margin-top:6px;cursor:pointer;font-family:inherit;
+  }
+  .calendar-detail-delete-btn-v2[hidden]{display:none;}
+
   /* 알림 권한 soft-ask 배너 */
   .push-softask{
     position:fixed;left:16px;right:16px;bottom:16px;z-index:250;
@@ -2060,8 +2109,14 @@
   /* ==================================================
      금융 캘린더 — 월별 금융 스케줄러
      ================================================== */
-  .calendar-page-head{padding:28px 2px 20px;}
+  .calendar-page-head{padding:28px 2px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
   @media (min-width:640px){ .calendar-page-head{padding:36px 2px 24px;} }
+  .calendar-add-personal-btn{
+    flex-shrink:0;display:flex;align-items:center;gap:6px;
+    background:var(--brand-soft);color:var(--brand);border:none;border-radius:999px;
+    padding:9px 16px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit;
+  }
+  .calendar-add-personal-btn i{font-size:14px;}
   .calendar-page-head h2{
     margin:0 0 6px;
     font-size:20px;
@@ -2292,6 +2347,12 @@
   .calendar-event-icon-circle.tax-icon{background:rgba(139,92,246,0.12);}
   .calendar-event-icon-circle.tax-icon i{font-size:15px;color:#8b5cf6;--ph-duotone-secondary-color:#8b5cf6;--ph-duotone-secondary-opacity:0.18;}
   .calendar-event-icon-circle.economy-icon{background:rgba(49,130,246,0.10);}
+  .calendar-event-icon-circle.subsidy-icon{background:rgba(219,39,119,0.12);}
+  .calendar-event-icon-circle.subsidy-icon i{font-size:15px;color:#db2777;--ph-duotone-secondary-color:#db2777;--ph-duotone-secondary-opacity:0.18;}
+  .calendar-event-icon-circle.ipo-icon{background:rgba(8,145,178,0.12);}
+  .calendar-event-icon-circle.ipo-icon i{font-size:15px;color:#0891b2;--ph-duotone-secondary-color:#0891b2;--ph-duotone-secondary-opacity:0.18;}
+  .calendar-event-icon-circle.personal-icon{background:rgba(107,114,128,0.14);}
+  .calendar-event-icon-circle.personal-icon i{font-size:15px;color:#6b7280;--ph-duotone-secondary-color:#6b7280;--ph-duotone-secondary-opacity:0.18;}
   .calendar-event-body{flex:1;min-width:0;}
   .calendar-event-cat{
     display:inline-block;
@@ -2325,6 +2386,18 @@
     border-radius:999px;
     white-space:nowrap;
   }
+  .calendar-event-dday{
+    flex-shrink:0;
+    font-size:10.5px;
+    font-weight:800;
+    color:var(--brand);
+    background:var(--brand-soft);
+    padding:4px 9px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .calendar-event-dday.is-today{color:#fff;background:#f04452;}
+  .calendar-event-row{cursor:pointer;}
 
   .calendar-empty{
     display:flex;
@@ -3081,7 +3154,20 @@
     border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;
   }
   .admin-push-submit-btn:disabled{opacity:0.6;cursor:default;}
+  .admin-push-cancel-btn{background:var(--card-soft);color:var(--ink-2);margin-top:8px;}
   .admin-push-result{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:pre-wrap;}
+  .admin-cal-item{
+    display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .admin-cal-item:last-child{border-bottom:none;}
+  .admin-cal-item-body{flex:1;min-width:0;}
+  .admin-cal-item-title{margin:0;font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .admin-cal-item-meta{margin:2px 0 0;font-size:11.5px;font-weight:600;color:var(--ink-3);}
+  .admin-cal-item-btn{
+    flex-shrink:0;border:none;background:var(--card-soft);color:var(--ink-2);
+    border-radius:8px;padding:6px 10px;font-size:11.5px;font-weight:700;cursor:pointer;
+  }
+  .admin-cal-item-btn.danger{color:#f04452;}
 
   .mypage-theme-section{margin-bottom:20px;}
   .theme-option-group{
@@ -4030,8 +4116,13 @@
 <main class="wrap app-view" id="view-calendar">
 
   <div class="calendar-page-head">
-    <h2>금융 캘린더</h2>
-    <p>배당·실적, 부동산 청약, 경제지표, 세무 일정을 한 곳에서 확인하세요.</p>
+    <div>
+      <h2>금융 캘린더</h2>
+      <p>배당·실적, 부동산 청약, 정부지원금, 공모주, 경제지표, 세무 일정을 한 곳에서 확인하세요.</p>
+    </div>
+    <button type="button" class="calendar-add-personal-btn" id="calendarAddPersonalBtn">
+      <i class="ph-duotone ph-plus"></i>일정 추가
+    </button>
   </div>
 
   <div class="calendar-layout">
@@ -4156,6 +4247,82 @@
 
     <button type="button" class="admin-push-submit-btn" id="adminPushSubmitBtn">발송하기</button>
     <p class="admin-push-result" id="adminPushResult"></p>
+  </div>
+</main>
+
+<!-- 관리자 전용 캘린더 일정 관리 화면 — #admin-calendar로 직접 진입, 비밀값으로 보호됨 -->
+<main class="wrap app-view" id="view-admin-calendar">
+  <div class="mypage-head">
+    <p class="mypage-eyebrow">관리자</p>
+    <h2>캘린더 일정 관리</h2>
+    <p>정부지원금 · 부동산청약 · 공모주 일정을 직접 등록/수정/삭제해요.</p>
+  </div>
+
+  <div class="mypage-section">
+    <input type="hidden" id="adminCalEditId">
+    <label class="admin-push-label">비밀값</label>
+    <input type="password" class="admin-push-input" id="adminCalSecret" placeholder="SEND_PUSH_SECRET">
+
+    <label class="admin-push-label">카테고리</label>
+    <select class="admin-push-input" id="adminCalCategory">
+      <option value="subsidy">정부지원금</option>
+      <option value="realestate">부동산 청약</option>
+      <option value="ipo">공모주 / 증시</option>
+      <option value="stock">주식</option>
+      <option value="tax">세금</option>
+      <option value="economy">경제</option>
+    </select>
+
+    <label class="admin-push-label">날짜 (D-Day 기준일)</label>
+    <input type="date" class="admin-push-input" id="adminCalDate">
+
+    <label class="admin-push-label">제목</label>
+    <input type="text" class="admin-push-input" id="adminCalTitle" maxlength="80" placeholder="예: 청년내일저축계좌 신청 마감">
+
+    <label class="admin-push-label">부제 / 요약 (선택)</label>
+    <input type="text" class="admin-push-input" id="adminCalMeta" placeholder="예: 09:00">
+
+    <label class="admin-push-label">상태 (선택)</label>
+    <select class="admin-push-input" id="adminCalStatus">
+      <option value="">없음</option>
+      <option value="예정">예정</option>
+    </select>
+
+    <label class="admin-push-label">국가</label>
+    <select class="admin-push-input" id="adminCalFlag">
+      <option value="kr">한국</option>
+      <option value="us">미국</option>
+    </select>
+
+    <label class="admin-push-label">신청 / 원문 링크 (선택)</label>
+    <input type="text" class="admin-push-input" id="adminCalLink" placeholder="https://...">
+
+    <h3 class="mypage-section-title" style="margin-top:22px;">상세 정보 (선택, 필요한 것만)</h3>
+    <label class="admin-push-label">신청 자격 요건 (정부지원금)</label>
+    <input type="text" class="admin-push-input" id="adminCalEligibility">
+    <label class="admin-push-label">신청 기간 (정부지원금)</label>
+    <input type="text" class="admin-push-input" id="adminCalApplyPeriod" placeholder="예: 2026.08.01 ~ 08.31">
+    <label class="admin-push-label">공급 유형 (청약)</label>
+    <input type="text" class="admin-push-input" id="adminCalSupplyType" placeholder="예: 분양 / 특별공급">
+    <label class="admin-push-label">당첨자 발표일 (청약)</label>
+    <input type="text" class="admin-push-input" id="adminCalWinnerDate">
+    <label class="admin-push-label">주관 증권사 (공모주)</label>
+    <input type="text" class="admin-push-input" id="adminCalUnderwriter">
+    <label class="admin-push-label">공모가 (공모주)</label>
+    <input type="text" class="admin-push-input" id="adminCalOfferPrice">
+    <label class="admin-push-label">환불일 (공모주)</label>
+    <input type="text" class="admin-push-input" id="adminCalRefundDate">
+    <label class="admin-push-label">상장일 (공모주)</label>
+    <input type="text" class="admin-push-input" id="adminCalListingDate">
+
+    <button type="button" class="admin-push-submit-btn" id="adminCalSubmitBtn">등록하기</button>
+    <button type="button" class="admin-push-submit-btn admin-push-cancel-btn" id="adminCalCancelBtn" hidden>수정 취소</button>
+    <p class="admin-push-result" id="adminCalResult"></p>
+  </div>
+
+  <div class="mypage-section">
+    <h3 class="mypage-section-title">최근 일정 (최신순 30건)</h3>
+    <div id="adminCalList"></div>
   </div>
 </main>
 
@@ -4305,6 +4472,49 @@
   </div>
 </div>
 
+<!-- 금융 캘린더 일정 상세 모달 — 정부지원금/청약/공모주의 상세 필드(자격요건/공모가 등)와
+     원문 링크, 개별 알림(🔔) 켜기/끄기를 여기서 한 번에 보여준다. -->
+<div class="calendar-detail-overlay-v2" id="calDetailOverlay" hidden>
+  <div class="calendar-detail-modal-v2" role="dialog" aria-modal="true" aria-labelledby="calDetailTitle">
+    <div class="calendar-detail-top-v2">
+      <span class="calendar-detail-cat-v2" id="calDetailCat"></span>
+      <button type="button" class="calendar-detail-close-v2" id="calDetailCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+    <h3 id="calDetailTitle"></h3>
+    <p class="calendar-detail-date-v2" id="calDetailDate"></p>
+    <div class="calendar-detail-fields-v2" id="calDetailFields"></div>
+    <a class="calendar-detail-link-v2" id="calDetailLink" target="_blank" rel="noopener noreferrer" hidden>
+      원문 / 신청 링크 열기<i class="ph-duotone ph-arrow-square-out"></i>
+    </a>
+    <button type="button" class="calendar-detail-remind-btn-v2" id="calDetailRemindBtn">
+      <i class="ph-duotone ph-bell"></i><span id="calDetailRemindText">알림 받기</span>
+    </button>
+    <button type="button" class="calendar-detail-delete-btn-v2" id="calDetailDeleteBtn" hidden>이 개인 일정 삭제</button>
+  </div>
+</div>
+
+<!-- 개인 일정 추가 모달 -->
+<div class="calendar-detail-overlay-v2" id="calAddOverlay" hidden>
+  <div class="calendar-detail-modal-v2" role="dialog" aria-modal="true" aria-labelledby="calAddTitle">
+    <div class="calendar-detail-top-v2">
+      <h3 id="calAddTitle" style="margin:0;">개인 일정 추가</h3>
+      <button type="button" class="calendar-detail-close-v2" id="calAddCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+    <label class="admin-push-label">날짜</label>
+    <input type="date" class="admin-push-input" id="calAddDate">
+    <label class="admin-push-label">제목</label>
+    <input type="text" class="admin-push-input" id="calAddTitleInput" maxlength="60" placeholder="예: 개인 대출이자 납부일">
+    <label class="admin-push-label">메모 (선택)</label>
+    <input type="text" class="admin-push-input" id="calAddMemo" maxlength="120">
+    <button type="button" class="calendar-detail-remind-btn-v2" id="calAddSubmitBtn" style="margin-top:18px;">추가하기</button>
+    <p class="admin-push-result" id="calAddResult"></p>
+  </div>
+</div>
+
 <!-- 알림 권한 동의 유도 배너(soft-ask) — 브라우저 표준 권한 팝업을 띄우기 전에
      먼저 맥락을 설명해서, 사용자가 무심코 "차단"을 눌러 되돌릴 수 없게 되는 걸 방지한다 -->
 <div class="push-softask" id="pushSoftAsk" hidden>
@@ -4336,7 +4546,7 @@
 (function(){
   "use strict";
 
-  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "subsidy", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq", "admin-push"];
+  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "subsidy", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq", "admin-push", "admin-calendar"];
   // 사이드바 ↔ 상단 메뉴바 드롭다운 항목까지 전부 포함해, data-view가 일치하는 모든 요소가
   // 한 곳에서만 갱신해도 두 위치 동시에 활성화 스타일이 켜지도록(양방향 동기화) 넓게 잡은 선택자
   var tabBtns = document.querySelectorAll(".tab-btn, .sidebar-item, .navbar-dropdown-item, .bottom-nav-item");
@@ -4775,7 +4985,18 @@
 
   var CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.slice();
 
-  // Firestore calendarEvents에서 자동 수집된 일정을 불러와 수동 목록과 합친다.
+  // 수동 목록 + (관리자/DART/청약홈이 채운) 공유 일정 + 로그인한 사용자의 개인 일정, 세 소스를 합쳐서
+  // CALENDAR_EVENTS를 다시 만든다. 세 소스가 서로 다른 타이밍(최초 로드, 로그인/로그아웃)에 갱신되므로
+  // 캐시를 따로 들고 있다가 하나라도 바뀌면 항상 셋을 다시 합친다.
+  var sharedCalendarEventsCache = [];
+  var personalCalendarEventsCache = [];
+  function rebuildCalendarEvents(){
+    CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.concat(sharedCalendarEventsCache).concat(personalCalendarEventsCache);
+    renderCalendarGrid();
+    renderCalendarTimeline();
+  }
+
+  // Firestore calendarEvents에서 자동/관리자 수집된 일정을 불러온다.
   // DART/청약홈 API 키가 아직 없으면 컬렉션이 비어있으므로, 이 시점에는 그냥 수동 목록만 계속 보인다.
   function loadCalendarEventsFromFirestore(){
     var today = new Date();
@@ -4790,11 +5011,12 @@
       .get()
       .then(function(snapshot){
         if (snapshot.empty) return;
-        var fetched = [];
-        snapshot.forEach(function(doc){ fetched.push(doc.data()); });
-        CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.concat(fetched);
-        renderCalendarGrid();
-        renderCalendarTimeline();
+        sharedCalendarEventsCache = snapshot.docs.map(function(doc){
+          var data = doc.data();
+          data.id = doc.id;
+          return data;
+        });
+        rebuildCalendarEvents();
         scrollToTodayInCalendar(false);
       })
       .catch(function(error){
@@ -4802,11 +5024,46 @@
       });
   }
 
+  // 로그인한 사용자의 개인 일정(users/{uid}/personalEvents)을 실시간 구독한다.
+  // 로그아웃하면 즉시 목록에서 비운다 — 개인 일정은 계정에 귀속된 비공개 데이터라 남의 화면에 보이면 안 된다.
+  var personalEventsUnsubscribe = null;
+  function subscribePersonalEvents(uid){
+    if (personalEventsUnsubscribe) { personalEventsUnsubscribe(); personalEventsUnsubscribe = null; }
+    if (!uid) {
+      personalCalendarEventsCache = [];
+      rebuildCalendarEvents();
+      return;
+    }
+    personalEventsUnsubscribe = db.collection("users").doc(uid).collection("personalEvents")
+      .onSnapshot(function(snapshot){
+        personalCalendarEventsCache = snapshot.docs.map(function(doc){
+          var d = doc.data();
+          return {
+            id: doc.id,
+            date: d.date,
+            category: "personal",
+            type: "개인",
+            title: d.title || "",
+            meta: d.memo || "",
+            status: null,
+            flag: "kr",
+            isPersonal: true
+          };
+        });
+        rebuildCalendarEvents();
+      }, function(error){
+        console.error("개인 일정 구독 실패:", error);
+      });
+  }
+
   var CALENDAR_CATEGORY_META = {
-    "economy":    { label: "경제",   color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
-    "stock":      { label: "주식",   color: "#6366f1", bg: "rgba(99,102,241,0.10)" },
-    "tax":        { label: "세무",   color: "#f59e0b", bg: "rgba(245,158,11,0.14)" },
-    "realestate": { label: "부동산", color: "#059669", bg: "rgba(5,150,105,0.10)" }
+    "economy":    { label: "경제",     color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
+    "stock":      { label: "주식",     color: "#6366f1", bg: "rgba(99,102,241,0.10)" },
+    "tax":        { label: "세무",     color: "#f59e0b", bg: "rgba(245,158,11,0.14)" },
+    "realestate": { label: "부동산",   color: "#059669", bg: "rgba(5,150,105,0.10)" },
+    "subsidy":    { label: "정부지원금", color: "#db2777", bg: "rgba(219,39,119,0.10)" },
+    "ipo":        { label: "공모주",   color: "#0891b2", bg: "rgba(8,145,178,0.10)" },
+    "personal":   { label: "개인일정", color: "#6b7280", bg: "rgba(107,114,128,0.12)" }
   };
   // 카테고리보다 더 세분화된 일정 유형(type)별 컬러 — 배당은 레드, 세무는 퍼플처럼
   // 호재/악재/성격이 한눈에 구분되도록 뉴스피드형 태그 컬러를 다채롭게 부여
@@ -4819,10 +5076,13 @@
   };
   var CALENDAR_FILTER_OPTIONS = [
     { key: "all", label: "전체" },
+    { key: "subsidy", label: "정부지원금" },
+    { key: "realestate", label: "부동산 청약" },
+    { key: "ipo", label: "공모주/증시" },
+    { key: "personal", label: "개인 일정" },
     { key: "economy", label: "경제" },
     { key: "stock", label: "주식" },
-    { key: "tax", label: "세무" },
-    { key: "realestate", label: "부동산" }
+    { key: "tax", label: "세무" }
   ];
   var CALENDAR_WEEKDAY_FULL_KO = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
 
@@ -4851,6 +5111,15 @@
     }
     if (ev.category === "tax") {
       return '<span class="calendar-event-icon-circle tax-icon"><i class="ph-duotone ph-receipt"></i></span>';
+    }
+    if (ev.category === "subsidy") {
+      return '<span class="calendar-event-icon-circle subsidy-icon"><i class="ph-duotone ph-gift"></i></span>';
+    }
+    if (ev.category === "ipo") {
+      return '<span class="calendar-event-icon-circle ipo-icon"><i class="ph-duotone ph-chart-line-up"></i></span>';
+    }
+    if (ev.category === "personal") {
+      return '<span class="calendar-event-icon-circle personal-icon"><i class="ph-duotone ph-user"></i></span>';
     }
     // economy(경제·경제지표) 등 그 외 카테고리는 국기 이모지 유지
     return '<span class="calendar-event-icon-circle economy-icon">' + flagEmoji + '</span>';
@@ -5024,14 +5293,16 @@
         var catMeta = CALENDAR_CATEGORY_META[ev.category];
         var tagColors = CALENDAR_TYPE_COLORS[ev.type] || catMeta;
         var globalIdx = CALENDAR_EVENTS.indexOf(ev);
+        var dDayLabel = calendarDDayLabel(ev.date, todayStr);
         return '' +
-          '<div class="calendar-event-row" id="calendarEvent-' + globalIdx + '">' +
+          '<div class="calendar-event-row" id="calendarEvent-' + globalIdx + '" data-event-idx="' + globalIdx + '">' +
             resolveEventIconHtml(ev) +
             '<div class="calendar-event-body">' +
               '<span class="calendar-event-cat" style="color:' + tagColors.color + ';background:' + tagColors.bg + '">' + catMeta.label + ' · ' + ev.type + '</span>' +
               '<p class="calendar-event-title">' + ev.title + '</p>' +
               (ev.meta ? '<p class="calendar-event-meta">' + ev.meta + '</p>' : '') +
             '</div>' +
+            (dDayLabel ? '<span class="calendar-event-dday' + (dDayLabel === "D-DAY" ? " is-today" : "") + '">' + dDayLabel + '</span>' : '') +
             (ev.status ? '<span class="calendar-event-status">' + ev.status + '</span>' : '') +
           '</div>';
       }).join("");
@@ -5062,7 +5333,149 @@
         group.classList.toggle("is-collapsed", !nowExpanded);
       });
     });
+
+    wrap.querySelectorAll(".calendar-event-row[data-event-idx]").forEach(function(row){
+      row.addEventListener("click", function(){
+        var ev = CALENDAR_EVENTS[Number(row.getAttribute("data-event-idx"))];
+        if (ev) openCalendarDetail(ev);
+      });
+    });
   }
+
+  // ---------- 캘린더 일정 상세 모달 (신청/원문 링크, 상세 필드, 개별 알림 켜기/끄기) ----------
+  function openCalendarDetail(ev){
+    var catMeta = CALENDAR_CATEGORY_META[ev.category] || { label: ev.category || "", color: "#6366f1", bg: "rgba(99,102,241,0.10)" };
+    var catEl = document.getElementById("calDetailCat");
+    catEl.textContent = catMeta.label;
+    catEl.style.color = catMeta.color;
+    catEl.style.background = catMeta.bg;
+
+    document.getElementById("calDetailTitle").textContent = ev.title || "";
+    var d = new Date(ev.date + "T00:00:00");
+    document.getElementById("calDetailDate").textContent =
+      d.getFullYear() + "년 " + (d.getMonth() + 1) + "월 " + d.getDate() + "일 (" + CALENDAR_WEEKDAY_FULL_KO[d.getDay()].charAt(0) + ")" +
+      (ev.meta ? " · " + ev.meta : "");
+
+    var labels = window.CALENDAR_DETAIL_LABELS || {};
+    var details = ev.details || {};
+    var fieldsEl = document.getElementById("calDetailFields");
+    fieldsEl.innerHTML = Object.keys(details).filter(function(k){ return details[k]; }).map(function(k){
+      return '<div class="calendar-detail-field-row"><span class="calendar-detail-field-label">' + (labels[k] || k) +
+        '</span><span class="calendar-detail-field-value">' + escapeMyPageHtml(details[k]) + '</span></div>';
+    }).join("");
+
+    var linkEl = document.getElementById("calDetailLink");
+    var linkUrl = ev.link || ev.sourceUrl || "";
+    if (linkUrl) { linkEl.href = linkUrl; linkEl.hidden = false; } else { linkEl.hidden = true; }
+
+    var deleteBtn = document.getElementById("calDetailDeleteBtn");
+    var currentUser = firebaseAuth.currentUser;
+    deleteBtn.hidden = !ev.isPersonal;
+    deleteBtn.onclick = function(){
+      if (!ev.isPersonal || !currentUser) return;
+      if (!confirm("이 개인 일정을 삭제할까요?")) return;
+      db.collection("users").doc(currentUser.uid).collection("personalEvents").doc(ev.id).delete().then(function(){
+        closeCalendarDetail();
+      });
+    };
+
+    var remindBtn = document.getElementById("calDetailRemindBtn");
+    var remindText = document.getElementById("calDetailRemindText");
+    if (!ev.id) {
+      remindBtn.style.display = "none";
+    } else if (!currentUser) {
+      remindBtn.style.display = "flex";
+      remindBtn.classList.remove("is-on");
+      remindText.textContent = "알림 받기";
+      remindBtn.onclick = function(){ showToast("로그인 후 알림을 켤 수 있어요", "ph-lock-simple"); };
+    } else {
+      remindBtn.style.display = "flex";
+      var reminderRef = db.collection("users").doc(currentUser.uid).collection("eventReminders").doc(ev.id);
+      reminderRef.get().then(function(docSnap){
+        var isOn = docSnap.exists;
+        remindBtn.classList.toggle("is-on", isOn);
+        remindText.textContent = isOn ? "알림 취소" : "알림 받기";
+        remindBtn.onclick = function(){
+          if (isOn) {
+            reminderRef.delete().then(function(){ openCalendarDetail(ev); });
+          } else {
+            reminderRef.set({
+              eventId: ev.id,
+              eventTitle: ev.title || "",
+              eventMeta: ev.meta || "",
+              eventDate: ev.date,
+              createdAt: new Date()
+            }).then(function(){
+              openCalendarDetail(ev);
+              showToast("이 일정에 알림을 켰어요 (D-1, D-Day 오전에 발송)", "ph-bell-ringing");
+            });
+          }
+        };
+      });
+    }
+
+    document.getElementById("calDetailOverlay").hidden = false;
+  }
+  function closeCalendarDetail(){
+    document.getElementById("calDetailOverlay").hidden = true;
+  }
+  (function initCalendarDetailModal(){
+    var overlay = document.getElementById("calDetailOverlay");
+    var closeBtn = document.getElementById("calDetailCloseBtn");
+    if (!overlay || !closeBtn) return;
+    closeBtn.addEventListener("click", closeCalendarDetail);
+    overlay.addEventListener("click", function(e){
+      if (e.target === overlay) closeCalendarDetail();
+    });
+  })();
+
+  // ---------- 개인 일정 추가 모달 ----------
+  (function initCalendarAddPersonal(){
+    var addBtn = document.getElementById("calendarAddPersonalBtn");
+    var overlay = document.getElementById("calAddOverlay");
+    var closeBtn = document.getElementById("calAddCloseBtn");
+    var submitBtn = document.getElementById("calAddSubmitBtn");
+    var resultEl = document.getElementById("calAddResult");
+    if (!addBtn || !overlay || !submitBtn) return;
+
+    function openAdd(){
+      if (!authState.isLoggedIn) { showToast("로그인 후 개인 일정을 추가할 수 있어요", "ph-lock-simple"); return; }
+      document.getElementById("calAddDate").value = "";
+      document.getElementById("calAddTitleInput").value = "";
+      document.getElementById("calAddMemo").value = "";
+      resultEl.textContent = "";
+      overlay.hidden = false;
+    }
+    function closeAdd(){ overlay.hidden = true; }
+
+    addBtn.addEventListener("click", openAdd);
+    closeBtn.addEventListener("click", closeAdd);
+    overlay.addEventListener("click", function(e){ if (e.target === overlay) closeAdd(); });
+
+    submitBtn.addEventListener("click", function(){
+      var user = firebaseAuth.currentUser;
+      if (!user) { showToast("로그인 후 개인 일정을 추가할 수 있어요", "ph-lock-simple"); return; }
+      var date = document.getElementById("calAddDate").value;
+      var title = document.getElementById("calAddTitleInput").value.trim();
+      var memo = document.getElementById("calAddMemo").value.trim();
+      if (!date || !title) { resultEl.textContent = "날짜와 제목은 필수예요."; return; }
+
+      submitBtn.disabled = true;
+      db.collection("users").doc(user.uid).collection("personalEvents").add({
+        date: date,
+        title: title,
+        memo: memo,
+        createdAt: new Date()
+      }).then(function(){
+        closeAdd();
+        showToast("개인 일정을 추가했어요", "ph-check-circle");
+      }).catch(function(error){
+        resultEl.textContent = "추가 실패: " + error.message;
+      }).then(function(){
+        submitBtn.disabled = false;
+      });
+    });
+  })();
 
   function changeCalendarMonth(delta){
     calendarViewMonth += delta;
@@ -5137,6 +5550,14 @@
   var REWARD_STARBUCKS_TARGET = 4500;
 
   function formatDateYMD(d){ return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+
+  // 오늘/미래 일정에만 "D-3", "D-DAY" 배지를 계산한다 — 지난 일정은 null(배지 없음)을 돌려준다.
+  function calendarDDayLabel(dateStr, todayStr){
+    var diffDays = Math.round((new Date(dateStr + "T00:00:00") - new Date(todayStr + "T00:00:00")) / 86400000);
+    if (diffDays < 0) return null;
+    if (diffDays === 0) return "D-DAY";
+    return "D-" + diffDays;
+  }
 
   var authState = {
     isLoggedIn: false,
@@ -5324,6 +5745,7 @@
       };
       authState.userEmail = user.email || "";
       subscribeToUserDoc(user.uid);
+      if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(user.uid);
     } else {
       authState.isLoggedIn = false;
       authState.userProfile = { name: DEFAULT_USER_PROFILE.name, avatar: DEFAULT_USER_PROFILE.avatar };
@@ -5331,6 +5753,7 @@
       authState.userPoints = DEFAULT_USER_POINTS;
       authState.pointHistory = [];
       if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
+      if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(null);
     }
     syncAuthUI();
   });
@@ -7448,6 +7871,178 @@
           submitBtn.disabled = false;
         });
     });
+  })();
+
+  // ---------- 관리자 캘린더 일정 CRUD 폼 (#admin-calendar) ----------
+  (function initAdminCalendar(){
+    var submitBtn = document.getElementById("adminCalSubmitBtn");
+    if (!submitBtn) return;
+    var cancelBtn = document.getElementById("adminCalCancelBtn");
+    var resultEl = document.getElementById("adminCalResult");
+    var listEl = document.getElementById("adminCalList");
+    var editIdInput = document.getElementById("adminCalEditId");
+
+    var DETAIL_FIELD_IDS = {
+      eligibility: "adminCalEligibility",
+      applyPeriod: "adminCalApplyPeriod",
+      supplyType: "adminCalSupplyType",
+      winnerDate: "adminCalWinnerDate",
+      underwriter: "adminCalUnderwriter",
+      offerPrice: "adminCalOfferPrice",
+      refundDate: "adminCalRefundDate",
+      listingDate: "adminCalListingDate"
+    };
+    // 캘린더 상세 모달도 같은 라벨을 재사용해서 관리자 화면과 사용자 화면의 용어가 어긋나지 않게 한다.
+    window.CALENDAR_DETAIL_LABELS = {
+      eligibility: "신청 자격 요건",
+      applyPeriod: "신청 기간",
+      supplyType: "공급 유형",
+      winnerDate: "당첨자 발표일",
+      underwriter: "주관 증권사",
+      offerPrice: "공모가",
+      refundDate: "환불일",
+      listingDate: "상장일"
+    };
+
+    function resetForm(){
+      editIdInput.value = "";
+      document.getElementById("adminCalCategory").value = "subsidy";
+      document.getElementById("adminCalDate").value = "";
+      document.getElementById("adminCalTitle").value = "";
+      document.getElementById("adminCalMeta").value = "";
+      document.getElementById("adminCalStatus").value = "";
+      document.getElementById("adminCalFlag").value = "kr";
+      document.getElementById("adminCalLink").value = "";
+      Object.keys(DETAIL_FIELD_IDS).forEach(function(key){
+        document.getElementById(DETAIL_FIELD_IDS[key]).value = "";
+      });
+      submitBtn.textContent = "등록하기";
+      cancelBtn.hidden = true;
+    }
+
+    function fillFormForEdit(id, ev){
+      editIdInput.value = id;
+      document.getElementById("adminCalCategory").value = ev.category || "subsidy";
+      document.getElementById("adminCalDate").value = ev.date || "";
+      document.getElementById("adminCalTitle").value = ev.title || "";
+      document.getElementById("adminCalMeta").value = ev.meta || "";
+      document.getElementById("adminCalStatus").value = ev.status || "";
+      document.getElementById("adminCalFlag").value = ev.flag || "kr";
+      document.getElementById("adminCalLink").value = ev.link || ev.sourceUrl || "";
+      var details = ev.details || {};
+      Object.keys(DETAIL_FIELD_IDS).forEach(function(key){
+        document.getElementById(DETAIL_FIELD_IDS[key]).value = details[key] || "";
+      });
+      submitBtn.textContent = "수정 저장";
+      cancelBtn.hidden = false;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function loadAdminCalList(){
+      if (!listEl) return;
+      db.collection("calendarEvents").orderBy("date", "desc").limit(30).get()
+        .then(function(snapshot){
+          if (snapshot.empty) {
+            listEl.innerHTML = '<p class="admin-push-result">등록된 일정이 없어요.</p>';
+            return;
+          }
+          listEl.innerHTML = snapshot.docs.map(function(doc){
+            var ev = doc.data();
+            return '' +
+              '<div class="admin-cal-item">' +
+                '<div class="admin-cal-item-body">' +
+                  '<p class="admin-cal-item-title">[' + (ev.category || "") + '] ' + (ev.title || "") + '</p>' +
+                  '<p class="admin-cal-item-meta">' + (ev.date || "") + (ev.source ? " · " + ev.source : "") + '</p>' +
+                '</div>' +
+                '<button type="button" class="admin-cal-item-btn" data-edit-id="' + doc.id + '">수정</button>' +
+                '<button type="button" class="admin-cal-item-btn danger" data-delete-id="' + doc.id + '">삭제</button>' +
+              '</div>';
+          }).join("");
+
+          listEl.querySelectorAll("[data-edit-id]").forEach(function(btn){
+            btn.addEventListener("click", function(){
+              db.collection("calendarEvents").doc(btn.getAttribute("data-edit-id")).get().then(function(docSnap){
+                if (docSnap.exists) fillFormForEdit(docSnap.id, docSnap.data());
+              });
+            });
+          });
+          listEl.querySelectorAll("[data-delete-id]").forEach(function(btn){
+            btn.addEventListener("click", function(){
+              var secret = document.getElementById("adminCalSecret").value.trim();
+              if (!secret) { resultEl.textContent = "삭제하려면 먼저 비밀값을 입력하세요."; return; }
+              if (!confirm("정말 삭제할까요?")) return;
+              fetch("/api/delete-calendar-event?secret=" + encodeURIComponent(secret), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: btn.getAttribute("data-delete-id") })
+              })
+                .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+                .then(function(result){
+                  if (!result.ok) { resultEl.textContent = "삭제 실패: " + (result.data.error || ""); return; }
+                  loadAdminCalList();
+                })
+                .catch(function(error){ resultEl.textContent = "삭제 요청 실패: " + error.message; });
+            });
+          });
+        })
+        .catch(function(error){
+          listEl.innerHTML = '<p class="admin-push-result">목록을 불러오지 못했어요: ' + error.message + '</p>';
+        });
+    }
+
+    submitBtn.addEventListener("click", function(){
+      var secret = document.getElementById("adminCalSecret").value.trim();
+      var date = document.getElementById("adminCalDate").value;
+      var title = document.getElementById("adminCalTitle").value.trim();
+      if (!secret || !date || !title) {
+        resultEl.textContent = "비밀값, 날짜, 제목은 필수예요.";
+        return;
+      }
+
+      var details = {};
+      Object.keys(DETAIL_FIELD_IDS).forEach(function(key){
+        var val = document.getElementById(DETAIL_FIELD_IDS[key]).value.trim();
+        if (val) details[key] = val;
+      });
+
+      var payload = {
+        id: editIdInput.value || undefined,
+        date: date,
+        category: document.getElementById("adminCalCategory").value,
+        title: title,
+        meta: document.getElementById("adminCalMeta").value.trim(),
+        status: document.getElementById("adminCalStatus").value || null,
+        flag: document.getElementById("adminCalFlag").value,
+        link: document.getElementById("adminCalLink").value.trim(),
+        details: Object.keys(details).length ? details : null
+      };
+
+      submitBtn.disabled = true;
+      resultEl.textContent = "저장 중...";
+
+      fetch("/api/upsert-calendar-event?secret=" + encodeURIComponent(secret), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+        .then(function(result){
+          if (!result.ok) { resultEl.textContent = "실패: " + (result.data.error || "알 수 없는 오류"); return; }
+          resultEl.textContent = "저장 완료!";
+          resetForm();
+          loadAdminCalList();
+        })
+        .catch(function(error){
+          resultEl.textContent = "요청 실패: " + error.message;
+        })
+        .then(function(){
+          submitBtn.disabled = false;
+        });
+    });
+
+    cancelBtn.addEventListener("click", resetForm);
+
+    loadAdminCalList();
   })();
 
   // ---------- Sidebar: accordion groups ----------
