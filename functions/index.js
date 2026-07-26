@@ -657,3 +657,183 @@ exports.dispatchEventReminders = onSchedule(
     }
   }
 );
+
+// ---------- 정부지원금 실데이터 동기화 (공공데이터포털 "보조금24" — 행정안전부_대한민국 공공서비스(혜택) 정보) ----------
+// serviceList(목록) → serviceDetail(신청링크 등 상세) → supportConditions(연령 등 자격조건) 3개 엔드포인트를 조합해
+// supportPrograms 컬렉션에 저장한다. 클라이언트는 이 컬렉션을 그대로 읽어서 기존 필터링 UI에 꽂아 쓴다.
+const GOV24_API_KEY = process.env.EXPO_PUBLIC_GOV24_API_KEY || "";
+const GOV24_BASE_URL = "https://api.odcloud.kr/api/gov24/v3";
+
+// 보조금24가 실제로 쓰는 서비스분야 8종 그대로를 카테고리로 사용한다 — 임의로 4개로 뭉치면
+// 정보 손실이 생기므로, 원본 분류 체계를 그대로 노출하는 쪽이 더 정확하다.
+const GOV24_CATEGORIES = ["보육·교육", "주거·자립", "농림축산어업", "행정·안전", "문화·환경", "보건·의료", "고용·창업", "생활안정"];
+
+const GOV24_REGION_PREFIXES = [
+  "서울특별시", "부산광역시", "대구광역시", "인천광역시", "광주광역시", "대전광역시", "울산광역시",
+  "세종특별자치시", "경기도", "강원특별자치도", "충청북도", "충청남도", "전북특별자치도", "전라남도",
+  "경상북도", "경상남도", "제주특별자치도"
+];
+
+async function gov24Fetch(path, condParams, page, perPage) {
+  const params = new URLSearchParams();
+  params.set("serviceKey", GOV24_API_KEY);
+  params.set("page", String(page));
+  params.set("perPage", String(perPage));
+  Object.keys(condParams || {}).forEach((k) => params.set(k, condParams[k]));
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(GOV24_BASE_URL + path + "?" + params.toString(), { signal: controller.signal });
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+// 보조금24 지원조건 API에는 명시적인 "지역" 코드가 없어서, 소관기관 정보로 대신 추정한다.
+// 중앙행정기관/공공기관이 주관하면 전국 대상으로, 지자체가 주관하면 기관명에서 시/도 이름을 뽑아낸다.
+function inferGov24Region(row) {
+  const orgType = row["소관기관유형"] || "";
+  if (orgType.indexOf("중앙행정기관") !== -1 || orgType.indexOf("공공기관") !== -1) return "전국";
+  const orgName = row["소관기관명"] || "";
+  const matched = GOV24_REGION_PREFIXES.filter(function (p) { return orgName.indexOf(p.slice(0, 2)) !== -1; })[0];
+  return matched || "전국";
+}
+
+// 보조금24 지원조건의 직업 코드(JA12xx 등)는 공식 코드표 없이는 정확히 매핑하기 어려워서,
+// 대신 서비스명/지원대상 텍스트에서 키워드를 찾는 방식으로 최대한 보수적으로(놓치지 않는 쪽으로) 추정한다.
+// 아무 키워드도 못 찾으면 빈 배열(= 직업 제한 없음)로 두어, 실제로 해당될 수 있는 사용자를 걸러내지 않는다.
+function inferGov24Employment(row) {
+  const text = [row["서비스명"], row["지원대상"], row["서비스목적요약"]].filter(Boolean).join(" ");
+  const result = [];
+  if (/대학생/.test(text)) result.push("대학생");
+  if (/(재직자|근로자|직장인)/.test(text)) result.push("재직자");
+  if (/(자영업자|소상공인)/.test(text)) result.push("자영업자");
+  if (/(프리랜서)/.test(text)) result.push("프리랜서");
+  if (/(구직|취업준비|미취업)/.test(text)) result.push("취준생");
+  if (/(무직|실업자)/.test(text)) result.push("무직");
+  return result;
+}
+
+// "신청기한"은 자유 텍스트라(예: "상시신청", "○ 정기신청 : 5.1.~5.31.") 항상 날짜를 뽑아낼 수는 없다.
+// 텍스트에 등장하는 마지막 YYYY.MM.DD 형태를 마감일로 간주하고, 못 찾으면 null(=상시/문의로 표시)로 둔다.
+function parseGov24Deadline(text) {
+  if (!text) return null;
+  const matches = String(text).match(/(\d{4})[.\-](\d{1,2})[.\-](\d{1,2})/g);
+  if (!matches || !matches.length) return null;
+  const parts = matches[matches.length - 1].split(/[.\-]/);
+  const y = parts[0];
+  const m = String(Number(parts[1])).padStart(2, "0");
+  const d = String(Number(parts[2])).padStart(2, "0");
+  if (Number(m) < 1 || Number(m) > 12 || Number(d) < 1 || Number(d) > 31) return null;
+  return y + "-" + m + "-" + d;
+}
+
+function splitGov24Checklist(text) {
+  if (!text) return [];
+  return String(text)
+    .split(/\r?\n/)
+    .map(function (line) { return line.replace(/^[\s○\-•*]+/, "").trim(); })
+    .filter(function (line) { return line.length > 3; })
+    .slice(0, 6);
+}
+
+// 동시에 너무 많은 요청을 보내면 odcloud 쪽에서 제한할 수 있어, 정해진 개수만큼만 동시에 처리한다.
+async function mapWithConcurrency(items, limit, fn) {
+  const results = [];
+  let index = 0;
+  async function worker() {
+    while (index < items.length) {
+      const current = index++;
+      results[current] = await fn(items[current]);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
+exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 540 }, async (req, res) => {
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  if (!GOV24_API_KEY) {
+    res.status(500).json({ error: "GOV24 API 키(EXPO_PUBLIC_GOV24_API_KEY)가 설정되지 않았습니다." });
+    return;
+  }
+  const pagesPerCategory = Number(req.query.pages) || 1; // 카테고리당 최대 페이지 수(1페이지 = 50건)
+  try {
+    let candidateRows = [];
+    for (const category of GOV24_CATEGORIES) {
+      for (let page = 1; page <= pagesPerCategory; page++) {
+        const json = await gov24Fetch("/serviceList", { "cond[서비스분야::EQ]": category }, page, 50);
+        if (!json.data || !json.data.length) break;
+        candidateRows = candidateRows.concat(json.data);
+        if (json.data.length < 50) break;
+      }
+    }
+
+    // 기업/시설 전용 서비스는 이 앱(개인 사용자 대상)과 맞지 않으니 제외
+    const personalRows = candidateRows.filter(function (row) {
+      const userType = row["사용자구분"] || "";
+      return userType.indexOf("개인") !== -1 || userType.indexOf("가구") !== -1;
+    });
+
+    let savedCount = 0;
+    const errors = [];
+    await mapWithConcurrency(personalRows, 6, async function (row) {
+      const serviceId = row["서비스ID"];
+      if (!serviceId) return;
+
+      let detail = {};
+      let conditions = {};
+      try {
+        const detailJson = await gov24Fetch("/serviceDetail", { "cond[서비스ID::EQ]": serviceId }, 1, 1);
+        detail = (detailJson.data && detailJson.data[0]) || {};
+      } catch (e) { /* 상세조회 실패 시 목록 데이터만으로 진행 */ }
+      try {
+        const condJson = await gov24Fetch("/supportConditions", { "cond[서비스ID::EQ]": serviceId }, 1, 1);
+        conditions = (condJson.data && condJson.data[0]) || {};
+      } catch (e) { /* 지원조건 조회 실패 시 무제한 연령으로 취급 */ }
+
+      const ageMin = typeof conditions["JA0110"] === "number" ? conditions["JA0110"] : 0;
+      const ageMax = typeof conditions["JA0111"] === "number" ? conditions["JA0111"] : 99;
+      const applyUrl = detail["온라인신청사이트URL"] || row["상세조회URL"] || "";
+      const checklist = splitGov24Checklist(detail["선정기준"] || row["선정기준"] || row["지원대상"]);
+      const deadlineText = row["신청기한"] || "";
+
+      const doc = {
+        title: row["서비스명"] || "",
+        category: row["서비스분야"] || "기타",
+        summary: (row["서비스목적요약"] || row["서비스명"] || "").slice(0, 90),
+        targetAge: { min: ageMin, max: ageMax },
+        targetRegions: [inferGov24Region(row)],
+        targetEmployment: inferGov24Employment(row),
+        benefits: (row["지원내용"] || "").slice(0, 400),
+        deadlineText: deadlineText,
+        endDate: parseGov24Deadline(deadlineText),
+        applyUrl: applyUrl,
+        checklist: checklist,
+        source: "gov24",
+        updatedAt: new Date()
+      };
+
+      try {
+        await db.collection("supportPrograms").doc(serviceId).set(doc, { merge: true });
+        savedCount++;
+      } catch (error) {
+        errors.push(serviceId + ": " + error.message);
+      }
+    });
+
+    res.status(200).json({
+      candidateCount: candidateRows.length,
+      personalCount: personalRows.length,
+      savedCount: savedCount,
+      errorCount: errors.length
+    });
+  } catch (error) {
+    console.error("보조금24 동기화 실패:", error);
+    res.status(500).json({ error: "동기화 중 오류가 발생했습니다: " + error.message });
+  }
+});

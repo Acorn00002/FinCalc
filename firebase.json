@@ -17,7 +17,8 @@
       { "source": "/api/sync-calendar", "function": "syncFinancialCalendarManual" },
       { "source": "/api/send-push", "function": "sendPushNotification" },
       { "source": "/api/upsert-calendar-event", "function": "upsertCalendarEvent" },
-      { "source": "/api/delete-calendar-event", "function": "deleteCalendarEvent" }
+      { "source": "/api/delete-calendar-event", "function": "deleteCalendarEvent" },
+      { "source": "/api/sync-gov24-subsidies", "function": "syncGov24Subsidies" }
     ]
   },
   "functions": [

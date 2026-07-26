@@ -42,6 +42,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 정부지원금(보조금24) 실데이터 — Cloud Function(syncGov24Subsidies, Admin SDK)만 쓸 수 있고
+    // 클라이언트는 읽기만 가능.
+    match /supportPrograms/{programId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // 알림함 — 관리자 발송 Cloud Function(Admin SDK, 비밀키로 보호됨)만 쓸 수 있고 클라이언트는 읽기만 가능.
     // 읽음/삭제 상태는 전역 알림 문서가 아니라 기기(localStorage)에 개인화해서 저장한다.
     match /notifications/{notificationId} {

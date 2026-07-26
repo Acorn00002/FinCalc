@@ -3324,6 +3324,16 @@
 
   .subsidy-empty-msg{text-align:center;padding:40px 20px;font-size:13px;color:var(--ink-3);}
 
+  .subsidy-card.is-skeleton{cursor:default;}
+  .subsidy-skel-bar{
+    display:inline-block;border-radius:6px;background:var(--card-soft);
+    animation:subsidySkelPulse 1.1s ease-in-out infinite;
+  }
+  @keyframes subsidySkelPulse{
+    0%, 100% { opacity:0.55; }
+    50%      { opacity:1; }
+  }
+
   .subsidy-detail-benefit{
     margin:0 0 18px;padding:12px 14px;background:var(--card-soft);border-radius:12px;
     font-size:13.5px;font-weight:700;color:var(--ink-1);line-height:1.5;
@@ -4310,7 +4320,7 @@
   </div>
 
   <div class="subsidy-card-list" id="subsidyCardList"></div>
-  <p class="subsidy-empty-msg" id="subsidyEmptyMsg" hidden>조건에 맞는 지원금이 없어요. 조건을 다시 설정해보세요.</p>
+  <p class="subsidy-empty-msg" id="subsidyEmptyMsg" hidden>해당 조건의 지원금이 없습니다</p>
 </main>
 
 <!-- 관리자 전용 푸시 발송 화면 — 메뉴에 노출되지 않고 주소창에 #admin-push로 직접 진입해야 함.
@@ -5647,116 +5657,39 @@
   })();
 
   // ---------- 맞춤형 정부지원금 조회 및 필터링 ----------
+  // 보조금24(행정안전부) 실데이터의 서비스분야 8종을 그대로 카테고리로 사용 — 임의로 뭉치면 정보가 소실됨
   var SUPPORT_CATEGORY_META = {
-    "housing": { label: "주거",      color: "#059669", bg: "rgba(5,150,105,0.10)" },
-    "finance": { label: "금융/자산", color: "#6366f1", bg: "rgba(99,102,241,0.10)" },
-    "job":     { label: "일자리",    color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
-    "life":    { label: "생활/복지", color: "#db2777", bg: "rgba(219,39,119,0.10)" }
+    "보육·교육":   { label: "보육·교육", color: "#0891b2", bg: "rgba(8,145,178,0.10)" },
+    "주거·자립":   { label: "주거·자립", color: "#059669", bg: "rgba(5,150,105,0.10)" },
+    "농림축산어업": { label: "농림축산어업", color: "#65a30d", bg: "rgba(101,163,13,0.10)" },
+    "행정·안전":   { label: "행정·안전", color: "#64748b", bg: "rgba(100,116,139,0.12)" },
+    "문화·환경":   { label: "문화·환경", color: "#7c3aed", bg: "rgba(124,58,237,0.10)" },
+    "보건·의료":   { label: "보건·의료", color: "#e11d48", bg: "rgba(225,29,72,0.10)" },
+    "고용·창업":   { label: "고용·창업", color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
+    "생활안정":    { label: "생활안정", color: "#db2777", bg: "rgba(219,39,119,0.10)" }
   };
 
-  // Step1 단계 더미 데이터 — 추후 관리자 페이지(#admin-calendar 형태)와 공공데이터포털 연동으로 대체 예정
-  var SUPPORT_PROGRAMS = [
-    {
-      id: "sp001", title: "청년월세 특별지원", category: "housing",
-      summary: "무주택 청년 1인 가구에게 월세를 최대 20만원씩 지원해요.",
-      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
-      benefits: "월 최대 20만원씩 12개월간 지원 (최대 240만원)",
-      startDate: "2026-01-01", endDate: "2026-08-31",
-      applyUrl: "https://www.bokjiro.go.kr",
-      checklist: ["만 19~34세 무주택 청년인가요?", "부모와 별도로 거주하며 임차료를 납부하고 있나요?", "기준 중위소득 60% 이하 가구인가요?"]
-    },
-    {
-      id: "sp002", title: "서울시 청년 월세 지원", category: "housing",
-      summary: "서울 거주 청년에게 월세를 10개월간 지원하는 서울시 자체 사업이에요.",
-      targetAge: { min: 19, max: 39 }, targetRegions: ["서울특별시"],
-      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
-      benefits: "월 20만원씩 10개월간 지원 (최대 200만원)",
-      startDate: "2026-07-01", endDate: "2026-07-31",
-      applyUrl: "https://youth.seoul.go.kr",
-      checklist: ["서울시에 거주하는 만 19~39세인가요?", "임차보증금 5천만원 이하, 월세 60만원 이하 주택에 거주 중인가요?"]
-    },
-    {
-      id: "sp003", title: "청년 버팀목 전세자금대출", category: "housing",
-      summary: "저금리로 전세 보증금을 빌려주는 청년 전용 대출 상품이에요.",
-      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
-      benefits: "최대 2억원, 연 1.8~2.7% 금리로 전세자금 대출",
-      startDate: "2026-01-01", endDate: "2026-12-31",
-      applyUrl: "https://nhuf.molit.go.kr",
-      checklist: ["세대주(예정자)이며 무주택자인가요?", "부부합산 연소득 5천만원 이하인가요?"]
-    },
-    {
-      id: "sp004", title: "청년도약계좌", category: "finance",
-      summary: "매달 저축하면 정부기여금을 더해 목돈 마련을 도와주는 정책형 적금이에요.",
-      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자", "자영업자", "프리랜서"],
-      benefits: "5년 만기 시 정부기여금 포함 최대 5,000만원 마련",
-      startDate: "2026-06-01", endDate: "2026-12-31",
-      applyUrl: "https://kinfa.or.kr",
-      checklist: ["개인소득 7,500만원 이하인가요?", "가구소득 기준 중위소득 180% 이하인가요?"]
-    },
-    {
-      id: "sp005", title: "청년 내일저축계좌", category: "finance",
-      summary: "일하는 저소득 청년의 자산 형성을 지원하는 매칭 적금이에요.",
-      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자"],
-      benefits: "매월 10만원 저축 시 정부가 최대 30만원 추가 적립",
-      startDate: "2026-07-01", endDate: "2026-08-05",
-      applyUrl: "https://www.bokjiro.go.kr",
-      checklist: ["근로·사업소득이 있는 만 19~34세인가요?", "가구 기준 중위소득 100% 이하인가요?"]
-    },
-    {
-      id: "sp006", title: "국민내일배움카드", category: "job",
-      summary: "직무 훈련·자격증 취득 비용을 지원해서 취업 역량을 키워줘요.",
-      targetAge: { min: 15, max: 65 }, targetRegions: ["전국"],
-      targetEmployment: ["취준생", "재직자", "자영업자", "무직"],
-      benefits: "5년간 최대 500만원 훈련비 지원 (자기부담률 별도)",
-      startDate: "2026-01-01", endDate: "2026-12-31",
-      applyUrl: "https://www.hrd.go.kr",
-      checklist: ["구직등록을 완료했거나 재직 중인가요?", "최근 5년 내 동일 과정을 수강한 적이 없나요?"]
-    },
-    {
-      id: "sp007", title: "청년구직활동지원금", category: "job",
-      summary: "구직 활동 중인 청년에게 활동비를 매달 지원해요.",
-      targetAge: { min: 18, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["취준생"],
-      benefits: "월 50만원씩 최대 6개월 지원",
-      startDate: "2026-07-01", endDate: "2026-08-10",
-      applyUrl: "https://www.work.go.kr",
-      checklist: ["졸업(수료) 후 2년 이내인가요?", "가구소득 기준 중위소득 120% 이하인가요?"]
-    },
-    {
-      id: "sp008", title: "청년일자리도약장려금", category: "job",
-      summary: "취업 취약 청년을 정규직으로 채용을 유도하는 인센티브 연계 사업이에요.",
-      targetAge: { min: 18, max: 34 }, targetRegions: ["전국"],
-      targetEmployment: ["취준생"],
-      benefits: "정규직 채용·근속 시 최대 480만원 장려금 연계 지원",
-      startDate: "2026-01-01", endDate: "2026-06-30",
-      applyUrl: "https://www.work.go.kr",
-      checklist: ["6개월 이상 미취업 상태였나요?", "취업 후 정규직으로 6개월 이상 근속 예정인가요?"]
-    },
-    {
-      id: "sp009", title: "문화누리카드", category: "life",
-      summary: "기초생활수급자·차상위계층에게 문화·여행·체육 이용권을 지원해요.",
-      targetAge: { min: 6, max: 99 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자", "자영업자", "프리랜서", "취준생", "대학생", "무직"],
-      benefits: "1인당 13만원 문화예술·여행·체육활동 바우처 지급",
-      startDate: "2026-02-01", endDate: "2026-11-30",
-      applyUrl: "https://www.mnuri.kr",
-      checklist: ["기초생활수급자 또는 차상위계층에 해당하나요?", "만 6세 이상인가요?"]
-    },
-    {
-      id: "sp010", title: "에너지바우처", category: "life",
-      summary: "여름·겨울철 냉난방 에너지 요금 부담을 덜어주는 바우처예요.",
-      targetAge: { min: 0, max: 99 }, targetRegions: ["전국"],
-      targetEmployment: ["재직자", "자영업자", "프리랜서", "취준생", "대학생", "무직"],
-      benefits: "하절기·동절기 에너지 요금 최대 60만원 상당 지원",
-      startDate: "2026-05-01", endDate: "2026-09-30",
-      applyUrl: "https://www.energyv.or.kr",
-      checklist: ["기초생활수급자(생계·의료급여) 가구인가요?", "노인·영유아·장애인 등 에너지 취약계층이 가구원으로 있나요?"]
-    }
-  ];
+  // 공공데이터포털 "보조금24"(행정안전부) 실데이터 — Cloud Function(syncGov24Subsidies)이
+  // 미리 supportPrograms 컬렉션에 동기화해두고, 여기서는 그 결과를 그대로 읽기만 한다.
+  var SUPPORT_PROGRAMS = [];
+  var subsidyProgramsLoaded = false;
+
+  function loadSupportProgramsFromFirestore(){
+    db.collection("supportPrograms").get().then(function(snapshot){
+      SUPPORT_PROGRAMS = snapshot.docs.map(function(doc){
+        var data = doc.data();
+        data.id = doc.id;
+        return data;
+      });
+      subsidyProgramsLoaded = true;
+      renderSubsidyFilterChips();
+      renderSubsidyList();
+    }).catch(function(error){
+      console.error("정부지원금 데이터 로드 실패:", error);
+      subsidyProgramsLoaded = true;
+      renderSubsidyList();
+    });
+  }
 
   var DEFAULT_SUBSIDY_FILTER = { age: null, region: "", employment: "" };
   var subsidyUserFilter = null;
@@ -5777,13 +5710,19 @@
     }
   }
 
-  function getSubsidyDday(endDateStr, todayStr){
+  // 보조금24 실데이터는 "신청기한"이 자유 텍스트라(상시신청/반기신청 등) 항상 날짜를 계산할 수 없다.
+  // endDateStr이 없으면 마감이 아니라 "상시/문의"로 표시하고, 정렬 시에는 진행중 > 상시·문의 > 마감 순으로 둔다.
+  function getSubsidyDday(endDateStr, todayStr, deadlineText){
+    if (!endDateStr) {
+      var label = (deadlineText && deadlineText.indexOf("상시") !== -1) ? "상시" : "문의";
+      return { label: label, closed: false, indefinite: true, days: Infinity };
+    }
     var end = new Date(endDateStr + "T00:00:00");
     var today = new Date(todayStr + "T00:00:00");
     var diffDays = Math.round((end - today) / 86400000);
-    if (diffDays < 0) return { label: "마감", closed: true, days: diffDays };
-    if (diffDays === 0) return { label: "D-DAY", closed: false, days: 0 };
-    return { label: "D-" + diffDays, closed: false, days: diffDays };
+    if (diffDays < 0) return { label: "마감", closed: true, indefinite: false, days: diffDays };
+    if (diffDays === 0) return { label: "D-DAY", closed: false, indefinite: false, days: 0 };
+    return { label: "D-" + diffDays, closed: false, indefinite: false, days: diffDays };
   }
 
   function isSubsidyMatch(program, filter){
@@ -5794,7 +5733,8 @@
     if (filter.region && program.targetRegions.indexOf("전국") === -1 && program.targetRegions.indexOf(filter.region) === -1) {
       return false;
     }
-    if (filter.employment && program.targetEmployment.indexOf(filter.employment) === -1) {
+    // targetEmployment가 빈 배열이면 "직업 제한 없음"을 의미하므로 항상 통과시킨다.
+    if (filter.employment && program.targetEmployment.length > 0 && program.targetEmployment.indexOf(filter.employment) === -1) {
       return false;
     }
     return true;
@@ -5803,12 +5743,18 @@
   function sortSubsidyList(list, todayStr){
     var sorted = list.slice();
     if (subsidySortMode === "latest") {
-      sorted.sort(function(a, b){ return a.startDate < b.startDate ? 1 : (a.startDate > b.startDate ? -1 : 0); });
+      sorted.sort(function(a, b){
+        var at = (a.updatedAt && typeof a.updatedAt.toMillis === "function") ? a.updatedAt.toMillis() : 0;
+        var bt = (b.updatedAt && typeof b.updatedAt.toMillis === "function") ? b.updatedAt.toMillis() : 0;
+        return bt - at;
+      });
     } else {
       sorted.sort(function(a, b){
-        var da = getSubsidyDday(a.endDate, todayStr);
-        var dbb = getSubsidyDday(b.endDate, todayStr);
-        if (da.closed !== dbb.closed) return da.closed ? 1 : -1;
+        var da = getSubsidyDday(a.endDate, todayStr, a.deadlineText);
+        var dbb = getSubsidyDday(b.endDate, todayStr, b.deadlineText);
+        var rank = function(x){ return x.closed ? 2 : (x.indefinite ? 1 : 0); };
+        var ra = rank(da), rb = rank(dbb);
+        if (ra !== rb) return ra - rb;
         return da.days - dbb.days;
       });
     }
@@ -5825,28 +5771,50 @@
     document.getElementById("subsidyFilterJobChip").classList.toggle("is-set", !!filter.employment);
   }
 
-  function renderSubsidyList(){
-    var filter = loadSubsidyFilter();
-    var todayStr = formatDateYMD(new Date());
-    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){ return isSubsidyMatch(p, filter); }), todayStr);
+  function renderSubsidySkeleton(){
+    var listEl = document.getElementById("subsidyCardList");
+    var emptyEl = document.getElementById("subsidyEmptyMsg");
+    var countEl = document.getElementById("subsidyResultCount");
+    if (!listEl) return;
+    emptyEl.hidden = true;
+    countEl.textContent = "불러오는 중...";
+    var skeletonCard = '<div class="subsidy-card is-skeleton">' +
+      '<div class="subsidy-card-top"><span class="subsidy-skel-bar" style="width:60px;height:20px;"></span><span class="subsidy-skel-bar" style="width:44px;height:20px;"></span></div>' +
+      '<span class="subsidy-skel-bar" style="width:70%;height:16px;margin-bottom:8px;"></span>' +
+      '<span class="subsidy-skel-bar" style="width:90%;height:13px;"></span>' +
+    '</div>';
+    listEl.innerHTML = skeletonCard + skeletonCard + skeletonCard;
+  }
 
+  function renderSubsidyList(){
     var listEl = document.getElementById("subsidyCardList");
     var emptyEl = document.getElementById("subsidyEmptyMsg");
     var countEl = document.getElementById("subsidyResultCount");
     if (!listEl || !emptyEl || !countEl) return;
+
+    if (!subsidyProgramsLoaded) {
+      renderSubsidySkeleton();
+      return;
+    }
+
+    var filter = loadSubsidyFilter();
+    var todayStr = formatDateYMD(new Date());
+    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){ return isSubsidyMatch(p, filter); }), todayStr);
+
     countEl.textContent = matched.length + "개의 지원금";
 
     if (!matched.length) {
       listEl.innerHTML = "";
       emptyEl.hidden = false;
+      emptyEl.textContent = "해당 조건의 지원금이 없습니다";
       return;
     }
     emptyEl.hidden = true;
 
     listEl.innerHTML = matched.map(function(p){
       var catMeta = SUPPORT_CATEGORY_META[p.category] || { label: p.category, color: "#6366f1", bg: "rgba(99,102,241,0.10)" };
-      var dday = getSubsidyDday(p.endDate, todayStr);
-      var ddayClass = dday.closed ? "is-closed" : (dday.days <= 7 ? "is-urgent" : "");
+      var dday = getSubsidyDday(p.endDate, todayStr, p.deadlineText);
+      var ddayClass = dday.closed ? "is-closed" : (!dday.indefinite && dday.days <= 7 ? "is-urgent" : "");
       return '<div class="subsidy-card" data-id="' + p.id + '">' +
         '<div class="subsidy-card-top">' +
           '<span class="subsidy-card-cat" style="color:' + catMeta.color + ';background:' + catMeta.bg + ';">' + catMeta.label + '</span>' +
@@ -5874,7 +5842,8 @@
     catEl.style.background = catMeta.bg;
 
     document.getElementById("subsidyDetailTitle").textContent = program.title;
-    document.getElementById("subsidyDetailPeriod").textContent = "신청기간 " + program.startDate + " ~ " + program.endDate;
+    document.getElementById("subsidyDetailPeriod").textContent = "신청기한 " +
+      (program.deadlineText || (program.startDate ? (program.startDate + " ~ " + program.endDate) : "상시/문의"));
     document.getElementById("subsidyDetailBenefit").textContent = program.benefits;
 
     var rowsEl = document.getElementById("subsidyChecklistRows");
@@ -5899,11 +5868,16 @@
     var remindText = document.getElementById("subsidyDetailRemindText");
     var currentUser = firebaseAuth.currentUser;
     var reminderId = "sp_" + program.id;
-    if (!currentUser) {
+    if (!program.endDate) {
+      // 신청기한이 "상시신청"처럼 특정 날짜로 계산되지 않으면 마감 알림 자체가 의미가 없어 숨긴다.
+      remindBtn.style.display = "none";
+    } else if (!currentUser) {
+      remindBtn.style.display = "flex";
       remindBtn.classList.remove("is-on");
       remindText.textContent = "마감 알림";
       remindBtn.onclick = function(){ showToast("로그인 후 알림을 켤 수 있어요", "ph-lock-simple"); };
     } else {
+      remindBtn.style.display = "flex";
       var reminderRef = db.collection("users").doc(currentUser.uid).collection("eventReminders").doc(reminderId);
       reminderRef.get().then(function(docSnap){
         var isOn = docSnap.exists;
@@ -5948,6 +5922,9 @@
   function initSubsidyView(){
     renderSubsidyFilterChips();
     renderSubsidyList();
+    if (!subsidyProgramsLoaded && !SUPPORT_PROGRAMS.length) {
+      loadSupportProgramsFromFirestore();
+    }
   }
 
   (function initSubsidyFeature(){
