@@ -3283,6 +3283,75 @@
     58%  { opacity:0; transform:translateY(0); } /* 아이콘이 튀어나가기 전에 먼저 사라짐 */
     100% { opacity:0; }
   }
+
+  /* ---------- 맞춤형 정부지원금 조회 ---------- */
+  .subsidy-head{margin-bottom:18px;}
+  .subsidy-head h2{margin:4px 0 6px;font-size:20px;font-weight:800;color:var(--ink-1);}
+  .subsidy-head p{margin:0;font-size:13px;color:var(--ink-3);}
+
+  .subsidy-filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+  .subsidy-filter-chip{
+    display:flex;align-items:center;gap:6px;
+    padding:9px 14px;border-radius:999px;border:1.5px solid var(--line);
+    background:var(--card);color:var(--ink-2);font-size:12.5px;font-weight:700;
+    cursor:pointer;font-family:inherit;
+  }
+  .subsidy-filter-chip.is-set{border-color:var(--brand);color:var(--brand);background:rgba(99,102,241,0.08);}
+  .subsidy-filter-chip i{font-size:15px;}
+
+  .subsidy-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .subsidy-result-count{font-size:12.5px;font-weight:700;color:var(--ink-3);}
+  .subsidy-sort-tabs{display:flex;gap:4px;background:var(--card-soft);border-radius:10px;padding:3px;}
+  .subsidy-sort-tab{
+    border:none;background:transparent;color:var(--ink-3);font-size:12px;font-weight:700;
+    padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-sort-tab.is-active{background:var(--card);color:var(--ink-1);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+  .subsidy-card-list{display:flex;flex-direction:column;gap:10px;}
+  .subsidy-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;
+    padding:16px;cursor:pointer;transition:border-color .15s ease;
+  }
+  .subsidy-card:hover{border-color:var(--brand);}
+  .subsidy-card-top{display:flex;align-items:center;gap:6px;margin-bottom:10px;}
+  .subsidy-card-cat{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;}
+  .subsidy-card-dday{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--card-soft);color:var(--ink-2);}
+  .subsidy-card-dday.is-urgent{background:rgba(240,68,82,0.12);color:#f04452;}
+  .subsidy-card-dday.is-closed{background:var(--card-soft);color:var(--ink-3);}
+  .subsidy-card-title{margin:0 0 6px;font-size:15px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .subsidy-card-summary{margin:0;font-size:13px;color:var(--ink-3);line-height:1.5;}
+
+  .subsidy-empty-msg{text-align:center;padding:40px 20px;font-size:13px;color:var(--ink-3);}
+
+  .subsidy-detail-benefit{
+    margin:0 0 18px;padding:12px 14px;background:var(--card-soft);border-radius:12px;
+    font-size:13.5px;font-weight:700;color:var(--ink-1);line-height:1.5;
+  }
+  .subsidy-checklist{margin-bottom:20px;}
+  .subsidy-checklist-title{display:flex;align-items:center;gap:6px;margin:0 0 10px;font-size:13px;font-weight:800;color:var(--ink-2);}
+  .subsidy-checklist-title i{font-size:15px;}
+  .subsidy-checklist-rows{display:flex;flex-direction:column;gap:8px;}
+  .subsidy-checklist-row{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;
+    background:var(--card-soft);border-radius:10px;cursor:pointer;
+  }
+  .subsidy-checklist-row input{width:17px;height:17px;flex-shrink:0;accent-color:var(--brand);}
+  .subsidy-checklist-row span{font-size:13px;font-weight:600;color:var(--ink-1);}
+  .subsidy-checklist-row.is-checked span{color:var(--ink-3);text-decoration:line-through;}
+
+  .subsidy-detail-actionbar{display:flex;gap:8px;}
+  .subsidy-remind-btn-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
+    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:12px;
+    padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-remind-btn-v2.is-on{background:var(--brand);color:#fff;}
+  .subsidy-apply-btn-v2{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--brand);color:#fff;border-radius:12px;padding:14px;
+    font-size:14px;font-weight:800;text-decoration:none;
+  }
 </style>
 </head>
 <body>
@@ -3362,7 +3431,6 @@
         </a>
         <a class="sidebar-item" href="#subsidy" data-view="subsidy">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부·지자체 지원금
-          <span class="badge soon sidebar-item-badge">준비중</span>
         </a>
         <a class="sidebar-item" href="#calendar" data-view="calendar">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
@@ -3459,7 +3527,6 @@
       </a>
       <a class="tab-btn" href="#subsidy" data-view="subsidy">
         <i class="ph-duotone ph-gift"></i>정부·지자체 지원금
-        <span class="badge soon tab-btn-badge">준비중</span>
       </a>
       <a class="tab-btn" href="#calendar" data-view="calendar">
         <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
@@ -4216,12 +4283,34 @@
 </main>
 
 <main class="wrap app-view" id="view-subsidy">
-  <section class="view-teaser">
-    <span class="view-teaser-icon"><i class="ph-duotone ph-gift"></i></span>
-    <span class="badge soon">준비 중</span>
-    <h2>정부·지자체 지원금</h2>
-    <p>나에게 맞는 정부·지자체 지원금과 보조금 정보를 모아서 알려드릴게요.</p>
-  </section>
+  <div class="subsidy-head">
+    <p class="mypage-eyebrow">정부·지자체 지원금</p>
+    <h2>나에게 맞는 지원금 찾기</h2>
+    <p>내 조건을 설정하면 나에게 맞는 지원금만 골라서 보여드려요.</p>
+  </div>
+
+  <div class="subsidy-filter-bar">
+    <button type="button" class="subsidy-filter-chip" id="subsidyFilterAgeChip">
+      <i class="ph-duotone ph-user"></i><span id="subsidyFilterAgeText">나이</span>
+    </button>
+    <button type="button" class="subsidy-filter-chip" id="subsidyFilterRegionChip">
+      <i class="ph-duotone ph-map-pin"></i><span id="subsidyFilterRegionText">지역</span>
+    </button>
+    <button type="button" class="subsidy-filter-chip" id="subsidyFilterJobChip">
+      <i class="ph-duotone ph-briefcase"></i><span id="subsidyFilterJobText">직업</span>
+    </button>
+  </div>
+
+  <div class="subsidy-toolbar">
+    <span class="subsidy-result-count" id="subsidyResultCount"></span>
+    <div class="subsidy-sort-tabs">
+      <button type="button" class="subsidy-sort-tab is-active" data-sort="deadline">마감임박순</button>
+      <button type="button" class="subsidy-sort-tab" data-sort="latest">최신순</button>
+    </div>
+  </div>
+
+  <div class="subsidy-card-list" id="subsidyCardList"></div>
+  <p class="subsidy-empty-msg" id="subsidyEmptyMsg" hidden>조건에 맞는 지원금이 없어요. 조건을 다시 설정해보세요.</p>
 </main>
 
 <!-- 관리자 전용 푸시 발송 화면 — 메뉴에 노출되지 않고 주소창에 #admin-push로 직접 진입해야 함.
@@ -4519,6 +4608,81 @@
   </div>
 </div>
 
+<!-- 정부지원금: 내 조건 설정 모달 -->
+<div class="calendar-detail-overlay-v2" id="subsidyFilterOverlay" hidden>
+  <div class="calendar-detail-modal-v2" role="dialog" aria-modal="true" aria-labelledby="subsidyFilterModalTitle">
+    <div class="calendar-detail-top-v2">
+      <h3 id="subsidyFilterModalTitle" style="margin:0;">내 조건 설정</h3>
+      <button type="button" class="calendar-detail-close-v2" id="subsidyFilterCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+    <label class="admin-push-label">나이</label>
+    <input type="number" class="admin-push-input" id="subsidyFilterAgeInput" min="0" max="120" placeholder="예: 29">
+    <label class="admin-push-label">거주 지역</label>
+    <select class="admin-push-input" id="subsidyFilterRegionInput">
+      <option value="">전체 (선택 안 함)</option>
+      <option value="서울특별시">서울특별시</option>
+      <option value="경기도">경기도</option>
+      <option value="인천광역시">인천광역시</option>
+      <option value="부산광역시">부산광역시</option>
+      <option value="대구광역시">대구광역시</option>
+      <option value="광주광역시">광주광역시</option>
+      <option value="대전광역시">대전광역시</option>
+      <option value="울산광역시">울산광역시</option>
+      <option value="세종특별자치시">세종특별자치시</option>
+      <option value="강원특별자치도">강원특별자치도</option>
+      <option value="충청북도">충청북도</option>
+      <option value="충청남도">충청남도</option>
+      <option value="전북특별자치도">전북특별자치도</option>
+      <option value="전라남도">전라남도</option>
+      <option value="경상북도">경상북도</option>
+      <option value="경상남도">경상남도</option>
+      <option value="제주특별자치도">제주특별자치도</option>
+    </select>
+    <label class="admin-push-label">직업 상태</label>
+    <select class="admin-push-input" id="subsidyFilterJobInput">
+      <option value="">전체 (선택 안 함)</option>
+      <option value="재직자">재직자</option>
+      <option value="자영업자">자영업자</option>
+      <option value="프리랜서">프리랜서</option>
+      <option value="취준생">취준생</option>
+      <option value="대학생">대학생</option>
+      <option value="무직">무직</option>
+    </select>
+    <button type="button" class="calendar-detail-remind-btn-v2" id="subsidyFilterSaveBtn" style="margin-top:18px;">적용하기</button>
+  </div>
+</div>
+
+<!-- 정부지원금: 상세 모달 -->
+<div class="calendar-detail-overlay-v2" id="subsidyDetailOverlay" hidden>
+  <div class="calendar-detail-modal-v2" role="dialog" aria-modal="true" aria-labelledby="subsidyDetailTitle">
+    <div class="calendar-detail-top-v2">
+      <span class="calendar-detail-cat-v2" id="subsidyDetailCat"></span>
+      <button type="button" class="calendar-detail-close-v2" id="subsidyDetailCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+    <h3 id="subsidyDetailTitle"></h3>
+    <p class="calendar-detail-date-v2" id="subsidyDetailPeriod"></p>
+    <p class="subsidy-detail-benefit" id="subsidyDetailBenefit"></p>
+
+    <div class="subsidy-checklist" id="subsidyDetailChecklist">
+      <p class="subsidy-checklist-title"><i class="ph-duotone ph-list-checks"></i>지원 자격 셀프 체크</p>
+      <div class="subsidy-checklist-rows" id="subsidyChecklistRows"></div>
+    </div>
+
+    <div class="subsidy-detail-actionbar">
+      <button type="button" class="subsidy-remind-btn-v2" id="subsidyDetailRemindBtn">
+        <i class="ph-duotone ph-bell"></i><span id="subsidyDetailRemindText">마감 알림</span>
+      </button>
+      <a class="subsidy-apply-btn-v2" id="subsidyDetailApplyLink" target="_blank" rel="noopener noreferrer">
+        신청 페이지로 이동<i class="ph-duotone ph-arrow-square-out"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- 알림 권한 동의 유도 배너(soft-ask) — 브라우저 표준 권한 팝업을 띄우기 전에
      먼저 맥락을 설명해서, 사용자가 무심코 "차단"을 눌러 되돌릴 수 없게 되는 걸 방지한다 -->
 <div class="push-softask" id="pushSoftAsk" hidden>
@@ -4614,6 +4778,7 @@
     if (view === "taxpilot") loadFrame("taxpilot");
     if (view === "finpilot") showFinpilotGrid();
     if (view === "market" && typeof initMarketDashboard === "function") initMarketDashboard();
+    if (view === "subsidy" && typeof initSubsidyView === "function") initSubsidyView();
 
     setChromeHeight();
     appMain.scrollTop = 0;
@@ -5481,6 +5646,353 @@
     });
   })();
 
+  // ---------- 맞춤형 정부지원금 조회 및 필터링 ----------
+  var SUPPORT_CATEGORY_META = {
+    "housing": { label: "주거",      color: "#059669", bg: "rgba(5,150,105,0.10)" },
+    "finance": { label: "금융/자산", color: "#6366f1", bg: "rgba(99,102,241,0.10)" },
+    "job":     { label: "일자리",    color: "#3182f6", bg: "rgba(49,130,246,0.10)" },
+    "life":    { label: "생활/복지", color: "#db2777", bg: "rgba(219,39,119,0.10)" }
+  };
+
+  // Step1 단계 더미 데이터 — 추후 관리자 페이지(#admin-calendar 형태)와 공공데이터포털 연동으로 대체 예정
+  var SUPPORT_PROGRAMS = [
+    {
+      id: "sp001", title: "청년월세 특별지원", category: "housing",
+      summary: "무주택 청년 1인 가구에게 월세를 최대 20만원씩 지원해요.",
+      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
+      benefits: "월 최대 20만원씩 12개월간 지원 (최대 240만원)",
+      startDate: "2026-01-01", endDate: "2026-08-31",
+      applyUrl: "https://www.bokjiro.go.kr",
+      checklist: ["만 19~34세 무주택 청년인가요?", "부모와 별도로 거주하며 임차료를 납부하고 있나요?", "기준 중위소득 60% 이하 가구인가요?"]
+    },
+    {
+      id: "sp002", title: "서울시 청년 월세 지원", category: "housing",
+      summary: "서울 거주 청년에게 월세를 10개월간 지원하는 서울시 자체 사업이에요.",
+      targetAge: { min: 19, max: 39 }, targetRegions: ["서울특별시"],
+      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
+      benefits: "월 20만원씩 10개월간 지원 (최대 200만원)",
+      startDate: "2026-07-01", endDate: "2026-07-31",
+      applyUrl: "https://youth.seoul.go.kr",
+      checklist: ["서울시에 거주하는 만 19~39세인가요?", "임차보증금 5천만원 이하, 월세 60만원 이하 주택에 거주 중인가요?"]
+    },
+    {
+      id: "sp003", title: "청년 버팀목 전세자금대출", category: "housing",
+      summary: "저금리로 전세 보증금을 빌려주는 청년 전용 대출 상품이에요.",
+      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자", "취준생", "프리랜서", "대학생", "무직"],
+      benefits: "최대 2억원, 연 1.8~2.7% 금리로 전세자금 대출",
+      startDate: "2026-01-01", endDate: "2026-12-31",
+      applyUrl: "https://nhuf.molit.go.kr",
+      checklist: ["세대주(예정자)이며 무주택자인가요?", "부부합산 연소득 5천만원 이하인가요?"]
+    },
+    {
+      id: "sp004", title: "청년도약계좌", category: "finance",
+      summary: "매달 저축하면 정부기여금을 더해 목돈 마련을 도와주는 정책형 적금이에요.",
+      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자", "자영업자", "프리랜서"],
+      benefits: "5년 만기 시 정부기여금 포함 최대 5,000만원 마련",
+      startDate: "2026-06-01", endDate: "2026-12-31",
+      applyUrl: "https://kinfa.or.kr",
+      checklist: ["개인소득 7,500만원 이하인가요?", "가구소득 기준 중위소득 180% 이하인가요?"]
+    },
+    {
+      id: "sp005", title: "청년 내일저축계좌", category: "finance",
+      summary: "일하는 저소득 청년의 자산 형성을 지원하는 매칭 적금이에요.",
+      targetAge: { min: 19, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자"],
+      benefits: "매월 10만원 저축 시 정부가 최대 30만원 추가 적립",
+      startDate: "2026-07-01", endDate: "2026-08-05",
+      applyUrl: "https://www.bokjiro.go.kr",
+      checklist: ["근로·사업소득이 있는 만 19~34세인가요?", "가구 기준 중위소득 100% 이하인가요?"]
+    },
+    {
+      id: "sp006", title: "국민내일배움카드", category: "job",
+      summary: "직무 훈련·자격증 취득 비용을 지원해서 취업 역량을 키워줘요.",
+      targetAge: { min: 15, max: 65 }, targetRegions: ["전국"],
+      targetEmployment: ["취준생", "재직자", "자영업자", "무직"],
+      benefits: "5년간 최대 500만원 훈련비 지원 (자기부담률 별도)",
+      startDate: "2026-01-01", endDate: "2026-12-31",
+      applyUrl: "https://www.hrd.go.kr",
+      checklist: ["구직등록을 완료했거나 재직 중인가요?", "최근 5년 내 동일 과정을 수강한 적이 없나요?"]
+    },
+    {
+      id: "sp007", title: "청년구직활동지원금", category: "job",
+      summary: "구직 활동 중인 청년에게 활동비를 매달 지원해요.",
+      targetAge: { min: 18, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["취준생"],
+      benefits: "월 50만원씩 최대 6개월 지원",
+      startDate: "2026-07-01", endDate: "2026-08-10",
+      applyUrl: "https://www.work.go.kr",
+      checklist: ["졸업(수료) 후 2년 이내인가요?", "가구소득 기준 중위소득 120% 이하인가요?"]
+    },
+    {
+      id: "sp008", title: "청년일자리도약장려금", category: "job",
+      summary: "취업 취약 청년을 정규직으로 채용을 유도하는 인센티브 연계 사업이에요.",
+      targetAge: { min: 18, max: 34 }, targetRegions: ["전국"],
+      targetEmployment: ["취준생"],
+      benefits: "정규직 채용·근속 시 최대 480만원 장려금 연계 지원",
+      startDate: "2026-01-01", endDate: "2026-06-30",
+      applyUrl: "https://www.work.go.kr",
+      checklist: ["6개월 이상 미취업 상태였나요?", "취업 후 정규직으로 6개월 이상 근속 예정인가요?"]
+    },
+    {
+      id: "sp009", title: "문화누리카드", category: "life",
+      summary: "기초생활수급자·차상위계층에게 문화·여행·체육 이용권을 지원해요.",
+      targetAge: { min: 6, max: 99 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자", "자영업자", "프리랜서", "취준생", "대학생", "무직"],
+      benefits: "1인당 13만원 문화예술·여행·체육활동 바우처 지급",
+      startDate: "2026-02-01", endDate: "2026-11-30",
+      applyUrl: "https://www.mnuri.kr",
+      checklist: ["기초생활수급자 또는 차상위계층에 해당하나요?", "만 6세 이상인가요?"]
+    },
+    {
+      id: "sp010", title: "에너지바우처", category: "life",
+      summary: "여름·겨울철 냉난방 에너지 요금 부담을 덜어주는 바우처예요.",
+      targetAge: { min: 0, max: 99 }, targetRegions: ["전국"],
+      targetEmployment: ["재직자", "자영업자", "프리랜서", "취준생", "대학생", "무직"],
+      benefits: "하절기·동절기 에너지 요금 최대 60만원 상당 지원",
+      startDate: "2026-05-01", endDate: "2026-09-30",
+      applyUrl: "https://www.energyv.or.kr",
+      checklist: ["기초생활수급자(생계·의료급여) 가구인가요?", "노인·영유아·장애인 등 에너지 취약계층이 가구원으로 있나요?"]
+    }
+  ];
+
+  var DEFAULT_SUBSIDY_FILTER = { age: null, region: "", employment: "" };
+  var subsidyUserFilter = null;
+  var subsidySortMode = "deadline";
+
+  function loadSubsidyFilter(){
+    if (subsidyUserFilter) return subsidyUserFilter;
+    var stored = null;
+    try { stored = JSON.parse(localStorage.getItem("subsidyUserFilter") || "null"); } catch(e) {}
+    subsidyUserFilter = Object.assign({}, DEFAULT_SUBSIDY_FILTER, stored || {});
+    return subsidyUserFilter;
+  }
+  function saveSubsidyFilter(filter){
+    subsidyUserFilter = filter;
+    try { localStorage.setItem("subsidyUserFilter", JSON.stringify(filter)); } catch(e) {}
+    if (authState.isLoggedIn && firebaseAuth.currentUser) {
+      db.collection("users").doc(firebaseAuth.currentUser.uid).set({ subsidyFilter: filter }, { merge: true });
+    }
+  }
+
+  function getSubsidyDday(endDateStr, todayStr){
+    var end = new Date(endDateStr + "T00:00:00");
+    var today = new Date(todayStr + "T00:00:00");
+    var diffDays = Math.round((end - today) / 86400000);
+    if (diffDays < 0) return { label: "마감", closed: true, days: diffDays };
+    if (diffDays === 0) return { label: "D-DAY", closed: false, days: 0 };
+    return { label: "D-" + diffDays, closed: false, days: diffDays };
+  }
+
+  function isSubsidyMatch(program, filter){
+    if (filter.age !== null && filter.age !== "" && !isNaN(Number(filter.age))) {
+      var age = Number(filter.age);
+      if (age < program.targetAge.min || age > program.targetAge.max) return false;
+    }
+    if (filter.region && program.targetRegions.indexOf("전국") === -1 && program.targetRegions.indexOf(filter.region) === -1) {
+      return false;
+    }
+    if (filter.employment && program.targetEmployment.indexOf(filter.employment) === -1) {
+      return false;
+    }
+    return true;
+  }
+
+  function sortSubsidyList(list, todayStr){
+    var sorted = list.slice();
+    if (subsidySortMode === "latest") {
+      sorted.sort(function(a, b){ return a.startDate < b.startDate ? 1 : (a.startDate > b.startDate ? -1 : 0); });
+    } else {
+      sorted.sort(function(a, b){
+        var da = getSubsidyDday(a.endDate, todayStr);
+        var dbb = getSubsidyDday(b.endDate, todayStr);
+        if (da.closed !== dbb.closed) return da.closed ? 1 : -1;
+        return da.days - dbb.days;
+      });
+    }
+    return sorted;
+  }
+
+  function renderSubsidyFilterChips(){
+    var filter = loadSubsidyFilter();
+    document.getElementById("subsidyFilterAgeText").textContent = filter.age ? (filter.age + "세") : "나이";
+    document.getElementById("subsidyFilterRegionText").textContent = filter.region || "지역";
+    document.getElementById("subsidyFilterJobText").textContent = filter.employment || "직업";
+    document.getElementById("subsidyFilterAgeChip").classList.toggle("is-set", !!filter.age);
+    document.getElementById("subsidyFilterRegionChip").classList.toggle("is-set", !!filter.region);
+    document.getElementById("subsidyFilterJobChip").classList.toggle("is-set", !!filter.employment);
+  }
+
+  function renderSubsidyList(){
+    var filter = loadSubsidyFilter();
+    var todayStr = formatDateYMD(new Date());
+    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){ return isSubsidyMatch(p, filter); }), todayStr);
+
+    var listEl = document.getElementById("subsidyCardList");
+    var emptyEl = document.getElementById("subsidyEmptyMsg");
+    var countEl = document.getElementById("subsidyResultCount");
+    if (!listEl || !emptyEl || !countEl) return;
+    countEl.textContent = matched.length + "개의 지원금";
+
+    if (!matched.length) {
+      listEl.innerHTML = "";
+      emptyEl.hidden = false;
+      return;
+    }
+    emptyEl.hidden = true;
+
+    listEl.innerHTML = matched.map(function(p){
+      var catMeta = SUPPORT_CATEGORY_META[p.category] || { label: p.category, color: "#6366f1", bg: "rgba(99,102,241,0.10)" };
+      var dday = getSubsidyDday(p.endDate, todayStr);
+      var ddayClass = dday.closed ? "is-closed" : (dday.days <= 7 ? "is-urgent" : "");
+      return '<div class="subsidy-card" data-id="' + p.id + '">' +
+        '<div class="subsidy-card-top">' +
+          '<span class="subsidy-card-cat" style="color:' + catMeta.color + ';background:' + catMeta.bg + ';">' + catMeta.label + '</span>' +
+          '<span class="subsidy-card-dday ' + ddayClass + '">' + dday.label + '</span>' +
+        '</div>' +
+        '<h3 class="subsidy-card-title">' + escapeMyPageHtml(p.title) + '</h3>' +
+        '<p class="subsidy-card-summary">' + escapeMyPageHtml(p.summary) + '</p>' +
+      '</div>';
+    }).join("");
+
+    listEl.querySelectorAll(".subsidy-card").forEach(function(card){
+      card.addEventListener("click", function(){
+        var id = card.getAttribute("data-id");
+        var program = SUPPORT_PROGRAMS.filter(function(p){ return p.id === id; })[0];
+        if (program) openSubsidyDetail(program);
+      });
+    });
+  }
+
+  function openSubsidyDetail(program){
+    var catMeta = SUPPORT_CATEGORY_META[program.category] || { label: program.category, color: "#6366f1", bg: "rgba(99,102,241,0.10)" };
+    var catEl = document.getElementById("subsidyDetailCat");
+    catEl.textContent = catMeta.label;
+    catEl.style.color = catMeta.color;
+    catEl.style.background = catMeta.bg;
+
+    document.getElementById("subsidyDetailTitle").textContent = program.title;
+    document.getElementById("subsidyDetailPeriod").textContent = "신청기간 " + program.startDate + " ~ " + program.endDate;
+    document.getElementById("subsidyDetailBenefit").textContent = program.benefits;
+
+    var rowsEl = document.getElementById("subsidyChecklistRows");
+    var checklist = program.checklist || [];
+    rowsEl.innerHTML = checklist.map(function(item, idx){
+      return '<label class="subsidy-checklist-row" data-idx="' + idx + '">' +
+        '<input type="checkbox">' +
+        '<span>' + escapeMyPageHtml(item) + '</span>' +
+      '</label>';
+    }).join("");
+    rowsEl.querySelectorAll(".subsidy-checklist-row").forEach(function(row){
+      var checkbox = row.querySelector("input");
+      checkbox.addEventListener("change", function(){
+        row.classList.toggle("is-checked", checkbox.checked);
+      });
+    });
+
+    var applyLink = document.getElementById("subsidyDetailApplyLink");
+    applyLink.href = program.applyUrl || "#";
+
+    var remindBtn = document.getElementById("subsidyDetailRemindBtn");
+    var remindText = document.getElementById("subsidyDetailRemindText");
+    var currentUser = firebaseAuth.currentUser;
+    var reminderId = "sp_" + program.id;
+    if (!currentUser) {
+      remindBtn.classList.remove("is-on");
+      remindText.textContent = "마감 알림";
+      remindBtn.onclick = function(){ showToast("로그인 후 알림을 켤 수 있어요", "ph-lock-simple"); };
+    } else {
+      var reminderRef = db.collection("users").doc(currentUser.uid).collection("eventReminders").doc(reminderId);
+      reminderRef.get().then(function(docSnap){
+        var isOn = docSnap.exists;
+        remindBtn.classList.toggle("is-on", isOn);
+        remindText.textContent = isOn ? "알림 취소" : "마감 알림";
+        remindBtn.onclick = function(){
+          if (isOn) {
+            reminderRef.delete().then(function(){ openSubsidyDetail(program); });
+          } else {
+            reminderRef.set({
+              eventId: reminderId,
+              eventTitle: program.title,
+              eventMeta: "지원금 마감 알림",
+              eventDate: program.endDate,
+              createdAt: new Date()
+            }).then(function(){
+              openSubsidyDetail(program);
+              showToast("마감 알림을 켰어요 (D-1, D-Day 오전에 발송)", "ph-bell-ringing");
+            });
+          }
+        };
+      });
+    }
+
+    document.getElementById("subsidyDetailOverlay").hidden = false;
+  }
+  function closeSubsidyDetail(){
+    document.getElementById("subsidyDetailOverlay").hidden = true;
+  }
+
+  function openSubsidyFilterModal(){
+    var filter = loadSubsidyFilter();
+    document.getElementById("subsidyFilterAgeInput").value = filter.age || "";
+    document.getElementById("subsidyFilterRegionInput").value = filter.region || "";
+    document.getElementById("subsidyFilterJobInput").value = filter.employment || "";
+    document.getElementById("subsidyFilterOverlay").hidden = false;
+  }
+  function closeSubsidyFilterModal(){
+    document.getElementById("subsidyFilterOverlay").hidden = true;
+  }
+
+  function initSubsidyView(){
+    renderSubsidyFilterChips();
+    renderSubsidyList();
+  }
+
+  (function initSubsidyFeature(){
+    var ageChip = document.getElementById("subsidyFilterAgeChip");
+    var regionChip = document.getElementById("subsidyFilterRegionChip");
+    var jobChip = document.getElementById("subsidyFilterJobChip");
+    var filterOverlay = document.getElementById("subsidyFilterOverlay");
+    var filterCloseBtn = document.getElementById("subsidyFilterCloseBtn");
+    var filterSaveBtn = document.getElementById("subsidyFilterSaveBtn");
+    var detailOverlay = document.getElementById("subsidyDetailOverlay");
+    var detailCloseBtn = document.getElementById("subsidyDetailCloseBtn");
+    var sortTabs = document.querySelectorAll(".subsidy-sort-tab");
+    if (!ageChip || !filterOverlay || !detailOverlay) return;
+
+    [ageChip, regionChip, jobChip].forEach(function(chip){
+      chip.addEventListener("click", openSubsidyFilterModal);
+    });
+    filterCloseBtn.addEventListener("click", closeSubsidyFilterModal);
+    filterOverlay.addEventListener("click", function(e){ if (e.target === filterOverlay) closeSubsidyFilterModal(); });
+    filterSaveBtn.addEventListener("click", function(){
+      var ageVal = document.getElementById("subsidyFilterAgeInput").value;
+      var filter = {
+        age: ageVal !== "" ? Number(ageVal) : null,
+        region: document.getElementById("subsidyFilterRegionInput").value,
+        employment: document.getElementById("subsidyFilterJobInput").value
+      };
+      saveSubsidyFilter(filter);
+      closeSubsidyFilterModal();
+      renderSubsidyFilterChips();
+      renderSubsidyList();
+      showToast("조건을 적용했어요", "ph-check-circle");
+    });
+
+    detailCloseBtn.addEventListener("click", closeSubsidyDetail);
+    detailOverlay.addEventListener("click", function(e){ if (e.target === detailOverlay) closeSubsidyDetail(); });
+
+    sortTabs.forEach(function(tab){
+      tab.addEventListener("click", function(){
+        subsidySortMode = tab.getAttribute("data-sort");
+        sortTabs.forEach(function(t){ t.classList.toggle("is-active", t === tab); });
+        renderSubsidyList();
+      });
+    });
+  })();
+
   function changeCalendarMonth(delta){
     calendarViewMonth += delta;
     if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear -= 1; }
@@ -5597,6 +6109,15 @@
         // 사용자가 마이페이지에서 닉네임을 직접 바꿔둔 적이 있으면 구글 계정 이름 대신 그걸 우선한다
         if (typeof data.nickname === "string" && data.nickname.trim()) {
           authState.userProfile.name = data.nickname.trim();
+        }
+        // 다른 기기에서 저장해둔 정부지원금 조회 조건(나이/지역/직업)이 있으면 이 기기에도 동기화
+        if (data.subsidyFilter && typeof data.subsidyFilter === "object") {
+          subsidyUserFilter = Object.assign({}, DEFAULT_SUBSIDY_FILTER, data.subsidyFilter);
+          try { localStorage.setItem("subsidyUserFilter", JSON.stringify(subsidyUserFilter)); } catch(e) {}
+          if (typeof renderSubsidyFilterChips === "function" && document.getElementById("view-subsidy") && document.getElementById("view-subsidy").classList.contains("active")) {
+            renderSubsidyFilterChips();
+            renderSubsidyList();
+          }
         }
         syncAuthUI();
       } else {
