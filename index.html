@@ -3298,6 +3298,14 @@
   }
   .subsidy-filter-chip.is-set{border-color:var(--brand);color:var(--brand);background:rgba(99,102,241,0.08);}
   .subsidy-filter-chip i{font-size:15px;}
+  .subsidy-filter-reset-btn{
+    display:flex;align-items:center;gap:5px;
+    padding:9px 12px;border-radius:999px;border:none;
+    background:transparent;color:var(--ink-3);font-size:12.5px;font-weight:700;
+    cursor:pointer;font-family:inherit;
+  }
+  .subsidy-filter-reset-btn:hover{color:var(--ink-1);}
+  .subsidy-filter-reset-btn i{font-size:15px;}
 
   .subsidy-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
   .subsidy-result-count{font-size:12.5px;font-weight:700;color:var(--ink-3);}
@@ -3440,7 +3448,7 @@
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-target"></i></span>목표자산 파일럿 (시뮬레이터)
         </a>
         <a class="sidebar-item" href="#subsidy" data-view="subsidy">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부·지자체 지원금
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부 지원금
         </a>
         <a class="sidebar-item" href="#calendar" data-view="calendar">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
@@ -3536,7 +3544,7 @@
         <i class="ph-duotone ph-target"></i>목표자산 파일럿
       </a>
       <a class="tab-btn" href="#subsidy" data-view="subsidy">
-        <i class="ph-duotone ph-gift"></i>정부·지자체 지원금
+        <i class="ph-duotone ph-gift"></i>정부 지원금
       </a>
       <a class="tab-btn" href="#calendar" data-view="calendar">
         <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
@@ -4294,7 +4302,7 @@
 
 <main class="wrap app-view" id="view-subsidy">
   <div class="subsidy-head">
-    <p class="mypage-eyebrow">정부·지자체 지원금</p>
+    <p class="mypage-eyebrow">정부 지원금</p>
     <h2>나에게 맞는 지원금 찾기</h2>
     <p>내 조건을 설정하면 나에게 맞는 지원금만 골라서 보여드려요.</p>
   </div>
@@ -4308,6 +4316,9 @@
     </button>
     <button type="button" class="subsidy-filter-chip" id="subsidyFilterJobChip">
       <i class="ph-duotone ph-briefcase"></i><span id="subsidyFilterJobText">직업</span>
+    </button>
+    <button type="button" class="subsidy-filter-reset-btn" id="subsidyFilterResetBtn">
+      <i class="ph-duotone ph-arrow-counter-clockwise"></i>초기화
     </button>
   </div>
 
@@ -5936,12 +5947,21 @@
     var filterSaveBtn = document.getElementById("subsidyFilterSaveBtn");
     var detailOverlay = document.getElementById("subsidyDetailOverlay");
     var detailCloseBtn = document.getElementById("subsidyDetailCloseBtn");
+    var resetBtn = document.getElementById("subsidyFilterResetBtn");
     var sortTabs = document.querySelectorAll(".subsidy-sort-tab");
     if (!ageChip || !filterOverlay || !detailOverlay) return;
 
     [ageChip, regionChip, jobChip].forEach(function(chip){
       chip.addEventListener("click", openSubsidyFilterModal);
     });
+    if (resetBtn) {
+      resetBtn.addEventListener("click", function(){
+        saveSubsidyFilter(Object.assign({}, DEFAULT_SUBSIDY_FILTER));
+        renderSubsidyFilterChips();
+        renderSubsidyList();
+        showToast("조건을 초기화했어요", "ph-arrow-counter-clockwise");
+      });
+    }
     filterCloseBtn.addEventListener("click", closeSubsidyFilterModal);
     filterOverlay.addEventListener("click", function(e){ if (e.target === filterOverlay) closeSubsidyFilterModal(); });
     filterSaveBtn.addEventListener("click", function(){
