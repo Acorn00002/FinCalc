@@ -356,6 +356,35 @@
   .push-softask-btn.secondary{background:var(--card-soft);color:var(--ink-2);}
   .push-softask-btn.primary{background:var(--brand);color:#fff;}
 
+  /* 최초 로그인 닉네임 설정 모달 */
+  .nickname-setup-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:260;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .nickname-setup-overlay[hidden]{display:none;}
+  .nickname-setup-modal{
+    width:100%;max-width:360px;background:var(--card);border-radius:20px;
+    padding:28px 24px;text-align:center;
+    animation:pushSoftAskIn .25s ease both;
+  }
+  .nickname-setup-icon{
+    display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
+    width:52px;height:52px;border-radius:50%;background:var(--brand-soft);color:var(--brand);
+    font-size:26px;--ph-duotone-secondary-opacity:0.16;
+  }
+  .nickname-setup-modal h3{margin:0 0 8px;font-size:16px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;line-height:1.4;}
+  .nickname-setup-desc{margin:0 0 18px;font-size:12.5px;font-weight:500;color:var(--ink-2);line-height:1.5;}
+  .nickname-setup-input{
+    width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;
+    padding:13px 14px;font-size:14px;font-weight:700;color:var(--ink-1);text-align:center;
+    background:var(--bg);font-family:inherit;margin-bottom:14px;
+  }
+  .nickname-setup-input:focus{outline:none;border-color:var(--brand);}
+  .nickname-setup-confirm-btn{
+    width:100%;background:var(--brand);color:#fff;border:none;border-radius:12px;
+    padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+
   .cta-pill{
     display:flex;
     align-items:center;
@@ -4290,6 +4319,19 @@
   </div>
 </div>
 
+<!-- 최초 구글 로그인 직후 1회 노출되는 닉네임 설정 모달 — 구글 계정 이름이 기본값으로 채워져 있어
+     그대로 확인만 눌러도 되고, 원하면 바로 바꿀 수도 있다. 마이페이지의 연필 아이콘 편집과 같은
+     users/{uid}.nickname 필드를 공유한다. -->
+<div class="nickname-setup-overlay" id="nicknameSetupOverlay" hidden>
+  <div class="nickname-setup-modal" role="dialog" aria-modal="true" aria-labelledby="nicknameSetupTitle">
+    <span class="nickname-setup-icon"><i class="ph-duotone ph-smiley"></i></span>
+    <h3 id="nicknameSetupTitle">자산 파일럿에서 쓸 닉네임을 정해주세요</h3>
+    <p class="nickname-setup-desc">라운지 게시글·댓글에 이 닉네임으로 표시돼요. 마이페이지에서 언제든 다시 바꿀 수 있어요.</p>
+    <input type="text" class="nickname-setup-input" id="nicknameSetupInput" maxlength="20" placeholder="닉네임">
+    <button type="button" class="nickname-setup-confirm-btn" id="nicknameSetupConfirmBtn">시작하기</button>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -5143,6 +5185,10 @@
           console.error("사용자 문서 초기화 실패:", error);
         });
         // set() 완료 후 이 onSnapshot이 exists:true로 다시 호출되어 위 분기에서 자연스럽게 반영됨
+        var newUser = firebaseAuth.currentUser;
+        if (typeof promptNicknameSetup === "function") {
+          promptNicknameSetup((newUser && newUser.displayName) || DEFAULT_USER_PROFILE.name, uid);
+        }
       }
     }, function(error){
       console.error("사용자 포인트 실시간 구독 실패:", error);
@@ -5623,6 +5669,33 @@
       });
     });
   })();
+
+  // ---------- 최초 로그인 닉네임 설정 모달 ----------
+  // subscribeToUserDoc()이 첫 로그인(신규 사용자 문서 생성)을 감지했을 때만 호출된다.
+  // 마이페이지 연필 아이콘 편집과 같은 users/{uid}.nickname 필드를 그대로 재사용한다.
+  function promptNicknameSetup(defaultName, uid){
+    var overlay = document.getElementById("nicknameSetupOverlay");
+    var input = document.getElementById("nicknameSetupInput");
+    var confirmBtn = document.getElementById("nicknameSetupConfirmBtn");
+    if (!overlay || !input || !confirmBtn) return;
+
+    input.value = defaultName;
+    overlay.hidden = false;
+    setTimeout(function(){ input.focus(); input.select(); }, 50);
+
+    function confirm(){
+      var newName = input.value.trim().slice(0, 20) || defaultName;
+      overlay.hidden = true;
+      db.collection("users").doc(uid).set({ nickname: newName }, { merge: true }).catch(function(error){
+        console.error("최초 닉네임 저장 실패:", error);
+      });
+    }
+
+    confirmBtn.onclick = confirm;
+    input.onkeydown = function(e){
+      if (e.key === "Enter") confirm();
+    };
+  }
 
   // ---------- 닉네임 변경 (마이페이지) ----------
   // 구글 계정 이름을 users/{uid} 문서의 nickname 필드로 덮어써서 저장한다.
