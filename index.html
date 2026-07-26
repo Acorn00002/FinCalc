@@ -3034,29 +3034,6 @@
   .mypage-progress-track{height:8px;background:rgba(255,255,255,0.7);border-radius:999px;overflow:hidden;}
   .mypage-progress-fill{height:100%;background:var(--brand);border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1);}
 
-  /* 포인트를 쓸 수 있는 포인트 숍으로 바로 이동하는 가로폭 꽉 찬 배너형 CTA */
-  .mypage-shop-banner-btn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    width:100%;
-    margin-top:20px;
-    padding:15px 16px;
-    border:none;
-    border-radius:14px;
-    background:var(--brand);
-    color:#fff;
-    font-size:14px;
-    font-weight:800;
-    letter-spacing:-0.02em;
-    cursor:pointer;
-    transition:background .15s ease, transform .15s ease;
-  }
-  .mypage-shop-banner-btn:hover{background:#4f46e5;}
-  .mypage-shop-banner-btn:active{transform:scale(0.98);}
-  .mypage-shop-banner-btn i{font-size:15px;color:#fff;--ph-duotone-secondary-color:#fff;--ph-duotone-secondary-opacity:0.5;}
-
   .mypage-section-title{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
 
   /* 관리자 푸시 발송 폼 */
@@ -3105,22 +3082,6 @@
     .theme-option-label span{display:none;}
   }
 
-  .mypage-shop-grid{display:grid;grid-template-columns:1fr;gap:12px;}
-  @media (min-width:560px){ .mypage-shop-grid{grid-template-columns:repeat(3,1fr);} }
-  .mypage-shop-card{
-    background:var(--card);border-radius:var(--radius-md);padding:18px;text-align:center;
-    box-shadow:var(--shadow-card);cursor:pointer;transition:box-shadow .15s ease, transform .15s ease, opacity .15s ease;
-    border:none;font-family:inherit;
-  }
-  .mypage-shop-card:hover:not(:disabled){box-shadow:var(--shadow-card-hover);transform:translateY(-1px);}
-  .mypage-shop-card:disabled{opacity:0.55;cursor:default;}
-  .mypage-shop-icon{
-    width:44px;height:44px;margin:0 auto 12px;border-radius:14px;background:var(--brand-soft);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .mypage-shop-icon i{font-size:21px;color:var(--brand);}
-  .mypage-shop-name{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--ink-1);line-height:1.4;}
-  .mypage-shop-price{margin:0;font-size:13px;font-weight:800;color:var(--brand);}
 
   .mypage-history-list{
     background:var(--card);border-radius:var(--radius-lg);padding:6px 20px;box-shadow:var(--shadow-card);
@@ -3999,15 +3960,6 @@
         <span id="mypageProgressPct">0%</span>
       </div>
       <div class="mypage-progress-track"><div class="mypage-progress-fill" id="mypageProgressFill"></div></div>
-      <button type="button" class="mypage-shop-banner-btn" id="mypageShopBannerBtn">
-        <span>포인트 숍 바로가기</span>
-        <i class="ph-duotone ph-arrow-right"></i>
-      </button>
-    </div>
-
-    <div class="mypage-section">
-      <h3 class="mypage-section-title">포인트 사용처</h3>
-      <div class="mypage-shop-grid" id="mypageShopGrid"></div>
     </div>
 
     <div class="mypage-section">
@@ -5597,32 +5549,6 @@
       .replace(/'/g, "&#39;");
   }
 
-  function renderMyPageShopGrid(){
-    var grid = document.getElementById("mypageShopGrid");
-    if (!grid) return;
-
-    grid.innerHTML = REWARD_PRODUCTS.map(function(p){
-      var affordable = authState.userPoints >= p.price;
-      return '' +
-        '<button type="button" class="mypage-shop-card" data-product-id="' + p.id + '"' + (affordable ? '' : ' disabled') + '>' +
-          '<span class="mypage-shop-icon"><i class="ph-duotone ' + p.icon + '"></i></span>' +
-          '<p class="mypage-shop-name">' + escapeMyPageHtml(p.name) + '</p>' +
-          '<p class="mypage-shop-price">' + p.price.toLocaleString("ko-KR") + ' P</p>' +
-        '</button>';
-    }).join("");
-
-    grid.querySelectorAll(".mypage-shop-card").forEach(function(card){
-      card.addEventListener("click", function(){
-        if (card.disabled) return;
-        card.disabled = true;
-        purchaseRewardProduct(card.dataset.productId, function(success){
-          if (success) renderMyPageShopGrid();
-          else card.disabled = false;
-        });
-      });
-    });
-  }
-
   function renderMyPageHistory(){
     var list = document.getElementById("mypageHistoryList");
     if (!list) return;
@@ -5671,7 +5597,6 @@
     document.getElementById("mypageProgressPct").textContent = pct + "%";
     document.getElementById("mypageProgressFill").style.width = pct + "%";
 
-    renderMyPageShopGrid();
     renderMyPageHistory();
   }
 
@@ -5679,8 +5604,6 @@
   if (mypageLoginBtn) mypageLoginBtn.addEventListener("click", handleGoogleLogin);
   var mypageLogoutBtn = document.getElementById("mypageLogoutBtn");
   if (mypageLogoutBtn) mypageLogoutBtn.addEventListener("click", handleGoogleLogout);
-  var mypageShopBannerBtn = document.getElementById("mypageShopBannerBtn");
-  if (mypageShopBannerBtn) mypageShopBannerBtn.addEventListener("click", openRewardShop);
 
   // ---------- 화면 테마 설정 (마이페이지) ----------
   // 실제 적용/저장 로직은 <head>의 조기 실행 스크립트(window.setThemePreference)가 전담하고,
