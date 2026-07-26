@@ -3307,6 +3307,18 @@
   .subsidy-filter-reset-btn:hover{color:var(--ink-1);}
   .subsidy-filter-reset-btn i{font-size:15px;}
 
+  .subsidy-category-pills{
+    display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;
+    margin-bottom:14px;padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .subsidy-category-pills::-webkit-scrollbar{display:none;}
+  .subsidy-category-pill{
+    flex-shrink:0;padding:8px 14px;border-radius:999px;border:none;
+    font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;
+    white-space:nowrap;transition:background .15s ease, color .15s ease;
+  }
+
   .subsidy-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
   .subsidy-result-count{font-size:12.5px;font-weight:700;color:var(--ink-3);}
   .subsidy-sort-tabs{display:flex;gap:4px;background:var(--card-soft);border-radius:10px;padding:3px;}
@@ -4321,6 +4333,8 @@
       <i class="ph-duotone ph-arrow-counter-clockwise"></i>초기화
     </button>
   </div>
+
+  <div class="subsidy-category-pills" id="subsidyCategoryPills"></div>
 
   <div class="subsidy-toolbar">
     <span class="subsidy-result-count" id="subsidyResultCount"></span>
@@ -5705,6 +5719,33 @@
   var DEFAULT_SUBSIDY_FILTER = { age: null, region: "", employment: "" };
   var subsidyUserFilter = null;
   var subsidySortMode = "deadline";
+  var subsidyActiveCategory = "all";
+
+  function renderSubsidyCategoryPills(){
+    var wrap = document.getElementById("subsidyCategoryPills");
+    if (!wrap) return;
+    var options = [{ key: "all", label: "전체" }].concat(
+      Object.keys(SUPPORT_CATEGORY_META).map(function(key){ return { key: key, label: SUPPORT_CATEGORY_META[key].label }; })
+    );
+    wrap.innerHTML = options.map(function(opt){
+      var isActive = opt.key === subsidyActiveCategory;
+      var meta = SUPPORT_CATEGORY_META[opt.key];
+      var style;
+      if (opt.key === "all") {
+        style = isActive ? "background:var(--brand);color:#fff;" : "background:var(--card-soft);color:var(--ink-3);";
+      } else {
+        style = isActive ? "background:" + meta.color + ";color:#fff;" : "background:" + meta.bg + ";color:" + meta.color + ";";
+      }
+      return '<button type="button" class="subsidy-category-pill" data-cat="' + opt.key + '" style="' + style + '">' + opt.label + '</button>';
+    }).join("");
+    wrap.querySelectorAll(".subsidy-category-pill").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        subsidyActiveCategory = btn.getAttribute("data-cat");
+        renderSubsidyCategoryPills();
+        renderSubsidyList();
+      });
+    });
+  }
 
   function loadSubsidyFilter(){
     if (subsidyUserFilter) return subsidyUserFilter;
@@ -5810,7 +5851,9 @@
 
     var filter = loadSubsidyFilter();
     var todayStr = formatDateYMD(new Date());
-    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){ return isSubsidyMatch(p, filter); }), todayStr);
+    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){
+      return (subsidyActiveCategory === "all" || p.category === subsidyActiveCategory) && isSubsidyMatch(p, filter);
+    }), todayStr);
 
     countEl.textContent = matched.length + "개의 지원금";
 
@@ -5932,6 +5975,7 @@
 
   function initSubsidyView(){
     renderSubsidyFilterChips();
+    renderSubsidyCategoryPills();
     renderSubsidyList();
     if (!subsidyProgramsLoaded && !SUPPORT_PROGRAMS.length) {
       loadSupportProgramsFromFirestore();
