@@ -94,6 +94,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 <script>
   // ==================================================
   // 🔥 Firebase 프로젝트 설정 (Firebase Console > 프로젝트 설정 > 일반 > 내 앱 > SDK 설정 및 구성 에서 확인)
@@ -274,6 +275,7 @@
   .icon-btn-ghost i{font-size:19px;--ph-duotone-secondary-opacity:0;}
   .icon-btn-ghost:hover{background:var(--card-soft);}
   .notif-dot{
+    display:none;
     position:absolute;
     top:7px;right:7px;
     width:7px;height:7px;
@@ -281,6 +283,77 @@
     background:#f04452;
     border:1.5px solid var(--bg);
   }
+  .notif-dot.show{display:block;}
+
+  /* 알림함 모달 — 글쓰기 모달과 같은 오버레이 패턴, 다만 상단 정렬(알림은 목록형이라 위에서부터 채움) */
+  .notif-center-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:20px;z-index:230;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .notif-center-overlay.open{opacity:1;pointer-events:auto;}
+  .notif-center-modal{
+    width:100%;max-width:420px;max-height:80vh;overflow-y:auto;margin-top:64px;
+    background:var(--card);border-radius:20px;padding:20px;
+    transform:translateY(12px) scale(0.98);opacity:0;transition:transform .22s ease, opacity .22s ease;
+  }
+  .notif-center-overlay.open .notif-center-modal{transform:translateY(0) scale(1);opacity:1;}
+  .notif-center-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .notif-center-top h3{margin:0;font-size:16px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .notif-center-top-actions{display:flex;align-items:center;gap:10px;}
+  .notif-center-read-all-btn{border:none;background:none;color:var(--brand);font-size:12.5px;font-weight:700;cursor:pointer;padding:4px;}
+  .notif-center-close{
+    width:30px;height:30px;border-radius:9px;border:none;background:var(--bg);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .notif-center-close:hover{background:var(--line);}
+  .notif-center-list{display:flex;flex-direction:column;gap:4px;}
+  .notif-center-item{
+    display:flex;align-items:flex-start;gap:12px;padding:12px 8px;border-radius:12px;
+    cursor:pointer;transition:background .15s ease;
+  }
+  .notif-center-item:hover{background:var(--card-soft);}
+  .notif-center-item.is-unread{background:var(--brand-soft);}
+  .notif-center-icon{
+    width:36px;height:36px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card-soft);color:var(--brand);font-size:17px;
+    --ph-duotone-secondary-opacity:0.16;
+  }
+  .notif-center-body{flex:1;min-width:0;}
+  .notif-center-item-title{margin:0 0 2px;font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .notif-center-item-desc{margin:0;font-size:12.5px;font-weight:500;color:var(--ink-2);line-height:1.4;}
+  .notif-center-item-time{margin:4px 0 0;font-size:11px;font-weight:600;color:var(--ink-3);}
+  .notif-center-dismiss{
+    flex-shrink:0;width:22px;height:22px;border-radius:6px;border:none;background:transparent;
+    color:var(--ink-3);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .notif-center-dismiss:hover{background:var(--line);color:var(--ink-1);}
+  .notif-center-dismiss i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .notif-center-empty{padding:36px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-3);}
+
+  /* 알림 권한 soft-ask 배너 */
+  .push-softask{
+    position:fixed;left:16px;right:16px;bottom:16px;z-index:250;
+    max-width:420px;margin:0 auto;
+    background:var(--card);border-radius:18px;padding:16px;
+    box-shadow:0 12px 32px rgba(15,23,42,0.18);
+    display:flex;gap:12px;
+    animation:pushSoftAskIn .3s ease both;
+  }
+  @keyframes pushSoftAskIn{ 0%{opacity:0;transform:translateY(16px);} 100%{opacity:1;transform:translateY(0);} }
+  .push-softask-icon{
+    width:40px;height:40px;border-radius:50%;flex-shrink:0;
+    background:var(--brand-soft);color:var(--brand);
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+    --ph-duotone-secondary-opacity:0.16;
+  }
+  .push-softask-title{margin:0 0 4px;font-size:13.5px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .push-softask-desc{margin:0 0 12px;font-size:12px;font-weight:500;color:var(--ink-2);line-height:1.4;}
+  .push-softask-actions{display:flex;gap:8px;justify-content:flex-end;}
+  .push-softask-btn{border:none;border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .push-softask-btn.secondary{background:var(--card-soft);color:var(--ink-2);}
+  .push-softask-btn.primary{background:var(--brand);color:#fff;}
 
   .cta-pill{
     display:flex;
@@ -2986,6 +3059,23 @@
 
   .mypage-section-title{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
 
+  /* 관리자 푸시 발송 폼 */
+  .admin-push-label{display:block;margin:16px 0 6px;font-size:12.5px;font-weight:700;color:var(--ink-2);}
+  .admin-push-label:first-child{margin-top:0;}
+  .admin-push-input{
+    width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:13.5px;font-weight:600;color:var(--ink-1);
+    background:var(--card);font-family:inherit;
+  }
+  .admin-push-input:focus{outline:none;border-color:var(--brand);}
+  .admin-push-textarea{min-height:80px;resize:vertical;}
+  .admin-push-submit-btn{
+    margin-top:20px;width:100%;background:var(--brand);color:#fff;border:none;
+    border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;
+  }
+  .admin-push-submit-btn:disabled{opacity:0.6;cursor:default;}
+  .admin-push-result{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:pre-wrap;}
+
   .mypage-theme-section{margin-bottom:20px;}
   .theme-option-group{
     display:flex;
@@ -4057,6 +4147,36 @@
   </section>
 </main>
 
+<!-- 관리자 전용 푸시 발송 화면 — 메뉴에 노출되지 않고 주소창에 #admin-push로 직접 진입해야 함.
+     비밀값을 모르면 실제 발송(POST /api/send-push)이 서버에서 거부되므로, 화면 자체는 숨길 필요가 없다. -->
+<main class="wrap app-view" id="view-admin-push">
+  <div class="mypage-head">
+    <p class="mypage-eyebrow">관리자</p>
+    <h2>푸시 알림 발송</h2>
+    <p>발송 비밀값을 아는 사람만 실제로 발송할 수 있어요.</p>
+  </div>
+
+  <div class="mypage-section">
+    <label class="admin-push-label">비밀값</label>
+    <input type="password" class="admin-push-input" id="adminPushSecret" placeholder="SEND_PUSH_SECRET">
+
+    <label class="admin-push-label">제목</label>
+    <input type="text" class="admin-push-input" id="adminPushTitle" maxlength="60" placeholder="예: 한국은행 기준금리 발표">
+
+    <label class="admin-push-label">내용</label>
+    <textarea class="admin-push-input admin-push-textarea" id="adminPushBody" maxlength="200" placeholder="예: 방금 한국은행이 기준금리를 동결했어요. 캘린더에서 확인해보세요."></textarea>
+
+    <label class="admin-push-label">이동 링크 (선택, 예: calendar)</label>
+    <input type="text" class="admin-push-input" id="adminPushLink" placeholder="calendar / lounge / mypage 등">
+
+    <label class="admin-push-label">예약 발송 시각 (선택, 비워두면 즉시 발송)</label>
+    <input type="datetime-local" class="admin-push-input" id="adminPushSchedule">
+
+    <button type="button" class="admin-push-submit-btn" id="adminPushSubmitBtn">발송하기</button>
+    <p class="admin-push-result" id="adminPushResult"></p>
+  </div>
+</main>
+
 <main class="wrap app-view" id="view-market">
 
   <div class="market-head">
@@ -4187,11 +4307,41 @@
   </div>
 </div>
 
+<!-- 알림함 -->
+<div class="notif-center-overlay" id="notifCenterOverlay">
+  <div class="notif-center-modal" role="dialog" aria-modal="true" aria-labelledby="notifCenterTitle">
+    <div class="notif-center-top">
+      <h3 id="notifCenterTitle">알림</h3>
+      <div class="notif-center-top-actions">
+        <button type="button" class="notif-center-read-all-btn" id="notifCenterReadAllBtn">모두 읽음</button>
+        <button type="button" class="notif-center-close" id="notifCenterCloseBtn" aria-label="닫기">
+          <i class="ph-duotone ph-x"></i>
+        </button>
+      </div>
+    </div>
+    <div class="notif-center-list" id="notifCenterList"></div>
+  </div>
+</div>
+
+<!-- 알림 권한 동의 유도 배너(soft-ask) — 브라우저 표준 권한 팝업을 띄우기 전에
+     먼저 맥락을 설명해서, 사용자가 무심코 "차단"을 눌러 되돌릴 수 없게 되는 걸 방지한다 -->
+<div class="push-softask" id="pushSoftAsk" hidden>
+  <div class="push-softask-icon"><i class="ph-duotone ph-bell-ringing"></i></div>
+  <div class="push-softask-body">
+    <p class="push-softask-title">주요 금융 뉴스와 자산 일정 알림을 받으시겠어요?</p>
+    <p class="push-softask-desc">금리 발표, 배당락일 같은 중요한 소식을 놓치지 않게 알려드려요.</p>
+    <div class="push-softask-actions">
+      <button type="button" class="push-softask-btn secondary" id="pushSoftAskLaterBtn">나중에</button>
+      <button type="button" class="push-softask-btn primary" id="pushSoftAskAllowBtn">허용</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
 
-  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "subsidy", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq"];
+  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "subsidy", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq", "admin-push"];
   // 사이드바 ↔ 상단 메뉴바 드롭다운 항목까지 전부 포함해, data-view가 일치하는 모든 요소가
   // 한 곳에서만 갱신해도 두 위치 동시에 활성화 스타일이 켜지도록(양방향 동기화) 넓게 잡은 선택자
   var tabBtns = document.querySelectorAll(".tab-btn, .sidebar-item, .navbar-dropdown-item, .bottom-nav-item");
@@ -7061,9 +7211,247 @@
   document.getElementById("calendarBtn").addEventListener("click", function(){
     showToast("세금 신고 일정 캘린더는 준비 중이에요", "ph-calendar-blank");
   });
-  document.getElementById("bellBtn").addEventListener("click", function(){
-    showToast("아직 새로운 알림이 없어요", "ph-bell");
+
+  // ---------- 알림함 ----------
+  // 읽음/삭제 상태는 기기(localStorage) 기준이라 여러 기기 간에는 동기화되지 않는다 — 알림 자체가
+  // 개인화 데이터가 아니라 관리자가 전체 발송하는 공지성 피드라, 기기별 상태로도 충분하다고 보고 단순화했다.
+  var NOTIF_READ_KEY = "fincalc_notif_read_ids";
+  var NOTIF_DISMISSED_KEY = "fincalc_notif_dismissed_ids";
+  var notifItems = [];
+
+  function loadNotifIdSet(key){
+    try { return new Set(JSON.parse(localStorage.getItem(key) || "[]")); }
+    catch (e) { return new Set(); }
+  }
+  function saveNotifIdSet(key, set){
+    try { localStorage.setItem(key, JSON.stringify(Array.from(set))); } catch (e) {}
+  }
+
+  function formatNotifTime(date){
+    var diffMin = Math.floor((Date.now() - date.getTime()) / 60000);
+    if (diffMin < 1) return "방금 전";
+    if (diffMin < 60) return diffMin + "분 전";
+    var diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return diffHour + "시간 전";
+    var diffDay = Math.floor(diffHour / 24);
+    if (diffDay === 1) return "어제";
+    if (diffDay < 7) return diffDay + "일 전";
+    return (date.getMonth() + 1) + "." + date.getDate();
+  }
+
+  function escapeNotifHtml(str){
+    return String(str == null ? "" : str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function updateNotifBadge(){
+    var readIds = loadNotifIdSet(NOTIF_READ_KEY);
+    var dismissedIds = loadNotifIdSet(NOTIF_DISMISSED_KEY);
+    var hasUnread = notifItems.some(function(n){
+      return !dismissedIds.has(n.id) && !readIds.has(n.id);
+    });
+    document.querySelectorAll(".notif-dot").forEach(function(dot){
+      dot.classList.toggle("show", hasUnread);
+    });
+  }
+
+  function renderNotifCenter(){
+    var listEl = document.getElementById("notifCenterList");
+    if (!listEl) return;
+    var readIds = loadNotifIdSet(NOTIF_READ_KEY);
+    var dismissedIds = loadNotifIdSet(NOTIF_DISMISSED_KEY);
+    var visible = notifItems.filter(function(n){ return !dismissedIds.has(n.id); });
+
+    if (!visible.length) {
+      listEl.innerHTML = '<p class="notif-center-empty">아직 알림이 없어요</p>';
+      return;
+    }
+
+    listEl.innerHTML = visible.map(function(n){
+      var isUnread = !readIds.has(n.id);
+      return '' +
+        '<div class="notif-center-item' + (isUnread ? ' is-unread' : '') + '" data-notif-id="' + n.id + '" data-notif-link="' + escapeNotifHtml(n.link || "") + '">' +
+          '<span class="notif-center-icon"><i class="ph-duotone ' + (n.icon || "ph-bell") + '"></i></span>' +
+          '<div class="notif-center-body">' +
+            '<p class="notif-center-item-title">' + escapeNotifHtml(n.title) + '</p>' +
+            '<p class="notif-center-item-desc">' + escapeNotifHtml(n.body) + '</p>' +
+            '<p class="notif-center-item-time">' + formatNotifTime(n.createdAt) + '</p>' +
+          '</div>' +
+          '<button type="button" class="notif-center-dismiss" data-dismiss-id="' + n.id + '" aria-label="알림 삭제"><i class="ph-duotone ph-x"></i></button>' +
+        '</div>';
+    }).join("");
+
+    listEl.querySelectorAll(".notif-center-dismiss").forEach(function(btn){
+      btn.addEventListener("click", function(e){
+        e.stopPropagation();
+        var ids = loadNotifIdSet(NOTIF_DISMISSED_KEY);
+        ids.add(btn.getAttribute("data-dismiss-id"));
+        saveNotifIdSet(NOTIF_DISMISSED_KEY, ids);
+        renderNotifCenter();
+        updateNotifBadge();
+      });
+    });
+    listEl.querySelectorAll(".notif-center-item").forEach(function(item){
+      item.addEventListener("click", function(){
+        var ids = loadNotifIdSet(NOTIF_READ_KEY);
+        ids.add(item.getAttribute("data-notif-id"));
+        saveNotifIdSet(NOTIF_READ_KEY, ids);
+        updateNotifBadge();
+        var link = item.getAttribute("data-notif-link");
+        closeNotifCenter();
+        if (link) location.hash = link.replace(/^#/, "");
+      });
+    });
+  }
+
+  var notifCenterOverlay = document.getElementById("notifCenterOverlay");
+  function openNotifCenter(){
+    renderNotifCenter();
+    notifCenterOverlay.classList.add("open");
+  }
+  function closeNotifCenter(){
+    notifCenterOverlay.classList.remove("open");
+  }
+  document.getElementById("bellBtn").addEventListener("click", openNotifCenter);
+  document.getElementById("notifCenterCloseBtn").addEventListener("click", closeNotifCenter);
+  notifCenterOverlay.addEventListener("click", function(e){
+    if (e.target === notifCenterOverlay) closeNotifCenter();
   });
+  document.getElementById("notifCenterReadAllBtn").addEventListener("click", function(){
+    var ids = loadNotifIdSet(NOTIF_READ_KEY);
+    notifItems.forEach(function(n){ ids.add(n.id); });
+    saveNotifIdSet(NOTIF_READ_KEY, ids);
+    renderNotifCenter();
+    updateNotifBadge();
+  });
+
+  // 알림 문서를 실시간 구독 — 관리자가 새 알림을 발송하면 앱을 새로고침하지 않아도 배지가 바로 뜬다.
+  db.collection("notifications").where("sent", "==", true).orderBy("createdAt", "desc").limit(50)
+    .onSnapshot(function(snapshot){
+      notifItems = snapshot.docs.map(function(doc){
+        var data = doc.data();
+        var createdAt = data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date();
+        return { id: doc.id, title: data.title || "", body: data.body || "", icon: data.icon || "ph-bell", link: data.link || "", createdAt: createdAt };
+      });
+      updateNotifBadge();
+      if (notifCenterOverlay.classList.contains("open")) renderNotifCenter();
+    }, function(error){
+      console.error("알림 목록 구독 실패:", error);
+    });
+
+  // ---------- 알림 권한 요청(soft-ask) + FCM 토큰 등록 ----------
+  // Firebase Console > 프로젝트 설정 > Cloud Messaging > 웹 구성에서 발급한 "키 쌍(VAPID 키)"을
+  // 채워 넣어야 실제로 토큰을 발급받을 수 있다. 비어있는 동안은 조용히 아무 동작도 하지 않는다.
+  var FCM_VAPID_KEY = "";
+
+  (function initPushPermission(){
+    var softAsk = document.getElementById("pushSoftAsk");
+    var allowBtn = document.getElementById("pushSoftAskAllowBtn");
+    var laterBtn = document.getElementById("pushSoftAskLaterBtn");
+    if (!softAsk || !allowBtn || !laterBtn) return;
+    if (!("Notification" in window) || !firebase.messaging || !firebase.messaging.isSupported || !firebase.messaging.isSupported()) return;
+
+    var PROMPTED_KEY = "fincalc_push_prompted_at";
+
+    function registerFcmToken(){
+      if (!FCM_VAPID_KEY) { console.warn("FCM_VAPID_KEY가 비어있어 토큰 등록을 건너뜁니다."); return; }
+      try {
+        var messaging = firebase.messaging();
+        navigator.serviceWorker.register("/firebase-messaging-sw.js").then(function(registration){
+          return messaging.getToken({ vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: registration });
+        }).then(function(token){
+          if (!token) return;
+          var user = firebaseAuth.currentUser;
+          return db.collection("fcmTokens").doc(token).set({
+            token: token,
+            uid: user ? user.uid : null,
+            updatedAt: new Date()
+          }, { merge: true });
+        }).catch(function(error){
+          console.error("FCM 토큰 등록 실패:", error);
+        });
+        messaging.onMessage(function(){
+          // 포그라운드 수신 시엔 OS 알림 대신 알림함 배지만 즉시 갱신(onSnapshot이 곧 새 문서를 반영함)
+        });
+      } catch (e) {
+        console.error("FCM 초기화 실패:", e);
+      }
+    }
+
+    if (Notification.permission === "granted") {
+      registerFcmToken();
+      return;
+    }
+    if (Notification.permission === "denied") return;
+    if (localStorage.getItem(PROMPTED_KEY)) return;
+
+    setTimeout(function(){ softAsk.hidden = false; }, 1500);
+
+    allowBtn.addEventListener("click", function(){
+      localStorage.setItem(PROMPTED_KEY, String(Date.now()));
+      softAsk.hidden = true;
+      Notification.requestPermission().then(function(permission){
+        if (permission === "granted") registerFcmToken();
+      });
+    });
+    laterBtn.addEventListener("click", function(){
+      localStorage.setItem(PROMPTED_KEY, String(Date.now()));
+      softAsk.hidden = true;
+    });
+  })();
+
+  // ---------- 관리자 푸시 발송 폼 (#admin-push) ----------
+  (function initAdminPush(){
+    var submitBtn = document.getElementById("adminPushSubmitBtn");
+    if (!submitBtn) return;
+    var resultEl = document.getElementById("adminPushResult");
+
+    submitBtn.addEventListener("click", function(){
+      var secret = document.getElementById("adminPushSecret").value.trim();
+      var title = document.getElementById("adminPushTitle").value.trim();
+      var body = document.getElementById("adminPushBody").value.trim();
+      var link = document.getElementById("adminPushLink").value.trim();
+      var scheduleVal = document.getElementById("adminPushSchedule").value;
+
+      if (!secret || !title || !body) {
+        resultEl.textContent = "비밀값, 제목, 내용은 필수예요.";
+        return;
+      }
+
+      submitBtn.disabled = true;
+      resultEl.textContent = "발송 중...";
+
+      fetch("/api/send-push?secret=" + encodeURIComponent(secret), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          body: body,
+          link: link ? "#" + link.replace(/^#/, "") : "",
+          scheduledFor: scheduleVal ? new Date(scheduleVal).toISOString() : null
+        })
+      })
+        .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+        .then(function(result){
+          if (!result.ok) {
+            resultEl.textContent = "실패: " + (result.data.error || "알 수 없는 오류");
+            return;
+          }
+          if (result.data.scheduled) {
+            resultEl.textContent = "예약 완료 (" + result.data.scheduledFor + "). 시간이 되면 자동 발송돼요.";
+          } else {
+            resultEl.textContent = "발송 완료! 성공 " + result.data.successCount + "건 / 실패 " + result.data.failureCount + "건";
+          }
+        })
+        .catch(function(error){
+          resultEl.textContent = "요청 실패: " + error.message;
+        })
+        .then(function(){
+          submitBtn.disabled = false;
+        });
+    });
+  })();
 
   // ---------- Sidebar: accordion groups ----------
   var sidebarGroups = document.querySelectorAll(".sidebar-group");

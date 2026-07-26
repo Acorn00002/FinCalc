@@ -427,3 +427,110 @@ exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-nort
     res.status(500).json({ error: "동기화 중 오류가 발생했습니다." });
   }
 });
+
+// ---------- 푸시 알림 발송 ----------
+// 이 앱은 별도 관리자 계정 체계가 없어(1인 개발), CALENDAR_SYNC_SECRET과 동일한 방식으로
+// 공유 비밀값 하나로 발송 권한을 제한한다. 값을 아는 사람만 /api/send-push를 호출할 수 있다.
+const SEND_PUSH_SECRET = process.env.SEND_PUSH_SECRET || "";
+
+// notifications 문서 하나를 실제 FCM 푸시로 fcmTokens에 등록된 모든 기기에 발송한다.
+// 만료/삭제된 토큰은 발송 응답에서 걸러내 fcmTokens에서 함께 정리한다(무효 토큰이 계속 쌓이는 것 방지).
+async function dispatchPushToAllTokens(title, body, link) {
+  const tokensSnap = await db.collection("fcmTokens").get();
+  const tokens = tokensSnap.docs.map((doc) => doc.id);
+  if (!tokens.length) return { successCount: 0, failureCount: 0 };
+
+  const chunks = [];
+  for (let i = 0; i < tokens.length; i += 500) chunks.push(tokens.slice(i, i + 500));
+
+  let successCount = 0;
+  let failureCount = 0;
+  const staleTokens = [];
+
+  for (const chunk of chunks) {
+    const response = await admin.messaging().sendEachForMulticast({
+      notification: { title, body },
+      data: { link: link || "" },
+      tokens: chunk
+    });
+    successCount += response.successCount;
+    failureCount += response.failureCount;
+    response.responses.forEach((r, idx) => {
+      if (!r.success && r.error && r.error.code === "messaging/registration-token-not-registered") {
+        staleTokens.push(chunk[idx]);
+      }
+    });
+  }
+
+  await Promise.all(staleTokens.map((token) =>
+    db.collection("fcmTokens").doc(token).delete().catch(() => {})
+  ));
+
+  return { successCount, failureCount, staleRemoved: staleTokens.length };
+}
+
+// 즉시 발송 또는 예약 발송 — 예약된 건은 notifications 문서를 sent:false로 만들어두기만 하고,
+// 실제 발송은 아래 dispatchScheduledPushes 스케줄러가 시간이 되면 처리한다.
+exports.sendPushNotification = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 요청만 지원합니다." });
+    return;
+  }
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+
+  const { title, body, icon, link, scheduledFor } = req.body || {};
+  if (!title || !body) {
+    res.status(400).json({ error: "title, body가 필요합니다." });
+    return;
+  }
+
+  const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
+  const isScheduled = !!(scheduledDate && !isNaN(scheduledDate.getTime()) && scheduledDate.getTime() > Date.now());
+
+  try {
+    const docRef = await db.collection("notifications").add({
+      title,
+      body,
+      icon: icon || "ph-bell",
+      link: link || "",
+      createdAt: new Date(),
+      scheduledFor: isScheduled ? scheduledDate : null,
+      sent: !isScheduled
+    });
+
+    if (!isScheduled) {
+      const result = await dispatchPushToAllTokens(title, body, link);
+      res.status(200).json({ id: docRef.id, scheduled: false, ...result });
+      return;
+    }
+
+    res.status(200).json({ id: docRef.id, scheduled: true, scheduledFor: scheduledDate.toISOString() });
+  } catch (error) {
+    console.error("푸시 발송 실패:", error);
+    res.status(500).json({ error: "발송 중 오류가 발생했습니다." });
+  }
+});
+
+// 10분마다 예약 시각이 지난 미발송 알림을 찾아 실제로 발송한다.
+exports.dispatchScheduledPushes = onSchedule(
+  { schedule: "*/10 * * * *", timeZone: "Asia/Seoul", region: "asia-northeast3" },
+  async () => {
+    const snapshot = await db.collection("notifications").where("sent", "==", false).get();
+    if (snapshot.empty) return;
+
+    const now = Date.now();
+    for (const doc of snapshot.docs) {
+      const data = doc.data();
+      if (!data.scheduledFor || data.scheduledFor.toDate().getTime() > now) continue;
+      try {
+        await dispatchPushToAllTokens(data.title, data.body, data.link);
+        await doc.ref.update({ sent: true });
+      } catch (error) {
+        console.error("예약 발송 실패(문서 " + doc.id + "):", error);
+      }
+    }
+  }
+);

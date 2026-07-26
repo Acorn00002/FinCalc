@@ -30,5 +30,20 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+
+    // 알림함 — 관리자 발송 Cloud Function(Admin SDK, 비밀키로 보호됨)만 쓸 수 있고 클라이언트는 읽기만 가능.
+    // 읽음/삭제 상태는 전역 알림 문서가 아니라 기기(localStorage)에 개인화해서 저장한다.
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // FCM 푸시 토큰 — 로그인 여부와 무관하게 알림 수신에 동의만 하면 등록되므로 읽기/로그인 요구 없이
+    // 문서 생성/갱신만 허용한다. 실제 발송(Admin SDK)과 토큰 조회는 서버 쪽 Cloud Function에서만 이뤄진다.
+    match /fcmTokens/{tokenId} {
+      allow read: if false;
+      allow create, update: if request.resource.data.token is string;
+      allow delete: if false;
+    }
   }
 }

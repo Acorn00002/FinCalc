@@ -14,7 +14,8 @@
     "rewrites": [
       { "source": "/api/news", "function": "newsProxy" },
       { "source": "/api/ask-ai", "function": "aiAsk" },
-      { "source": "/api/sync-calendar", "function": "syncFinancialCalendarManual" }
+      { "source": "/api/sync-calendar", "function": "syncFinancialCalendarManual" },
+      { "source": "/api/send-push", "function": "sendPushNotification" }
     ]
   },
   "functions": [
