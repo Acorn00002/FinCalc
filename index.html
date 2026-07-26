@@ -3186,11 +3186,18 @@
         <a class="sidebar-item" href="#realized-gain" data-view="realized-gain">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-currency-circle-dollar"></i></span>실현손익 파일럿
         </a>
+        <a class="sidebar-item" onclick="openFinCalc('goal-planner')" role="button" tabindex="0">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-target"></i></span>목표자산 파일럿 (시뮬레이터)
+        </a>
+        <a class="sidebar-item" href="#subsidy" data-view="subsidy">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부·지자체 지원금
+          <span class="badge soon sidebar-item-badge">준비중</span>
+        </a>
         <a class="sidebar-item" href="#calendar" data-view="calendar">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
         </a>
         <a class="sidebar-item" href="#dictionary" data-view="dictionary">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-book-open-text"></i></span>경제 사전
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-lightbulb"></i></span>오늘의 퀴즈 & 사전
           <span class="badge soon sidebar-item-badge">준비중</span>
         </a>
         <a class="sidebar-item" href="#market" data-view="market">
@@ -3276,11 +3283,18 @@
       <a class="tab-btn" href="#realized-gain" data-view="realized-gain">
         <i class="ph-duotone ph-currency-circle-dollar"></i>실현손익 파일럿
       </a>
+      <a class="tab-btn" onclick="openFinCalc('goal-planner')" role="button" tabindex="0">
+        <i class="ph-duotone ph-target"></i>목표자산 파일럿
+      </a>
+      <a class="tab-btn" href="#subsidy" data-view="subsidy">
+        <i class="ph-duotone ph-gift"></i>정부·지자체 지원금
+        <span class="badge soon tab-btn-badge">준비중</span>
+      </a>
       <a class="tab-btn" href="#calendar" data-view="calendar">
         <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
       </a>
       <a class="tab-btn" href="#dictionary" data-view="dictionary">
-        <i class="ph-duotone ph-book-open-text"></i>경제 사전
+        <i class="ph-duotone ph-lightbulb"></i>오늘의 퀴즈 & 사전
         <span class="badge soon tab-btn-badge">준비중</span>
       </a>
       <a class="tab-btn" href="#market" data-view="market">
@@ -4027,10 +4041,19 @@
 
 <main class="wrap app-view" id="view-dictionary">
   <section class="view-teaser">
-    <span class="view-teaser-icon"><i class="ph-duotone ph-book-open-text"></i></span>
+    <span class="view-teaser-icon"><i class="ph-duotone ph-lightbulb"></i></span>
     <span class="badge soon">준비 중</span>
-    <h2>경제사전</h2>
-    <p>어려운 경제·금융 용어를 쉽게 풀어주는 사전을 준비하고 있어요.</p>
+    <h2>오늘의 퀴즈 & 사전</h2>
+    <p>매일 짧은 금융 퀴즈를 풀어보고, 어려운 경제·금융 용어도 쉽게 찾아볼 수 있도록 준비하고 있어요.</p>
+  </section>
+</main>
+
+<main class="wrap app-view" id="view-subsidy">
+  <section class="view-teaser">
+    <span class="view-teaser-icon"><i class="ph-duotone ph-gift"></i></span>
+    <span class="badge soon">준비 중</span>
+    <h2>정부·지자체 지원금</h2>
+    <p>나에게 맞는 정부·지자체 지원금과 보조금 정보를 모아서 알려드릴게요.</p>
   </section>
 </main>
 
@@ -4168,7 +4191,7 @@
 (function(){
   "use strict";
 
-  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq"];
+  var VIEWS = ["home", "finpilot", "taxpilot", "realized-gain", "finance", "subsidy", "calendar", "lounge", "mypage", "dictionary", "market", "info", "notice", "faq"];
   // 사이드바 ↔ 상단 메뉴바 드롭다운 항목까지 전부 포함해, data-view가 일치하는 모든 요소가
   // 한 곳에서만 갱신해도 두 위치 동시에 활성화 스타일이 켜지도록(양방향 동기화) 넓게 잡은 선택자
   var tabBtns = document.querySelectorAll(".tab-btn, .sidebar-item, .navbar-dropdown-item, .bottom-nav-item");
