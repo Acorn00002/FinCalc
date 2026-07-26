@@ -619,7 +619,7 @@
     height:140px;
     padding:24px;
     position:relative;
-    background:#ffffff;
+    background:var(--card);
     border-radius:20px;
     box-shadow:0 4px 20px rgba(0,0,0,0.03);
     cursor:pointer;
@@ -633,7 +633,7 @@
   .calc-icon{
     width:44px;height:44px;
     border-radius:12px;
-    background-color:#f0f2fe;
+    background-color:var(--brand-soft);
     display:flex;align-items:center;justify-content:center;
     flex-shrink:0;
   }
@@ -653,14 +653,14 @@
     font-weight:800;
     padding:3px 8px;
     border-radius:999px;
-    background:#e4e7eb;
+    background:var(--card-soft);
     color:var(--ink-3);
   }
   .calc-soon-badge.new{
     background:var(--brand-soft-2);
     color:var(--brand-2);
   }
-  .calc-card.soon .calc-icon{background:#f2f3f5;}
+  .calc-card.soon .calc-icon{background:var(--card-soft);}
   .calc-card.soon .calc-icon i{
     color:var(--ink-3);
     --ph-duotone-secondary-color:var(--ink-3);
@@ -671,7 +671,7 @@
   /* 핵심 서비스인 세금 계산기(양도소득세·증여세·상속세)만 미세한 컬러 포인트로 주목도를 높임 */
   .calc-card[data-category="tax"]{
     border:1.5px solid rgba(245,158,11,0.35);
-    background:linear-gradient(160deg, rgba(245,158,11,0.07), #ffffff 60%);
+    background:linear-gradient(160deg, rgba(245,158,11,0.07), var(--card) 60%);
   }
   .calc-card[data-category="tax"] .calc-icon{background:rgba(245,158,11,0.16);}
   .calc-card[data-category="tax"] .calc-icon i{color:#f59e0b;--ph-duotone-secondary-color:#f59e0b;}
@@ -3664,9 +3664,6 @@
         <button type="submit" class="home-ai-submit-btn" id="homeAiSubmitBtn">질문하기</button>
       </div>
 
-      <div class="home-ai-foot">
-        <a class="home-ai-charge-link" href="#mypage" data-view="mypage">포인트 더 모으기<i class="ph-duotone ph-caret-right"></i></a>
-      </div>
       <div class="home-ai-answer" id="homeAiAnswer" hidden></div>
     </form>
   </section>
