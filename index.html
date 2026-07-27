@@ -798,6 +798,9 @@
   @media (min-width:640px){ footer{padding:24px 32px 0;} }
 
   /* ---------- App shell / tab bar ---------- */
+  /* Android 16(API 36)부터 edge-to-edge가 강제되면서 상태표시줄 뒤로 콘텐츠가 그려질 수 있어,
+     고정 헤더가 노치/상태표시줄에 가려지지 않도록 안전 영역만큼 위쪽 여백을 미리 확보해둔다.
+     env() 미지원/inset이 0인 기기에서는 그냥 0px로 계산되어 기존과 동일하게 보인다. */
   .app-header{
     position:sticky;
     top:0;
@@ -805,6 +808,7 @@
     background:rgba(242,244,246,0.86);
     backdrop-filter:blur(14px);
     -webkit-backdrop-filter:blur(14px);
+    padding-top:env(safe-area-inset-top, 0px);
   }
   html[data-theme="dark"] .app-header{background:rgba(11,15,20,0.86);}
 
@@ -1617,7 +1621,10 @@
 
   @media (max-width:640px){
     .fincalc-overlay{padding:0;align-items:flex-end;}
-    .fincalc-modal{max-width:100%;height:92vh;border-radius:24px 24px 0 0;}
+    .fincalc-modal{
+      max-width:100%;height:92vh;border-radius:24px 24px 0 0;
+      padding-bottom:env(safe-area-inset-bottom, 0px);
+    }
   }
 
   /* ---------- 증권시장 대시보드 (TradingView 위젯) ---------- */
