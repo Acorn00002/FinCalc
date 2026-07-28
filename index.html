@@ -189,24 +189,12 @@
     </div>
 
     <nav class="sidebar-nav">
-      <p class="sidebar-section-title">주요 금융 서비스</p>
-      <div class="sidebar-standalone">
-        <a class="sidebar-item" href="#subsidy" data-view="subsidy">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부 지원금
-        </a>
-        <a class="sidebar-item" href="#ipo" data-view="ipo">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chart-bar"></i></span>청약·공모주
-        </a>
-      </div>
-      <div class="sidebar-group" data-group="finance-calc">
+      <div class="sidebar-group" data-group="finance">
         <button class="sidebar-group-header" type="button">
-          <span class="sidebar-group-title"><span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calculator"></i></span>금융 계산기</span>
+          <span class="sidebar-group-title"><span class="sidebar-item-icon-plate"><i class="ph-duotone ph-bank"></i></span>금융</span>
           <i class="ph-duotone ph-caret-down sidebar-caret"></i>
         </button>
         <div class="sidebar-group-body">
-          <a class="sidebar-item" href="#finpilot" data-view="finpilot">
-            <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-squares-four"></i></span>전체 계산기 보기
-          </a>
           <a class="sidebar-item" href="#finance" data-finance-cat="deposit">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-money"></i></span>정기예금
           </a>
@@ -222,26 +210,57 @@
           <a class="sidebar-item" href="#finance" data-finance-cat="credit">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-credit-card"></i></span>신용담보대출
           </a>
+        </div>
+      </div>
+
+      <div class="sidebar-standalone">
+        <a class="sidebar-item" href="#subsidy" data-view="subsidy">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gift"></i></span>정부 지원금
+        </a>
+        <a class="sidebar-item" href="#ipo" data-view="ipo">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chart-bar"></i></span>청약·공모주
+        </a>
+      </div>
+
+      <div class="sidebar-group" data-group="finance-calc">
+        <button class="sidebar-group-header" type="button">
+          <span class="sidebar-group-title"><span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calculator"></i></span>금융 계산기</span>
+          <i class="ph-duotone ph-caret-down sidebar-caret"></i>
+        </button>
+        <div class="sidebar-group-body">
+          <a class="sidebar-item" href="#finpilot" data-view="finpilot">
+            <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-squares-four"></i></span>전체 계산기 보기
+          </a>
           <a class="sidebar-item" href="#taxpilot" data-view="taxpilot">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-receipt"></i></span>해외주식 절세계산기
           </a>
         </div>
       </div>
+
       <div class="sidebar-standalone">
         <a class="sidebar-item" href="#news" data-view="news">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-newspaper"></i></span>뉴스 · 금융소식
         </a>
-      </div>
-
-      <p class="sidebar-section-title">정보 & 콘텐츠</p>
-      <div class="sidebar-standalone">
         <a class="sidebar-item" href="#market" data-view="market">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chart-line-up"></i></span>증권시장
         </a>
         <a class="sidebar-item" href="#dictionary" data-view="dictionary">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-lightbulb"></i></span>경제사전
         </a>
+        <a class="sidebar-item" href="#lounge" data-view="lounge">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chats-circle"></i></span>자산 라운지
+        </a>
+        <a class="sidebar-item" href="#calendar" data-view="calendar">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
+        </a>
+        <a class="sidebar-item" href="#mypage" data-view="mypage">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-user-circle"></i></span>마이페이지
+        </a>
+        <a class="sidebar-item" href="#settings" data-view="settings">
+          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gear-six"></i></span>설정
+        </a>
       </div>
+
       <div class="sidebar-group" data-group="info">
         <button class="sidebar-group-header" type="button">
           <span class="sidebar-group-title"><span class="sidebar-item-icon-plate"><i class="ph-duotone ph-file-text"></i></span>정보</span>
@@ -257,22 +276,6 @@
             <span class="badge soon sidebar-item-badge">준비중</span>
           </a>
         </div>
-      </div>
-
-      <p class="sidebar-section-title">마이 · 설정</p>
-      <div class="sidebar-standalone">
-        <a class="sidebar-item" href="#lounge" data-view="lounge">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chats-circle"></i></span>자산 라운지
-        </a>
-        <a class="sidebar-item" href="#mypage" data-view="mypage">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-user-circle"></i></span>마이페이지
-        </a>
-        <a class="sidebar-item" href="#calendar" data-view="calendar">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
-        </a>
-        <a class="sidebar-item" href="#settings" data-view="settings">
-          <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-gear-six"></i></span>설정
-        </a>
       </div>
     </nav>
   </aside>
@@ -298,6 +301,30 @@
         <i class="ph-duotone ph-house"></i>홈
       </a>
 
+      <div class="navbar-dropdown" data-dropdown="finance">
+        <button type="button" class="tab-btn dropdown-trigger">
+          <i class="ph-duotone ph-bank"></i>금융
+          <i class="ph-duotone ph-caret-down navbar-dropdown-caret"></i>
+        </button>
+        <div class="navbar-dropdown-menu">
+          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="deposit">
+            <i class="ph-duotone ph-money"></i>정기예금
+          </a>
+          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="savings">
+            <i class="ph-duotone ph-piggy-bank"></i>정기적금
+          </a>
+          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="mortgage">
+            <i class="ph-duotone ph-buildings"></i>주택담보대출
+          </a>
+          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="jeonse">
+            <i class="ph-duotone ph-house-line"></i>전월세보증금대출
+          </a>
+          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="credit">
+            <i class="ph-duotone ph-credit-card"></i>신용담보대출
+          </a>
+        </div>
+      </div>
+
       <a class="tab-btn" href="#subsidy" data-view="subsidy">
         <i class="ph-duotone ph-gift"></i>정부 지원금
       </a>
@@ -314,21 +341,6 @@
           <a class="navbar-dropdown-item" href="#finpilot" data-view="finpilot">
             <i class="ph-duotone ph-squares-four"></i>전체 계산기 보기
           </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="deposit">
-            <i class="ph-duotone ph-money"></i>정기예금
-          </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="savings">
-            <i class="ph-duotone ph-piggy-bank"></i>정기적금
-          </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="mortgage">
-            <i class="ph-duotone ph-buildings"></i>주택담보대출
-          </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="jeonse">
-            <i class="ph-duotone ph-house-line"></i>전월세보증금대출
-          </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="credit">
-            <i class="ph-duotone ph-credit-card"></i>신용담보대출
-          </a>
           <a class="navbar-dropdown-item" href="#taxpilot" data-view="taxpilot">
             <i class="ph-duotone ph-receipt"></i>해외주식 절세계산기
           </a>
@@ -338,9 +350,6 @@
       <a class="tab-btn" href="#news" data-view="news">
         <i class="ph-duotone ph-newspaper"></i>뉴스·금융소식
       </a>
-      <a class="tab-btn" href="#calendar" data-view="calendar">
-        <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
-      </a>
       <a class="tab-btn" href="#market" data-view="market">
         <i class="ph-duotone ph-chart-line-up"></i>증권시장
       </a>
@@ -349,6 +358,9 @@
       </a>
       <a class="tab-btn" href="#lounge" data-view="lounge">
         <i class="ph-duotone ph-chats-circle"></i>자산 라운지
+      </a>
+      <a class="tab-btn" href="#calendar" data-view="calendar">
+        <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
       </a>
 
       <div class="navbar-dropdown" data-dropdown="info">

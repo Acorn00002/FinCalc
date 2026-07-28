@@ -858,16 +858,6 @@
   .sidebar-standalone + .sidebar-standalone{
     margin-top:18px;
   }
-  .sidebar-section-title{
-    margin:22px 14px 8px;
-    font-size:11px;
-    font-weight:800;
-    color:var(--ink-3);
-    letter-spacing:0.04em;
-    text-transform:uppercase;
-  }
-  .sidebar-section-title:first-child{margin-top:6px;}
-
   .sidebar-group-header{
     width:calc(100% - 20px);
     margin:2px 10px;
