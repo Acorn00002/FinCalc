@@ -45,6 +45,13 @@
     else if (mql.addListener) mql.addListener(onSystemChange);
   }
 })();
+
+// 네이티브 하이브리드 앱(mobile-app/, Expo WebView) 감지 — 자체 UA에 "AssetPilotNativeApp"을 붙여서 보내면
+// 웹 자체 헤더/사이드바/하단바를 숨기고 콘텐츠만 채운다. 첫 페인트 전에 실행해야 깜빡임 없이 적용된다.
+// 일반 브라우저/기존 TWA는 이 문자열이 없으므로 기존 동작에 영향 없음.
+if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
+  document.documentElement.classList.add("native-embed");
+}
 </script>
 <title>자산 파일럿 | 쉽게 빠르게 끝내는 자산관리 & 금융계산기</title>
 <meta name="description" content="자산관리를 가장 쉽게, 빠르게! 주식 물타기·평단가 계산부터 복리·세금 계산기, 실시간 자산 라운지 커뮤니티까지. 스마트한 자산 관리는 자산 파일럿과 함께하세요.">

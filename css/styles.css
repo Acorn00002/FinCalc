@@ -1062,6 +1062,19 @@
     .embed-view{height:calc(100vh - var(--chrome-h, 76px) - 64px - env(safe-area-inset-bottom, 0px));}
   }
 
+  /* ==================================================
+     네이티브 하이브리드 앱(mobile-app/) 전용 — Expo WebView가 UA에 "AssetPilotNativeApp"을
+     붙여서 로드하면 <html>에 native-embed 클래스가 붙는다(index.html 상단 조기 스크립트 참고).
+     네이티브 헤더/드로어/하단바가 이미 있으므로 웹 자체 헤더·사이드바·하단바는 전부 숨기고
+     본문 콘텐츠만 채운다. 일반 브라우저/기존 TWA는 이 클래스가 없으므로 영향 없음.
+     ================================================== */
+  .native-embed .app-header,
+  .native-embed .bottom-nav,
+  .native-embed .app-sidebar,
+  .native-embed .sidebar-backdrop{display:none !important;}
+  .native-embed .app-main{padding-bottom:0 !important;margin-left:0 !important;}
+  .native-embed .embed-view{height:calc(100vh - var(--chrome-h, 0px)) !important;}
+
   /* ---------- Fin Pilot: grid state vs. detail (iframe) state ---------- */
   #finpilotGridState.is-hidden{display:none;}
 
