@@ -3510,6 +3510,14 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   };
 
   function handleGoogleLogin(){
+    // 구글이 임베디드 WebView 안에서의 OAuth 팝업 로그인을 정책적으로 차단하기 때문에(네이티브 앱 안에서는
+    // signInWithPopup이 항상 실패함), 네이티브 앱 안이면 RN 쪽에 로그인을 위임하고 그 결과(idToken)를
+    // 돌려받아 signInWithCredential로 로그인한다. mobile-app/src/components/WebViewScreen.tsx의
+    // handleWebMessage가 이 메시지를 받아 처리한다.
+    if (document.documentElement.classList.contains("native-embed") && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: "GOOGLE_LOGIN_REQUEST" }));
+      return;
+    }
     firebaseAuth.signInWithPopup(googleAuthProvider)
       .then(function(){
         showToast("구글 계정으로 성공적으로 로그인되었습니다.", "ph-google-logo");
