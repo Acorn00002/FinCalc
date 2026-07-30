@@ -60,6 +60,12 @@
 // 일반 브라우저/기존 TWA는 이 문자열이 없으므로 기존 동작에 영향 없음.
 if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   document.documentElement.classList.add("native-embed");
+  // 네이티브 앱이 메뉴 전환 때마다 WebView를 새 URL로 로드하면서 매번 이 페이지가 다시 열리는데,
+  // 그때마다 화살표 발사 스플래시가 재생되면 안 된다. 앱 콜드 스타트 때의 "진짜 첫 로드"만 URL에
+  // embednav 마커가 없고, 이후 메뉴 전환 때는 mobile-app이 이 마커를 붙여서 보낸다.
+  if (location.search.indexOf("embednav=1") !== -1) {
+    document.documentElement.classList.add("native-embed-skip-splash");
+  }
 }
 </script>
 <title>자산 파일럿 | 쉽게 빠르게 끝내는 자산관리 & 금융계산기</title>
