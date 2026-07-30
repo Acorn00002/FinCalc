@@ -1074,6 +1074,10 @@
   .native-embed .sidebar-backdrop{display:none !important;}
   .native-embed .app-main{padding-bottom:0 !important;margin-left:0 !important;}
   .native-embed .embed-view{height:calc(100vh - var(--chrome-h, 0px)) !important;}
+  /* 네이티브 앱은 콜드 스타트 시 자기 자신의 스플래시(아이콘 모션)를 이미 보여주므로, 메뉴 전환마다
+     WebView가 새로 로드될 때 이 웹 자체 스플래시(화살표 발사 애니메이션)까지 매번 재생되면 안 된다.
+     첫 페인트 전에 즉시 숨겨서, 어떤 메뉴로 들어오든 이 스플래시 자체가 아예 보이지 않게 한다. */
+  .native-embed .app-splash{display:none !important;}
 
   /* ---------- Fin Pilot: grid state vs. detail (iframe) state ---------- */
   #finpilotGridState.is-hidden{display:none;}
