@@ -680,6 +680,11 @@
     font-weight:500;
     line-height:1.7;
   }
+  .home-footer-links{
+    display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;
+  }
+  .home-footer-links a{font-weight:600;color:var(--ink-3);}
+  .home-footer-links a:hover{color:var(--brand);}
   @media (min-width:640px){ footer{padding:24px 32px 0;} }
 
   /* ---------- App shell / tab bar ---------- */
@@ -1133,7 +1138,7 @@
     align-items:center;
     justify-content:space-between;
     gap:12px;
-    padding:16px 2px 24px;
+    padding:16px 2px 10px;
   }
   .home-welcome-name{margin:0;font-size:18px;font-weight:700;color:var(--ink-1);letter-spacing:-0.03em;}
   .home-points-badge{
@@ -1157,10 +1162,126 @@
   .home-points-badge:active{transform:scale(0.96);}
   .home-points-badge i{font-size:13px;--ph-duotone-secondary-opacity:0;}
 
+  /* 미래 자산 예측 시뮬레이터 — 슬라이더 두 개(월 저축액/대출 추가상환)로 5년 뒤 예상 자산과
+     절감 이자를 실시간 계산해 보여주는 토스 스타일 카드. 입력창 없이 슬라이더+원터치 버튼만 사용. */
+  .home-sim-section{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+  .home-sim-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .home-sim-label{margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .home-sim-value{margin:0 0 6px;font-size:21px;font-weight:800;color:var(--brand);letter-spacing:-0.02em;}
+  .home-sim-value--loss{color:#dc2626;}
+  .home-sim-sub{margin:0 0 14px;font-size:12px;font-weight:500;color:var(--ink-3);}
+  .home-sim-slider{
+    width:100%;
+    height:6px;
+    border-radius:999px;
+    background:var(--brand-soft);
+    accent-color:var(--brand);
+    appearance:none;
+    -webkit-appearance:none;
+    cursor:pointer;
+    margin-bottom:12px;
+  }
+  .home-sim-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--brand);border:3px solid var(--card);
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    cursor:pointer;
+  }
+  .home-sim-slider::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;
+    background:var(--brand);border:3px solid var(--card);
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    cursor:pointer;
+  }
+  .home-sim-slider--loan{accent-color:#dc2626;}
+  .home-sim-slider--loan::-webkit-slider-thumb{background:#dc2626;}
+  .home-sim-slider--loan::-moz-range-thumb{background:#dc2626;}
+  .home-sim-quick{display:flex;gap:8px;}
+  .home-sim-quick-btn{
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .home-sim-quick-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .home-sim-quick-btn:active{transform:scale(0.96);}
+
+  /* 자산 비교 & 자산 점수 카드 — 모바일 앱 AssetScoreScreen.tsx와 동일한 로직/문구를 웹에 이식 */
+  .home-score-section{margin-bottom:24px;}
+  .home-score-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .home-score-input-title{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .home-score-bracket-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .home-score-bracket-chip{
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .home-score-bracket-chip.active{background:var(--brand);color:#fff;}
+  .home-score-input-row{display:flex;align-items:center;gap:8px;background:var(--card-soft);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
+  .home-score-input-label{flex-shrink:0;font-size:13px;font-weight:700;color:var(--ink-2);width:52px;}
+  .home-score-input{flex:1;min-width:0;border:none;background:transparent;font-size:16px;font-weight:700;color:var(--ink-1);}
+  .home-score-input::placeholder{color:var(--ink-3);}
+  .home-score-input-suffix{font-size:13px;font-weight:700;color:var(--ink-3);}
+  .home-score-submit-btn{
+    width:100%;
+    background:var(--brand);
+    color:#fff;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .home-score-result-title{margin:0 0 16px;font-size:18px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .home-score-gauge-track{width:100%;height:10px;border-radius:999px;background:var(--card-soft);overflow:hidden;}
+  .home-score-gauge-fill{height:100%;border-radius:999px;background:var(--brand);transition:width .3s ease;}
+  .home-score-gauge-fill--score{background:var(--profit, #059669);}
+  .home-score-caption{margin:8px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .home-score-divider{height:1px;background:var(--line);margin:18px 0;}
+  .home-score-sub-label{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--ink-3);}
+  .home-score-value{margin:0 0 14px;font-size:28px;font-weight:800;color:var(--brand);}
+  .home-score-disclaimer{margin:12px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.5;}
+  .home-score-edit-btn{width:100%;background:none;border:none;padding:14px 0 0;font-size:13px;font-weight:700;color:var(--ink-3);cursor:pointer;}
+
+  /* 오늘의 3초 자산 꿀팁 — 앱의 푸시 알림 리마인더에 대응하는 웹 전용 읽기 달성 카드 */
+  .home-tip-section{margin-bottom:24px;}
+  .home-tip-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:18px;}
+  .home-tip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .home-tip-badge{font-size:12.5px;font-weight:700;color:var(--brand);}
+  .home-tip-streak{font-size:12px;font-weight:600;color:var(--ink-3);}
+  .home-tip-text{margin:0 0 14px;font-size:14px;font-weight:500;color:var(--ink-1);line-height:1.55;}
+  .home-tip-btn{
+    width:100%;
+    background:var(--card-soft);
+    color:var(--ink-1);
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .home-tip-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .home-tip-btn.done{background:var(--brand);color:#fff;}
+
   /* 3. 실시간 경제 뉴스 — 토스/당근마켓 벤치마킹, 장식 없이 타이포그래피 대비로만 위계를 만든 미니멀 피드 */
   .home-news-section{margin-bottom:24px;}
   .home-news-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;padding:0 16px;}
-  .home-news-heading{margin:0;padding:0;font-size:15px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;}
+  .home-news-heading{margin:0;padding:0;font-size:18px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;}
   .home-news-more{
     display:flex;
     align-items:center;
@@ -1211,7 +1332,7 @@
   .home-news-empty{margin:0;padding:32px 16px;font-size:13.5px;font-weight:500;color:var(--ink-3);text-align:center;}
 
   /* 1. AI 자산파일럿 서포터 — 제미나이 그라디언트 포인트를 준 카드형 검색창 (홈 최상단 배치) */
-  .home-ai-section{margin:20px 0 24px;}
+  .home-ai-section{margin:8px 0 24px;}
   .home-ai-card{
     background:linear-gradient(135deg, var(--card) 0%, var(--card-soft) 100%);
     border-radius:16px;
@@ -1879,8 +2000,42 @@
     border-radius:18px;
     box-shadow:0 2px 10px rgba(15,23,42,0.04);
     padding:16px 18px;
+    cursor:pointer;
     transition:box-shadow .15s ease, transform .15s ease, opacity .25s ease;
   }
+  .finance-rank-chevron{flex-shrink:0;font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;}
+
+  .finance-loading{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    padding:56px 20px;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:600;
+  }
+  .finance-spinner{
+    width:28px;height:28px;
+    border-radius:50%;
+    border:3px solid var(--card-soft);
+    border-top-color:var(--brand);
+    animation:financeSpin 0.8s linear infinite;
+  }
+  @keyframes financeSpin{ to{ transform:rotate(360deg); } }
+
+  .finance-error{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    padding:56px 20px;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+  }
+  .finance-error i{font-size:32px;--ph-duotone-secondary-opacity:0;}
   .finance-rank-item:hover{
     box-shadow:0 6px 18px rgba(15,23,42,0.08);
   }
@@ -2164,6 +2319,44 @@
   .calendar-filter-pill.active{
     background:var(--brand);
     color:#fff;
+  }
+
+  /* 날짜를 탭하면 캘린더 바로 밑에서 펼쳐지는 패널 — 아래 타임라인까지 스크롤해서 찾아가지 않아도
+     되도록, 그 날짜의 일정만 이 자리에서 바로 보여준다. */
+  .calendar-selected-day-panel{
+    background:var(--card-soft);
+    border-radius:var(--radius-lg);
+    padding:16px;
+    margin-bottom:22px;
+    animation:calendarSelectedDayIn .2s ease;
+  }
+  @keyframes calendarSelectedDayIn{
+    from{opacity:0;transform:translateY(-6px);}
+    to{opacity:1;transform:translateY(0);}
+  }
+  .calendar-selected-day-heading{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .calendar-selected-day-heading span{
+    font-size:14.5px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.02em;
+  }
+  .calendar-selected-day-close{
+    display:flex;align-items:center;justify-content:center;
+    width:28px;height:28px;border-radius:999px;
+    border:none;background:var(--card);color:var(--ink-3);
+    cursor:pointer;
+  }
+  .calendar-selected-day-close i{font-size:14px;--ph-duotone-secondary-opacity:0;}
+  .calendar-selected-day-events{display:flex;flex-direction:column;gap:8px;}
+  .calendar-selected-day-empty{
+    margin:0;padding:20px 0;text-align:center;
+    font-size:13px;color:var(--ink-3);
   }
 
   .calendar-timeline{display:flex;flex-direction:column;gap:24px;}
@@ -3328,3 +3521,16 @@
     box-shadow:var(--shadow-card);
   }
   .settings-version{text-align:center;font-size:12px;font-weight:600;color:var(--ink-3);margin-top:20px;}
+
+  /* ---------- 핀 파일럿 허브 하단 SEO 안내 ---------- */
+  .finpilot-seo-guide{
+    margin:36px 0 12px;padding:24px 20px;
+    background:var(--card);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+  }
+  .finpilot-seo-guide h2{margin:0 0 16px;font-size:18px;font-weight:800;color:var(--ink-1);}
+  .finpilot-seo-guide h3{margin:20px 0 8px;font-size:15px;font-weight:800;color:var(--ink-1);}
+  .finpilot-seo-guide h3:first-of-type{margin-top:0;}
+  .finpilot-seo-guide p{margin:0 0 4px;font-size:13.5px;line-height:1.75;color:var(--ink-2);}
+  .finpilot-seo-guide strong{color:var(--ink-1);font-weight:700;}
+  .finpilot-seo-guide-disclaimer{margin-top:18px !important;font-size:12px !important;color:var(--ink-3) !important;line-height:1.6 !important;}

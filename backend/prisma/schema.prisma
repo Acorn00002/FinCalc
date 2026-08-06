@@ -1,0 +1,54 @@
+// 금융감독원 "금융상품 한눈에" 적금(savingProductsSearch) 데이터 저장 스키마.
+// SQLite로 시작해 별도 DB 서버 설치 없이 바로 `npm run db:push`로 세팅할 수 있게 했다 —
+// 나중에 Postgres/Supabase로 옮기고 싶으면 datasource의 provider/url만 바꾸면 된다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 상품 기본정보 (result.baseList) — 은행 하나의 적금 상품 하나에 대응.
+model Product {
+  id          String          @id @default(cuid())
+  finCoNo     String // 금융회사 코드
+  finPrdtCd   String // 금융상품 코드
+  korCoNm     String // 금융회사명(은행명)
+  finPrdtNm   String // 금융상품명
+  joinWay     String? // 가입 방법
+  mtrtInt     String? // 만기 후 이자율 설명
+  spclCnd     String? // 우대조건
+  joinDeny    String? // 가입제한(1:제한없음 2:서민전용 3:일부제한)
+  joinMember  String? // 가입대상
+  etcNote     String? // 기타 유의사항
+  maxLimit    String? // 최고한도
+  dclsMonth   String? // 공시 제출월(YYYYMM)
+  dclsStrtDay String? // 공시 시작일
+  dclsEndDay  String? // 공시 종료일
+  options     ProductOption[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  // 금융회사+상품코드 조합이 실제 API의 상품 식별자라 이 둘을 유니크 키로 삼아 upsert한다.
+  @@unique([finCoNo, finPrdtCd])
+  @@index([korCoNm])
+}
+
+// 금리 옵션 (result.optionList) — 상품 하나가 저축기간(save_trm)별로 여러 옵션을 가질 수 있다.
+model ProductOption {
+  id             String   @id @default(cuid())
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId      String
+  intrRateType   String? // 저축금리 유형(S:단리 M:복리)
+  intrRateTypeNm String? // 저축금리 유형명
+  saveTrm        String? // 저축 기간(개월)
+  intrRate       Float? // 기본금리
+  intrRate2      Float? // 최고우대금리
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([productId, saveTrm, intrRateType])
+}

@@ -1,0 +1,52 @@
+{
+  "expo": {
+    "name": "자산 파일럿",
+    "slug": "asset-pilot",
+    "version": "1.0.15",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#f2f4f6",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gofincalc.app"
+    },
+    "android": {
+      "package": "com.gofincalc.app",
+      "versionCode": 15,
+      "adaptiveIcon": {
+        "backgroundColor": "#6266F5",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "./withAndroidNonAsciiPathFix.js",
+      "./withReleaseSigning.js",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#f2f4f6"
+        }
+      ],
+      "@react-native-google-signin/google-signin",
+      [
+        "expo-notifications",
+        {
+          "color": "#585CE5"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1578b12e-2bab-435d-b86e-2f1e12b642b6"
+      }
+    },
+    "owner": "lemonder"
+  }
+}

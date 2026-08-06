@@ -1,0 +1,6 @@
+# .cursorignore 예시
+node_modules/
+.expo/
+dist/
+build/
+*.log
