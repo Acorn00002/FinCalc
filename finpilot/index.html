@@ -73,6 +73,8 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="./css/styles.css">
+    <!-- 결과 카드 하단 "상세 산출 근거 및 가이드" 아코디언 — 기존 스타일과 완전히 분리된 추가 전용 스타일시트 -->
+    <link rel="stylesheet" href="./css/guide-accordion.css">
 </head>
 <body>
     <div class="app-container">
@@ -4138,5 +4140,8 @@
     <script src="./js/chart-utils.js"></script>
     <script src="./js/calculators.js"></script>
     <script src="./js/main.js"></script>
+    <!-- 결과 카드 하단 가이드 아코디언 — 기존 계산 로직/렌더 함수는 건드리지 않고 DOM에 이미
+         존재하는 .result-panel 끝에 새 블록만 덧붙이는 독립 스크립트 -->
+    <script src="./js/guide-accordion.js"></script>
 </body>
 </html>

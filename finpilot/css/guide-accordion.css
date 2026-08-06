@@ -1,0 +1,89 @@
+/* 계산 결과 카드 하단 "상세 산출 근거 및 가이드" 아코디언 — 기존 .result-panel/.glass-panel
+   스타일은 건드리지 않고, 그 안 맨 끝에 붙는 새 블록에 대한 스타일만 정의한다. */
+.calc-guide-accordion {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--panel-border);
+}
+
+.calc-guide-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 4px 2px;
+    font-family: inherit;
+    letter-spacing: -0.02em;
+}
+
+.calc-guide-toggle:hover {
+    color: var(--accent-color);
+}
+
+.calc-guide-toggle-arrow {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.25s ease;
+}
+
+.calc-guide-accordion.is-open .calc-guide-toggle-arrow {
+    transform: rotate(180deg);
+}
+
+.calc-guide-accordion.is-open .calc-guide-toggle {
+    color: var(--accent-color);
+}
+
+.calc-guide-body {
+    max-height: 0px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.calc-guide-body h4 {
+    margin: 12px 0 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.calc-guide-body h4:first-child {
+    margin-top: 10px;
+}
+
+.calc-guide-body p {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+}
+
+.calc-guide-formula {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    background: var(--accent-light);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--text-primary) !important;
+    font-size: 11.5px !important;
+    word-break: break-word;
+}
+
+.calc-guide-blog-link {
+    display: inline-block;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.calc-guide-blog-link:hover {
+    text-decoration: underline;
+}
