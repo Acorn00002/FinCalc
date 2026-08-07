@@ -1652,7 +1652,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     <div class="subsidy-detail-actionbar">
       <div class="subsidy-detail-actionrow">
         <button type="button" class="subsidy-share-btn-v2" id="subsidyDetailShareBtn">
-          <i class="ph-duotone ph-share-network"></i>공유하기
+          <i class="ph-duotone ph-share-network"></i>카카오톡 공유
         </button>
         <a class="subsidy-apply-btn-v2" id="subsidyDetailApplyLink" target="_blank" rel="noopener noreferrer">
           바로 신청하기<i class="ph-duotone ph-arrow-square-out"></i>
@@ -2966,7 +2966,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       navigator.share({ title: program.title, text: text, url: url }).catch(function(){});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text + "\n" + url).then(function(){
-        showToast("링크를 복사했어요", "ph-link");
+        showToast("링크를 복사했어요! 카카오톡에 붙여넣기 해보세요.", "ph-link");
       });
     } else {
       showToast("이 브라우저에서는 공유하기를 지원하지 않아요", "ph-warning");

@@ -3377,7 +3377,7 @@
   .subsidy-detail-actionrow{display:flex;gap:8px;}
   .subsidy-share-btn-v2{
     display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
-    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:12px;
+    background:#FEE500;color:#3C1E1E;border:none;border-radius:12px;
     padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
   }
   .subsidy-apply-btn-v2{
