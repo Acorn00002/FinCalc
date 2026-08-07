@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세무사 상담 신청 목록 | 관리자</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="stylesheet" href="/css/content.css">
+<style>
+  .adm-form { display: flex; gap: 8px; margin: 20px 0; }
+  .adm-input {
+    flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid #e2e5ea;
+    font-size: 14.5px; font-family: inherit;
+  }
+  .adm-btn {
+    padding: 12px 20px; border-radius: 12px; border: none; background: #1f6feb;
+    color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; white-space: nowrap;
+  }
+  .adm-btn:disabled { opacity: .6; cursor: default; }
+  .adm-result { font-size: 13.5px; color: #6b7280; margin: 8px 0 0; }
+  .adm-item {
+    padding: 16px; border: 1px solid #e2e5ea; border-radius: 14px; margin-bottom: 10px;
+  }
+  .adm-item-title { font-weight: 700; font-size: 14.5px; margin: 0 0 6px; }
+  .adm-item-meta { font-size: 13.5px; color: #6b7280; margin: 0 0 4px; white-space: pre-wrap; }
+  .adm-item-time { font-size: 12.5px; color: #9aa1ac; margin: 0; }
+</style>
+</head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://gofincalc.com/"><span class="cp-logo-mark">자</span>자산 파일럿</a>
+</header>
+
+<main class="cp-wrap">
+  <p class="cp-eyebrow">ADMIN</p>
+  <h1 class="cp-title">세무사 상담 신청 목록</h1>
+  <p class="cp-meta">비밀값을 입력하면 사용자가 남긴 절세 상담 신청 내역을 확인할 수 있어요.</p>
+
+  <div class="adm-form">
+    <input type="password" class="adm-input" id="admSecret" placeholder="비밀값">
+    <button type="button" class="adm-btn" id="admLoadBtn">불러오기</button>
+  </div>
+  <p class="adm-result" id="admResult"></p>
+
+  <div id="admList" style="margin-top:18px;"></div>
+</main>
+
+<script>
+  var ENDPOINT = "https://asia-northeast3-asset-filot.cloudfunctions.net/getTaxConsultLeads";
+
+  function escapeAdmHtml(str){
+    return String(str || "").replace(/[&<>"']/g, function(ch){
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+    });
+  }
+
+  function formatAdmDate(iso){
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") +
+      " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+
+  document.getElementById("admLoadBtn").addEventListener("click", function(){
+    var btn = this;
+    var secret = document.getElementById("admSecret").value.trim();
+    var resultEl = document.getElementById("admResult");
+    var listEl = document.getElementById("admList");
+    if (!secret) { resultEl.textContent = "비밀값을 입력하세요."; return; }
+
+    btn.disabled = true;
+    resultEl.textContent = "불러오는 중...";
+    listEl.innerHTML = "";
+
+    fetch(ENDPOINT + "?secret=" + encodeURIComponent(secret))
+      .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+      .then(function(result){
+        if (!result.ok) {
+          resultEl.textContent = "실패: " + (result.data.error || "알 수 없는 오류");
+          return;
+        }
+        var leads = result.data.leads || [];
+        resultEl.textContent = leads.length + "건";
+        if (!leads.length) {
+          listEl.innerHTML = '<p class="adm-result">신청 내역이 없어요.</p>';
+          return;
+        }
+        listEl.innerHTML = leads.map(function(lead){
+          return '' +
+            '<div class="adm-item">' +
+              '<p class="adm-item-title">[' + escapeAdmHtml(lead.category) + '] ' + escapeAdmHtml(lead.contact) + '</p>' +
+              '<p class="adm-item-meta">' + escapeAdmHtml(lead.message || "(내용 없음)") + '</p>' +
+              '<p class="adm-item-time">' + formatAdmDate(lead.createdAt) + '</p>' +
+            '</div>';
+        }).join("");
+      })
+      .catch(function(error){
+        resultEl.textContent = "요청 실패: " + error.message;
+      })
+      .then(function(){
+        btn.disabled = false;
+      });
+  });
+</script>
+
+</body>
+</html>
