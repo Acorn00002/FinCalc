@@ -26,13 +26,18 @@ service cloud.firestore {
         || request.time > get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lastActivityAt + duration.value(60, 's');
     }
 
-    // 자산 라운지 게시글 — 로그인 없이도 피드는 보이게(공개), 작성은 로그인 + 본인 uid + 쿨타임 통과 시에만,
-    // 좋아요/투표/신고는 다른 로그인 사용자도 count/필드를 업데이트해야 하므로 update는 로그인 여부만 검사
-    // (금칙어·연락처·URL 필터는 클라이언트에서 처리 — 자세한 이유는 index.html 주석 참고)
+    // 자산 라운지 게시글 — 로그인 없이도 피드는 보이게(공개), 작성은 로그인 + 본인 uid + 쿨타임 통과 시에만.
+    // update는 다른 로그인 사용자도 필요하지만(좋아요/투표/신고/댓글수), title·content·uid 등 본문 필드까지
+    // 아무나 고칠 수 있으면 안 되므로 실제로 클라이언트가 쓰는 필드만 정확히 열어준다:
+    // likedUsers/likesCount(toggleLike), poll(submitVote — poll.options/poll.votedUserIds는 affectedKeys()에서
+    // 최상위 키 'poll' 하나로 잡힘), reportCount/reportedBy/blinded(신고), commentsCount(댓글 작성자가 증가시킴).
     match /posts/{postId} {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && loungeNotRateLimited();
-      allow update: if request.auth != null;
+      allow update: if request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+          ['likedUsers', 'likesCount', 'poll', 'reportCount', 'reportedBy', 'blinded', 'commentsCount']
+        );
       allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
     }
 
