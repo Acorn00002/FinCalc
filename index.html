@@ -493,7 +493,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   <section class="home-news-section">
     <div class="home-news-head">
       <h3 class="home-news-heading">실시간 경제 뉴스</h3>
-      <a class="home-news-more" href="https://news.google.com/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&amp;gl=KR&amp;ceid=KR%3Ako" target="_blank" rel="noopener noreferrer">더보기<i class="ph-duotone ph-caret-right"></i></a>
+      <a class="home-news-more" href="#news">더보기<i class="ph-duotone ph-caret-right"></i></a>
     </div>
     <div class="home-news-list" id="homeNewsList">
       <div class="home-news-item skeleton"></div>
@@ -755,6 +755,8 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     <p>구글 인증된 파일럿들과 자산 현황·절세 노하우를 실시간으로 나눠보세요.</p>
   </div>
 
+  <p class="lounge-disclaimer">본 공간은 유저 간 자유로운 정보 공유를 위한 곳으로, 불법 홍보 및 허위 사실 유포 시 이용이 영구 제한되며 법적 책임을 질 수 있습니다.</p>
+
   <div class="lounge-filter-pills" id="loungeFilterPills">
     <button type="button" class="lounge-filter-pill active" data-category="all">전체</button>
     <button type="button" class="lounge-filter-pill" data-category="stock">주식</button>
@@ -821,6 +823,9 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     <div class="lounge-detail-topbar">
       <span class="lounge-detail-cat-badge" id="loungeDetailCategory">자산 팩</span>
       <div class="lounge-detail-topbar-actions">
+        <button type="button" class="lounge-detail-report-btn" id="loungeDetailReportBtn" aria-label="게시글 신고">
+          <i class="ph-duotone ph-flag"></i>
+        </button>
         <button type="button" class="lounge-detail-delete-btn" id="loungeDetailDeleteBtn" aria-label="게시글 삭제" hidden>
           <i class="ph-duotone ph-trash"></i>
         </button>
@@ -849,6 +854,20 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       <input type="text" class="lounge-comment-input" id="loungeCommentInput" autocomplete="off" maxlength="300" placeholder="댓글을 남겨보세요">
       <button type="button" class="lounge-comment-btn" id="loungeCommentBtn">등록</button>
     </div>
+  </div>
+</div>
+
+<!-- 신고 사유 선택 모달 — 게시글/댓글 공용, data-target-type/data-target-id로 대상만 바꿔 재사용 -->
+<div class="lounge-report-overlay" id="loungeReportOverlay" hidden>
+  <div class="lounge-report-modal" role="dialog" aria-modal="true" aria-labelledby="loungeReportTitle">
+    <p class="lounge-report-title" id="loungeReportTitle">신고하기</p>
+    <p class="lounge-report-desc">신고 사유를 선택해주세요. 반복 신고를 받은 게시물은 자동으로 숨김 처리돼요.</p>
+    <div class="lounge-report-reasons" id="loungeReportReasons">
+      <button type="button" class="lounge-report-reason-btn" data-reason="스팸">스팸 / 광고 / 불법 홍보</button>
+      <button type="button" class="lounge-report-reason-btn" data-reason="사기·허위정보">사기 / 허위정보</button>
+      <button type="button" class="lounge-report-reason-btn" data-reason="욕설·비방">욕설 / 비방</button>
+    </div>
+    <button type="button" class="lounge-report-cancel-btn" id="loungeReportCancelBtn">취소</button>
   </div>
 </div>
 
@@ -5084,6 +5103,55 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       showToast(message || "로그인 후 이용 가능합니다", "ph-lock-simple");
     }
 
+    // ---------- 어뷰징 방어: 금칙어/연락처·링크 필터 ----------
+    // 불법 리딩방/스미싱 유도 키워드 — 매크로가 아니라 문구 자체를 막는 1차 방어선.
+    var LOUNGE_BANNED_KEYWORDS = ["카톡", "카카오톡", "텔레그램", "채팅방", "오픈채팅", "수익보장", "리딩"];
+    // 국내 휴대폰/일반 전화번호 패턴 (010-1234-5678, 010 1234 5678, 02-123-4567 등)
+    var LOUNGE_PHONE_RE = /(01[0-9][-.\s]?\d{3,4}[-.\s]?\d{4})|(0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4})/;
+    // http(s)://, www., 흔한 도메인 패턴
+    var LOUNGE_URL_RE = /(https?:\/\/|www\.)[^\s]+|[a-zA-Z0-9-]+\.(com|net|kr|io|me|xyz|shop|co)(\/[^\s]*)?/i;
+
+    // 게시글/댓글 내용을 검사해 금칙어·연락처·링크가 있으면 등록을 막는다. 통과 시 null, 막을 땐 이유 문자열 반환.
+    function checkLoungeContentSafety(text){
+      if (!text) return null;
+      for (var i = 0; i < LOUNGE_BANNED_KEYWORDS.length; i++) {
+        if (text.indexOf(LOUNGE_BANNED_KEYWORDS[i]) !== -1) {
+          return "'" + LOUNGE_BANNED_KEYWORDS[i] + "' 등 외부 연락 유도 문구는 등록할 수 없어요. 불법 리딩방/투자 권유 의심 게시물은 신고 대상이에요.";
+        }
+      }
+      if (LOUNGE_PHONE_RE.test(text)) {
+        return "전화번호로 보이는 내용은 등록할 수 없어요. 개인 연락처 교환은 사기 피해로 이어질 수 있어요.";
+      }
+      if (LOUNGE_URL_RE.test(text)) {
+        return "외부 링크(URL)는 등록할 수 없어요. 스미싱/사기 피해 예방을 위한 조치예요.";
+      }
+      return null;
+    }
+
+    // ---------- 어뷰징 방어: 도배/매크로 방지 쿨타임 ----------
+    // 실제 강제력은 firestore.rules의 posts/comments create 규칙(users/{uid}.lastActivityAt 기준
+    // 60초 이내 재작성 차단)에 있다 — 여기서는 규칙에 걸려 헛되이 요청을 보내지 않도록 미리 안내만 한다.
+    var LOUNGE_RATE_LIMIT_MS = 60 * 1000;
+    var loungeLastActivityAtLocal = 0;
+
+    function checkLoungeRateLimit(){
+      var elapsed = Date.now() - loungeLastActivityAtLocal;
+      if (elapsed < LOUNGE_RATE_LIMIT_MS) {
+        var waitSec = Math.ceil((LOUNGE_RATE_LIMIT_MS - elapsed) / 1000);
+        return waitSec + "초 후에 다시 작성할 수 있어요. (연속 작성 방지)";
+      }
+      return null;
+    }
+
+    // 게시글/댓글 작성 성공 직후 호출 — users/{uid}.lastActivityAt을 갱신해 firestore.rules의
+    // 쿨타임 검사가 다음 작성 시도부터 바로 반영되게 한다.
+    function markLoungeActivity(uid){
+      loungeLastActivityAtLocal = Date.now();
+      return db.collection("users").doc(uid).set({
+        lastActivityAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    }
+
     // 투표 블록 렌더링(피드 카드/상세 모달 공용) — 옵션별 % 바 + 내가 투표한 항목 체크 표시
     function renderPollBlock(post){
       if (!post.poll) return "";
@@ -5113,6 +5181,9 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
     // ---------- 게시글 카드 렌더링 ----------
     function renderLoungeCard(post){
+      if (post.blinded) {
+        return '<div class="lounge-card lounge-card-blinded"><i class="ph-duotone ph-eye-slash"></i><p>신고 누적으로 숨김 처리된 게시물이에요.</p></div>';
+      }
       var uid = currentUid();
       var likedUsers = post.likedUsers || [];
       var liked = !!(uid && likedUsers.indexOf(uid) !== -1);
@@ -5138,6 +5209,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
               '<i class="ph-duotone ph-heart"></i><span>' + (post.likesCount || 0) + '</span>' +
             '</button>' +
             '<span class="lounge-card-stat"><i class="ph-duotone ph-chat-circle"></i><span>' + (post.commentsCount || 0) + '</span></span>' +
+            '<button type="button" class="lounge-report-icon-btn" data-report-type="post" data-report-id="' + post.id + '" aria-label="신고"><i class="ph-duotone ph-flag"></i></button>' +
           '</div>' +
         '</div>';
     }
@@ -5275,6 +5347,12 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       var content = writeContent.value.trim();
       if (!title) { writeTitle.focus(); return; }
 
+      var rateLimitMsg = checkLoungeRateLimit();
+      if (rateLimitMsg) { showToast(rateLimitMsg, "ph-timer"); return; }
+
+      var safetyMsg = checkLoungeContentSafety(title) || checkLoungeContentSafety(content);
+      if (safetyMsg) { showToast(safetyMsg, "ph-warning"); return; }
+
       var pollPayload = null;
       if (loungeWriteType === "poll") {
         var optionValues = getPollOptionValues();
@@ -5311,8 +5389,12 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         likesCount: 0,
         commentsCount: 0,
-        likedUsers: []
+        likedUsers: [],
+        reportCount: 0,
+        reportedBy: [],
+        blinded: false
       }).then(function(){
+        markLoungeActivity(user.uid).catch(function(){});
         writeTitle.value = "";
         writeContent.value = "";
         pollOptionList.innerHTML = "";
@@ -5322,7 +5404,11 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         addUserPoints(200, "자산 라운지 작성 보상 200P가 적립되었습니다!", "자산 라운지 글쓰기");
       }).catch(function(error){
         console.error("게시글 작성 실패:", error);
-        showToast("게시글 등록에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        if (error && error.code === "permission-denied") {
+          showToast("너무 빠르게 연속 작성하고 있어요. 잠시 후 다시 시도해주세요.", "ph-timer");
+        } else {
+          showToast("게시글 등록에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        }
       }).finally(function(){
         writeBtn.disabled = false;
       });
@@ -5398,6 +5484,12 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         toggleLike(likeBtn.dataset.postId);
         return;
       }
+      var reportBtn = e.target.closest(".lounge-report-icon-btn");
+      if (reportBtn) {
+        e.stopPropagation();
+        openReportModal(reportBtn.dataset.reportType, reportBtn.dataset.reportId);
+        return;
+      }
       var pollBar = e.target.closest(".lounge-poll-option-bar");
       if (pollBar) {
         e.stopPropagation();
@@ -5409,6 +5501,75 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       var card = e.target.closest(".lounge-card");
       if (card) openPostDetail(card.dataset.postId);
     });
+
+    // ---------- 신고 시스템 ----------
+    var REPORT_BLIND_THRESHOLD = 5;
+    var reportModalOverlay = document.getElementById("loungeReportOverlay");
+    var reportCancelBtn = document.getElementById("loungeReportCancelBtn");
+    var reportTargetType = null;
+    var reportTargetId = null;
+
+    function openReportModal(type, id){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) { promptLogin(); return; }
+      reportTargetType = type;
+      reportTargetId = id;
+      reportModalOverlay.hidden = false;
+    }
+    function closeReportModal(){
+      reportModalOverlay.hidden = true;
+      reportTargetType = null;
+      reportTargetId = null;
+    }
+
+    function submitReport(reason){
+      if (!reportTargetType || !reportTargetId || !firebaseAuth.currentUser) { closeReportModal(); return; }
+      var uid = firebaseAuth.currentUser.uid;
+      var collectionName = reportTargetType === "comment" ? COMMENTS_COLLECTION : POSTS_COLLECTION;
+      var ref = db.collection(collectionName).doc(reportTargetId);
+
+      ref.get().then(function(snap){
+        if (!snap.exists) throw new Error("not-found");
+        var data = snap.data();
+        var reportedBy = data.reportedBy || [];
+        if (reportedBy.indexOf(uid) !== -1) {
+          showToast("이미 신고한 게시물이에요", "ph-info");
+          return null;
+        }
+        var newCount = (data.reportCount || 0) + 1;
+        var patch = {
+          reportedBy: firebase.firestore.FieldValue.arrayUnion(uid),
+          reportCount: firebase.firestore.FieldValue.increment(1)
+        };
+        if (newCount >= REPORT_BLIND_THRESHOLD) patch.blinded = true;
+        return ref.update(patch);
+      }).then(function(result){
+        if (result === null) return; // 이미 신고한 경우
+        showToast("신고가 접수됐어요 (사유: " + reason + ")", "ph-flag");
+      }).catch(function(error){
+        console.error("신고 처리 실패:", error);
+        showToast("신고 처리에 실패했어요. 다시 시도해주세요.", "ph-warning");
+      }).finally(function(){
+        closeReportModal();
+      });
+    }
+
+    document.querySelectorAll("#loungeReportReasons .lounge-report-reason-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){ submitReport(btn.dataset.reason); });
+    });
+    reportCancelBtn.addEventListener("click", closeReportModal);
+    reportModalOverlay.addEventListener("click", function(e){ if (e.target === reportModalOverlay) closeReportModal(); });
+
+    commentList.addEventListener("click", function(e){
+      var reportBtn = e.target.closest(".lounge-report-icon-btn");
+      if (reportBtn) openReportModal(reportBtn.dataset.reportType, reportBtn.dataset.reportId);
+    });
+
+    var detailReportBtn = document.getElementById("loungeDetailReportBtn");
+    if (detailReportBtn) {
+      detailReportBtn.addEventListener("click", function(){
+        if (currentDetailPostId) openReportModal("post", currentDetailPostId);
+      });
+    }
 
     // ---------- 게시글 상세 + 실시간 댓글 팩 ----------
     function renderDetailHeader(post){
@@ -5446,6 +5607,9 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         return;
       }
       commentList.innerHTML = comments.map(function(c){
+        if (c.blinded) {
+          return '<div class="lounge-comment-item lounge-comment-blinded"><i class="ph-duotone ph-eye-slash"></i><span>신고 누적으로 숨김 처리된 댓글이에요.</span></div>';
+        }
         var avatar = c.authorPhoto || DEFAULT_AVATAR;
         return '' +
           '<div class="lounge-comment-item">' +
@@ -5454,6 +5618,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
               '<div class="lounge-comment-top">' +
                 '<span class="lounge-comment-name">' + escapeHtml(c.authorName || "익명") + renderTierBadge(c.authorTier) + '</span>' +
                 '<span class="lounge-comment-time">' + formatRelativeTime(toJsDate(c.createdAt)) + '</span>' +
+                '<button type="button" class="lounge-report-icon-btn" data-report-type="comment" data-report-id="' + c.id + '" aria-label="신고"><i class="ph-duotone ph-flag"></i></button>' +
               '</div>' +
               '<p class="lounge-comment-text">' + escapeHtml(c.content) + '</p>' +
             '</div>' +
@@ -5549,6 +5714,12 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       var text = commentInput.value.trim();
       if (!text) return;
 
+      var rateLimitMsg = checkLoungeRateLimit();
+      if (rateLimitMsg) { showToast(rateLimitMsg, "ph-timer"); return; }
+
+      var safetyMsg = checkLoungeContentSafety(text);
+      if (safetyMsg) { showToast(safetyMsg, "ph-warning"); return; }
+
       var user = firebaseAuth.currentUser;
       var postId = currentDetailPostId;
       var tier = getTierInfo(authState.userPoints);
@@ -5561,15 +5732,23 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         authorPhoto: "",
         authorTier: tier.label,
         content: text,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        reportCount: 0,
+        reportedBy: [],
+        blinded: false
       }).then(function(){
+        markLoungeActivity(user.uid).catch(function(){});
         commentInput.value = "";
         return db.collection(POSTS_COLLECTION).doc(postId).update({
           commentsCount: firebase.firestore.FieldValue.increment(1)
         });
       }).catch(function(error){
         console.error("댓글 작성 실패:", error);
-        showToast("댓글 등록에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        if (error && error.code === "permission-denied") {
+          showToast("너무 빠르게 연속 작성하고 있어요. 잠시 후 다시 시도해주세요.", "ph-timer");
+        } else {
+          showToast("댓글 등록에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        }
       }).finally(function(){
         commentBtn.disabled = false;
       });
