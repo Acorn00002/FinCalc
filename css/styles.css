@@ -2968,11 +2968,15 @@
   .lounge-detail-cat-badge{
     font-size:12px;font-weight:600;color:var(--ink-3);background:none;padding:0;
   }
-  .lounge-detail-close-btn{
+  .lounge-detail-topbar-actions{display:flex;align-items:center;gap:8px;}
+  .lounge-detail-close-btn, .lounge-detail-delete-btn{
     width:32px;height:32px;border-radius:10px;border:none;background:var(--bg);
     color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
   }
   .lounge-detail-close-btn:hover{background:var(--line);}
+  .lounge-detail-delete-btn{color:#f04452;}
+  .lounge-detail-delete-btn:hover{background:rgba(240,68,82,0.12);}
+  .lounge-detail-delete-btn:disabled{opacity:0.5;cursor:default;}
 
   .lounge-detail-author-row{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
   .lounge-detail-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg);}

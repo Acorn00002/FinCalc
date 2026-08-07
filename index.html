@@ -820,9 +820,14 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   <div class="lounge-detail-modal" role="dialog" aria-modal="true" aria-labelledby="loungeDetailCategory">
     <div class="lounge-detail-topbar">
       <span class="lounge-detail-cat-badge" id="loungeDetailCategory">자산 팩</span>
-      <button type="button" class="lounge-detail-close-btn" id="loungeDetailCloseBtn" aria-label="닫기">
-        <i class="ph-duotone ph-x"></i>
-      </button>
+      <div class="lounge-detail-topbar-actions">
+        <button type="button" class="lounge-detail-delete-btn" id="loungeDetailDeleteBtn" aria-label="게시글 삭제" hidden>
+          <i class="ph-duotone ph-trash"></i>
+        </button>
+        <button type="button" class="lounge-detail-close-btn" id="loungeDetailCloseBtn" aria-label="닫기">
+          <i class="ph-duotone ph-x"></i>
+        </button>
+      </div>
     </div>
 
     <div class="lounge-detail-body" id="loungeDetailBody"></div>
@@ -4693,6 +4698,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     var detailOverlay = document.getElementById("loungeDetailOverlay");
     var detailCloseBtn = document.getElementById("loungeDetailCloseBtn");
     var detailLikeBtn = document.getElementById("loungeDetailLikeBtn");
+    var detailDeleteBtn = document.getElementById("loungeDetailDeleteBtn");
     var commentList = document.getElementById("loungeCommentList");
     var commentInput = document.getElementById("loungeCommentInput");
     var commentBtn = document.getElementById("loungeCommentBtn");
@@ -5120,6 +5126,9 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       var avatar = post.authorPhoto || DEFAULT_AVATAR;
       var isPoll = post.postType === "poll" && post.poll;
 
+      // 글 작성자 본인일 때만 삭제 버튼 노출 — firestore.rules의 posts delete 규칙(본인 uid만 허용)과 짝을 맞춘다.
+      detailDeleteBtn.hidden = !(uid && post.uid === uid);
+
       document.getElementById("loungeDetailCategory").textContent = LOUNGE_CATEGORY_LABELS[post.category] || post.category || "";
       document.getElementById("loungeDetailBody").innerHTML =
         '<div class="lounge-detail-author-row">' +
@@ -5211,6 +5220,23 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     detailLikeBtn.addEventListener("click", function(){
       var postId = detailLikeBtn.dataset.postId;
       if (postId) toggleLike(postId);
+    });
+
+    detailDeleteBtn.addEventListener("click", function(){
+      var postId = currentDetailPostId;
+      if (!postId) return;
+      if (!window.confirm("이 게시글을 삭제할까요? 삭제하면 되돌릴 수 없어요.")) return;
+
+      detailDeleteBtn.disabled = true;
+      db.collection(POSTS_COLLECTION).doc(postId).delete().then(function(){
+        showToast("게시글을 삭제했어요", "ph-trash");
+        closePostDetail();
+      }).catch(function(error){
+        console.error("게시글 삭제 실패:", error);
+        showToast("삭제에 실패했어요. 다시 시도해주세요", "ph-warning");
+      }).finally(function(){
+        detailDeleteBtn.disabled = false;
+      });
     });
 
     document.getElementById("loungeDetailBody").addEventListener("click", function(e){
