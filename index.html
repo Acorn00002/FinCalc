@@ -2588,7 +2588,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
     panel.innerHTML =
       '<div class="calendar-selected-day-heading">' +
-        '<span>' + month + 1 + '월 ' + calendarSelectedDay + '일 · ' + weekday + '요일' + (dateStr === todayStr ? ' · 오늘' : '') + '</span>' +
+        '<span>' + (month + 1) + '월 ' + calendarSelectedDay + '일 · ' + weekday + (dateStr === todayStr ? ' · 오늘' : '') + '</span>' +
         '<button type="button" class="calendar-selected-day-close" id="calendarSelectedDayCloseBtn" aria-label="닫기"><i class="ph-duotone ph-x"></i></button>' +
       '</div>' +
       '<div class="calendar-selected-day-events">' + rowsHtml + '</div>';
