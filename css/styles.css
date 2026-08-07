@@ -2951,11 +2951,7 @@
   }
   .lounge-comment-empty, .lounge-comment-loading{background:var(--card-soft);padding:28px 16px;border-radius:14px;}
 
-  /* ---------- 어뷰징 방어: 면책 고지 / 신고 버튼 / 블라인드 처리 ---------- */
-  .lounge-disclaimer{
-    margin:0 0 16px;padding:12px 14px;background:var(--card-soft);border-radius:12px;
-    font-size:11.5px;font-weight:600;color:var(--ink-3);line-height:1.6;
-  }
+  /* ---------- 어뷰징 방어: 신고 버튼 / 블라인드 처리 ---------- */
 
   .lounge-report-icon-btn{
     border:none;background:none;color:var(--ink-3);padding:0;margin-left:auto;
