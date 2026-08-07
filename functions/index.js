@@ -210,9 +210,11 @@ const DATA_GO_KR_API_KEY = process.env.DATA_GO_KR_API_KEY || "";
 const CALENDAR_SYNC_SECRET = process.env.CALENDAR_SYNC_SECRET || "";
 
 const DART_LIST_URL = "https://opendart.fss.or.kr/api/list.json";
+// 실제 발급받은 키로 확인한 정확한 엔드포인트(odcloud.kr 기반, Swagger 문서로 직접 검증):
+// Base URL이 apis.data.go.kr이 아니라 api.odcloud.kr이고, 인증은 Authorization: Infuser {키} 헤더 방식이다.
 const CHEONGYAKHOME_API_URL =
   process.env.CHEONGYAKHOME_API_URL ||
-  "https://apis.data.go.kr/1613000/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail";
+  "https://api.odcloud.kr/api/ApplyhomeInfoDetailSvc/v1/getAPTLttotPblancDetail";
 
 function pad2(n) { return String(n).padStart(2, "0"); }
 
@@ -1154,5 +1156,80 @@ exports.ipoSchedulesLive = onRequest({ cors: true, region: "asia-northeast3", ti
   } catch (error) {
     console.error("ipoSchedulesLive 실패:", error);
     res.status(502).json({ error: "실시간 공모주 일정을 불러오지 못했습니다." });
+  }
+});
+
+// ---------- 아파트 청약 일정 (청약·공모주 페이지 "아파트 청약" 탭, /api/apartment-subscriptions) ----------
+// 한국부동산원_청약홈 분양정보 조회 서비스(data.go.kr 데이터ID 15098547) — CHEONGYAKHOME_API_URL과
+// 동일한 API를 쓰지만, 이쪽은 이 탭 전용으로 필드를 훨씬 풍부하게(특별공급/1·2순위 접수일,
+// 당첨자발표일, 시공사/시행사, 규제지역 여부 등) 그대로 내려준다. Swagger 문서로 실제 필드명을
+// 전부 확인하고 실 키로 라이브 테스트까지 마쳤다(대구 "달서자이 제니크" 등 실제 매물 확인).
+async function fetchApartmentSubscriptions() {
+  if (!DATA_GO_KR_API_KEY) return [];
+
+  const bgnDe = dartDateCompact(-45).replace(
+    /(\d{4})(\d{2})(\d{2})/, "$1-$2-$3"
+  );
+  const pageSize = 200;
+  let page = 1;
+  const rows = [];
+
+  for (;;) {
+    const url = CHEONGYAKHOME_API_URL +
+      "?page=" + page +
+      "&perPage=" + pageSize +
+      "&cond[RCRIT_PBLANC_DE::GTE]=" + bgnDe;
+    const res = await fetch(url, { headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY } });
+    if (!res.ok) {
+      console.error("청약홈 분양정보 API 오류:", res.status);
+      break;
+    }
+    const data = await res.json();
+    const items = data.data || [];
+    rows.push.apply(rows, items);
+    if (items.length < pageSize) break;
+    page += 1;
+    if (page > 10) break;
+  }
+
+  return rows.map(function (item) {
+    return {
+      id: item.HOUSE_MANAGE_NO || item.PBLANC_NO,
+      name: item.HOUSE_NM || "",
+      houseType: item.HOUSE_SECD_NM || "",
+      supplyType: item.HOUSE_DTL_SECD_NM || "",
+      region: item.SUBSCRPT_AREA_CODE_NM || "",
+      address: item.HSSPLY_ADRES || "",
+      totalUnits: item.TOT_SUPLY_HSHLDCO ? parseInt(item.TOT_SUPLY_HSHLDCO, 10) : null,
+      constructor: item.CNSTRCT_ENTRPS_NM || "",
+      developer: item.BSNS_MBY_NM || "",
+      specialSupplyStart: item.SPSPLY_RCEPT_BGNDE || null,
+      specialSupplyEnd: item.SPSPLY_RCEPT_ENDDE || null,
+      subStart: item.RCEPT_BGNDE || null,
+      subEnd: item.RCEPT_ENDDE || null,
+      winnerDate: item.PRZWNER_PRESNATN_DE || null,
+      contractStart: item.CNTRCT_CNCLS_BGNDE || null,
+      contractEnd: item.CNTRCT_CNCLS_ENDDE || null,
+      moveInMonth: item.MVN_PREARNGE_YM || null,
+      speculativeZone: item.SPECLT_RDN_EARTH_AT === "Y",
+      adjustmentZone: item.MDAT_TRGET_AREA_SECD === "Y",
+      priceCapZone: item.PARCPRC_ULS_AT === "Y",
+      sourceUrl: item.PBLANC_URL || "https://www.applyhome.co.kr"
+    };
+  }).filter(function (x) { return x.id && x.name && x.subStart && x.subEnd; });
+}
+
+exports.apartmentSubscriptionsLive = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 120 }, async (req, res) => {
+  try {
+    if (!DATA_GO_KR_API_KEY) {
+      res.status(500).json({ error: "DATA_GO_KR_API_KEY가 설정되지 않았습니다." });
+      return;
+    }
+    const listings = await fetchApartmentSubscriptions();
+    res.set("Cache-Control", "public, max-age=1800");
+    res.status(200).json({ listings: listings });
+  } catch (error) {
+    console.error("apartmentSubscriptionsLive 실패:", error);
+    res.status(502).json({ error: "실시간 아파트 청약 일정을 불러오지 못했습니다." });
   }
 });

@@ -20,7 +20,8 @@
       { "source": "/api/delete-calendar-event", "function": "deleteCalendarEvent" },
       { "source": "/api/sync-gov24-subsidies", "function": "syncGov24Subsidies" },
       { "source": "/api/finance-products", "function": "financeProductsLive" },
-      { "source": "/api/ipo-schedules", "function": "ipoSchedulesLive" }
+      { "source": "/api/ipo-schedules", "function": "ipoSchedulesLive" },
+      { "source": "/api/apartment-subscriptions", "function": "apartmentSubscriptionsLive" }
     ]
   },
   "functions": [

@@ -1235,13 +1235,77 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     <div class="ipo-card-list" id="ipoCardList"></div>
   </div>
 
-  <section class="view-teaser" id="ipoApartmentPanel" hidden>
-    <span class="view-teaser-icon"><i class="ph-duotone ph-buildings"></i></span>
-    <span class="badge soon">준비 중</span>
-    <h2>아파트 청약</h2>
-    <p>청약홈 연동 아파트 분양 일정도 곧 한눈에 볼 수 있도록 준비하고 있어요.</p>
-  </section>
+  <div id="aptTabPanel" hidden>
+    <div class="ipo-hero">
+      <h2 class="ipo-hero-title">
+        최근 접수한<br>
+        아파트 분양 <strong id="aptHeroCount">0</strong>건
+      </h2>
+    </div>
+
+    <div class="ipo-category-filter" id="aptCategoryFilter">
+      <button type="button" class="ipo-category-chip is-active" data-category="all">전체</button>
+      <button type="button" class="ipo-category-chip" data-category="APT">APT</button>
+      <button type="button" class="ipo-category-chip" data-category="민간사전청약">민간사전청약</button>
+      <button type="button" class="ipo-category-chip" data-category="신혼희망타운">신혼희망타운</button>
+    </div>
+
+    <div class="ipo-card-list" id="aptCardList"></div>
+  </div>
 </main>
+
+<!-- 아파트 청약: 상세 모달 — 공모주 상세 모달(.ipo160-*)과 같은 스타일을 재사용한다 -->
+<div class="calendar-detail-overlay-v2" id="aptDetailOverlay" hidden>
+  <div class="calendar-detail-modal-v2 ipo160-modal" role="dialog" aria-modal="true" aria-labelledby="aptDetailTitle">
+    <div class="ipo-detail-scroll">
+      <button type="button" class="ipo160-close-btn" id="aptDetailCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+
+      <div class="ipo160-profile">
+        <div class="ipo160-logo" id="aptDetailLogo"><i class="ph-duotone ph-buildings"></i></div>
+        <h3 id="aptDetailTitle"></h3>
+        <p class="ipo160-market-line" id="aptDetailRegionLine"></p>
+        <p class="ipo160-tagline" id="aptDetailAddress"></p>
+      </div>
+
+      <div class="ipo160-card ipo160-broker-card">
+        <div class="ipo160-broker-row">
+          <span class="ipo160-broker-badge"><i class="ph-duotone ph-hard-hat"></i></span>
+          <span class="ipo160-broker-name" id="aptDetailConstructor"></span>
+        </div>
+        <p class="ipo160-min-unit" id="aptDetailUnits"></p>
+      </div>
+
+      <div class="ipo160-card">
+        <p class="ipo160-section-title">청약 일정</p>
+        <div class="ipo160-timeline" id="aptDetailTimeline"></div>
+      </div>
+
+      <div class="ipo160-card">
+        <button type="button" class="ipo160-accordion-toggle" id="aptInfoAccordionToggle" aria-expanded="false">
+          <span>분양 정보</span>
+          <span class="ipo160-accordion-arrow">▼</span>
+        </button>
+        <div class="ipo160-accordion-body" id="aptInfoAccordionBody"></div>
+      </div>
+
+      <div class="ipo160-card">
+        <p class="ipo160-section-title">규제 지역 여부</p>
+        <div class="ipo160-demand-grid" id="aptRegulationGrid"></div>
+        <a class="ipo-scoring-source-link" id="aptDetailSourceLink" href="#" target="_blank" rel="noopener">
+          <i class="ph-duotone ph-file-text"></i>청약홈 원문 공고 확인하기 <i class="ph-duotone ph-arrow-square-out"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="ipo-detail-actionbar">
+      <button type="button" class="ipo-share-btn-v2 ipo160-share-btn-full" id="aptDetailShareBtn">
+        <i class="ph-duotone ph-share-network"></i>청약 일정 공유하기
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- 관리자 전용 푸시 발송 화면 — 메뉴에 노출되지 않고 주소창에 #admin-push로 직접 진입해야 함.
      비밀값을 모르면 실제 발송(POST /api/send-push)이 서버에서 거부되므로, 화면 자체는 숨길 필요가 없다. -->
@@ -3593,7 +3657,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   (function initIpoFeature(){
     var segTabs = document.querySelectorAll(".ipo-segmented-tab");
     var ipoPanel = document.getElementById("ipoTabPanel");
-    var apartmentPanel = document.getElementById("ipoApartmentPanel");
+    var apartmentPanel = document.getElementById("aptTabPanel");
     var detailOverlay = document.getElementById("ipoDetailOverlay");
     var detailCloseBtn = document.getElementById("ipoDetailCloseBtn");
     if (!segTabs.length || !detailOverlay) return;
@@ -3604,11 +3668,239 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         segTabs.forEach(function(t){ t.classList.toggle("is-active", t === tab); });
         ipoPanel.hidden = ipoActiveTab !== "ipo";
         apartmentPanel.hidden = ipoActiveTab !== "apartment";
+        if (ipoActiveTab === "apartment") initAptView();
       });
     });
 
     detailCloseBtn.addEventListener("click", closeIpoDetail);
     detailOverlay.addEventListener("click", function(e){ if (e.target === detailOverlay) closeIpoDetail(); });
+  })();
+
+  // ---------- 아파트 청약 (한국부동산원_청약홈 분양정보 조회 서비스) ----------
+  var APT_LISTINGS = [];
+  var aptListingsLoaded = false;
+  var aptListingsLoadFailed = false;
+  var aptActiveCategory = "all";
+
+  function toDateOrNull(str){
+    return str ? new Date(str + "T00:00:00") : null;
+  }
+
+  function loadAptListings(){
+    aptListingsLoadFailed = false;
+    return fetch("/api/apartment-subscriptions")
+      .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+      .then(function(result){
+        if (!result.ok || result.data.error || !Array.isArray(result.data.listings)) {
+          throw new Error((result.data && result.data.error) || "조회 실패");
+        }
+        APT_LISTINGS = result.data.listings.map(function(item){
+          return Object.assign({}, item, {
+            subStart: toDateOrNull(item.subStart),
+            subEnd: toDateOrNull(item.subEnd),
+            specialSupplyStart: toDateOrNull(item.specialSupplyStart),
+            specialSupplyEnd: toDateOrNull(item.specialSupplyEnd),
+            winnerDate: toDateOrNull(item.winnerDate),
+            contractStart: toDateOrNull(item.contractStart),
+            contractEnd: toDateOrNull(item.contractEnd)
+          });
+        });
+        aptListingsLoaded = true;
+        renderAptList();
+      })
+      .catch(function(error){
+        console.error("아파트 청약 일정 조회 실패:", error);
+        aptListingsLoadFailed = true;
+        aptListingsLoaded = true;
+        APT_LISTINGS = [];
+        renderAptList();
+      });
+  }
+
+  function matchesAptCategory(item, activeCategory){
+    return activeCategory === "all" || item.houseType === activeCategory;
+  }
+
+  function renderAptList(){
+    var listEl = document.getElementById("aptCardList");
+    var heroCountEl = document.getElementById("aptHeroCount");
+    if (!listEl || !heroCountEl) return;
+
+    if (!aptListingsLoaded) {
+      heroCountEl.textContent = "…";
+      listEl.innerHTML = '<div class="finance-loading"><div class="finance-spinner"></div><p>실시간 아파트 청약 일정을 불러오는 중이에요...</p></div>';
+      return;
+    }
+    if (aptListingsLoadFailed) {
+      heroCountEl.textContent = "0";
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-cloud-slash"></i><p>실시간 아파트 청약 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p></div>';
+      return;
+    }
+    if (!APT_LISTINGS.length) {
+      heroCountEl.textContent = "0";
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-calendar-blank"></i><p>최근 45일 내 접수 공고된 아파트 분양 정보가 없어요.</p></div>';
+      return;
+    }
+
+    var todayStr = formatDateYMD(new Date());
+    var filtered = APT_LISTINGS.filter(function(item){ return matchesAptCategory(item, aptActiveCategory); });
+    var sorted = filtered.slice().sort(function(a, b){ return a.subEnd - b.subEnd; });
+
+    heroCountEl.textContent = sorted.filter(function(item){ return !getIpoDday(item.subEnd, todayStr).closed; }).length;
+
+    if (!sorted.length) {
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-funnel"></i><p>이 분류에는 표시할 청약 일정이 없어요.</p></div>';
+      return;
+    }
+
+    listEl.innerHTML = sorted.map(function(item){
+      var dday = getIpoDday(item.subEnd, todayStr);
+      var ddayClass = dday.closed ? "is-closed" : (dday.days <= 1 ? "is-urgent" : "");
+      return '<div class="ipo-card" data-id="' + item.id + '">' +
+        '<div class="ipo-card-top">' +
+          '<span class="ipo-card-dday ' + ddayClass + '">' + dday.label + '</span>' +
+          '<span class="ipo-card-category">' + escapeMyPageHtml(item.houseType) + '</span>' +
+          '<span class="ipo-card-underwriter">' + escapeMyPageHtml(item.region) + '</span>' +
+        '</div>' +
+        '<h3 class="ipo-card-name">' + escapeMyPageHtml(item.name) + '</h3>' +
+        '<p class="ipo-card-price">' + escapeMyPageHtml(item.address) + '</p>' +
+        '<div class="ipo-card-meta">' +
+          '<div class="ipo-card-meta-row"><span class="ipo-card-meta-label">청약 기간</span><span class="ipo-card-meta-value">' + formatIpoDate(item.subStart) + ' ~ ' + formatIpoDate(item.subEnd) + '</span></div>' +
+          '<div class="ipo-card-meta-row"><span class="ipo-card-meta-label">당첨자 발표</span><span class="ipo-card-meta-value">' + formatIpoDate(item.winnerDate) + '</span></div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    listEl.querySelectorAll(".ipo-card").forEach(function(card){
+      var id = card.getAttribute("data-id");
+      var item = APT_LISTINGS.filter(function(p){ return String(p.id) === id; })[0];
+      card.addEventListener("click", function(){ if (item) openAptDetail(item); });
+    });
+  }
+
+  document.querySelectorAll("#aptCategoryFilter .ipo-category-chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      aptActiveCategory = chip.getAttribute("data-category");
+      document.querySelectorAll("#aptCategoryFilter .ipo-category-chip").forEach(function(c){
+        c.classList.toggle("is-active", c === chip);
+      });
+      renderAptList();
+    });
+  });
+
+  function buildAptTimeline(item, todayStr){
+    var today = new Date(todayStr + "T00:00:00");
+    var steps = [];
+    if (item.specialSupplyStart) {
+      steps.push({
+        label: "특별공급 접수",
+        dateText: formatIpoDate(item.specialSupplyStart) + (item.specialSupplyEnd ? " ~ " + formatIpoDate(item.specialSupplyEnd) : ""),
+        done: item.specialSupplyEnd ? today > item.specialSupplyEnd : today > item.specialSupplyStart
+      });
+    }
+    steps.push({
+      label: "청약 접수(1·2순위)",
+      dateText: formatIpoDate(item.subStart) + " ~ " + formatIpoDate(item.subEnd),
+      done: today > item.subEnd,
+      active: today >= item.subStart && today <= item.subEnd
+    });
+    steps.push({
+      label: "당첨자 발표일",
+      dateText: item.winnerDate ? formatIpoDate(item.winnerDate) : "미정",
+      done: item.winnerDate ? today > item.winnerDate : false
+    });
+    steps.push({
+      label: "계약 체결",
+      dateText: item.contractStart ? (formatIpoDate(item.contractStart) + (item.contractEnd ? " ~ " + formatIpoDate(item.contractEnd) : "")) : "미정",
+      done: item.contractEnd ? today > item.contractEnd : false
+    });
+
+    return steps.map(function(step){
+      var stateClass = step.done ? "is-done" : (step.active ? "is-active" : "");
+      return '<div class="ipo160-timeline-step ' + stateClass + '">' +
+        '<div class="ipo160-timeline-dot"></div>' +
+        '<div class="ipo160-timeline-body">' +
+          '<p class="ipo160-timeline-label">' + step.label + '</p>' +
+          '<p class="ipo160-timeline-date">' + step.dateText + '</p>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  function regulationBadgeHtml(label, active){
+    return '<div class="ipo160-demand-item"><span>' + label + '</span><strong class="' + (active ? "" : "muted") + '">' + (active ? "해당" : "해당 없음") + '</strong></div>';
+  }
+
+  function openAptDetail(item){
+    var todayStr = formatDateYMD(new Date());
+
+    document.getElementById("aptDetailTitle").textContent = item.name;
+    document.getElementById("aptDetailRegionLine").textContent = item.region + " · " + item.houseType + " · " + item.supplyType;
+    document.getElementById("aptDetailAddress").textContent = item.address || "주소 정보 없음";
+
+    document.getElementById("aptDetailConstructor").textContent = item.constructor || "시공사 정보 없음";
+    document.getElementById("aptDetailUnits").textContent = "총 " + (item.totalUnits ? item.totalUnits.toLocaleString("ko-KR") + "세대" : "세대수 미정") + " · 시행사 " + (item.developer || "정보 없음");
+
+    document.getElementById("aptDetailTimeline").innerHTML = buildAptTimeline(item, todayStr);
+
+    document.getElementById("aptInfoAccordionBody").innerHTML =
+      '<div class="ipo160-info-row"><span>주택 구분</span><strong>' + escapeMyPageHtml(item.houseType) + ' · ' + escapeMyPageHtml(item.supplyType) + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>공급 규모</span><strong>' + (item.totalUnits ? item.totalUnits.toLocaleString("ko-KR") + "세대" : "미정") + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>입주 예정월</span><strong>' + (item.moveInMonth ? item.moveInMonth.slice(0,4) + "년 " + item.moveInMonth.slice(4) + "월" : "미정") + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>공급 위치</span><strong>' + escapeMyPageHtml(item.address || "미정") + '</strong></div>';
+
+    document.getElementById("aptRegulationGrid").innerHTML =
+      regulationBadgeHtml("투기과열지구", item.speculativeZone) +
+      regulationBadgeHtml("조정대상지역", item.adjustmentZone) +
+      regulationBadgeHtml("분양가상한제", item.priceCapZone);
+    document.getElementById("aptDetailSourceLink").href = item.sourceUrl || "https://www.applyhome.co.kr";
+
+    var accToggle = document.getElementById("aptInfoAccordionToggle");
+    var accBody = document.getElementById("aptInfoAccordionBody");
+    accBody.style.maxHeight = "0px";
+    accToggle.setAttribute("aria-expanded", "false");
+    accToggle.onclick = function(){
+      var open = accToggle.getAttribute("aria-expanded") === "true";
+      if (open) {
+        accBody.style.maxHeight = "0px";
+        accToggle.setAttribute("aria-expanded", "false");
+      } else {
+        accBody.style.maxHeight = accBody.scrollHeight + "px";
+        accToggle.setAttribute("aria-expanded", "true");
+      }
+    };
+
+    document.getElementById("aptDetailShareBtn").onclick = function(){
+      var text = item.name + " 아파트 청약 일정: " + formatIpoDate(item.subStart) + " ~ " + formatIpoDate(item.subEnd) + " (" + item.region + ")";
+      if (navigator.share) {
+        navigator.share({ title: item.name + " 청약 일정", text: text, url: location.href }).catch(function(){});
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text + "\n" + location.href).then(function(){
+          showToast("일정을 복사했어요", "ph-link");
+        });
+      } else {
+        showToast("이 브라우저에서는 공유하기를 지원하지 않아요", "ph-warning");
+      }
+    };
+
+    document.getElementById("aptDetailOverlay").hidden = false;
+  }
+
+  function closeAptDetail(){
+    document.getElementById("aptDetailOverlay").hidden = true;
+  }
+
+  function initAptView(){
+    if (!aptListingsLoaded) loadAptListings();
+    else renderAptList();
+  }
+
+  (function initAptFeature(){
+    var overlay = document.getElementById("aptDetailOverlay");
+    var closeBtn = document.getElementById("aptDetailCloseBtn");
+    if (!overlay || !closeBtn) return;
+    closeBtn.addEventListener("click", closeAptDetail);
+    overlay.addEventListener("click", function(e){ if (e.target === overlay) closeAptDetail(); });
   })();
 
   // ---------- 뉴스 · 금융소식 (홈 위젯과 같은 /api/news RSS 프록시를 재사용, 더 긴 전체 목록만 별도 렌더링) ----------
