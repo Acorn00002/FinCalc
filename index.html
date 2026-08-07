@@ -3183,56 +3183,54 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   })();
 
   // ---------- 청약·공모주 ----------
-  // TODO(실연동): 지금은 서비스 함수 뼈대 + 더미 데이터만 있는 상태.
-  // 향후 금융위원회 증권상품정보(공공데이터포털) API를 Cloud Function(예: syncIpoSchedules)으로 동기화해
-  // supportPrograms와 동일한 패턴으로 Firestore "ipoSchedules" 컬렉션에 적재하고,
-  // 아래 loadIpoSchedules()의 목데이터 반환부만 실제 db.collection("ipoSchedules").get() 호출로 교체하면 된다.
-  function addDays(base, days){
-    var d = new Date(base);
-    d.setDate(d.getDate() + days);
-    return d;
-  }
+  // DART 증권신고서(지분증권) 공시를 조합해 만든 /api/ipo-schedules에서 실시간으로 받아온다
+  // (더미 데이터였던 buildIpoMockData()는 제거 — 아래 loadIpoSchedules() 참고).
   function formatIpoDate(d){
+    if (!d) return "-";
     return pad2(d.getMonth() + 1) + "." + pad2(d.getDate()) + "(" + CALENDAR_WEEKDAY_FULL_KO[d.getDay()].charAt(0) + ")";
-  }
-  function buildIpoMockData(){
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return [
-      {
-        id: "ipo-1", name: "OO테크", market: "코스닥", underwriter: "KB증권",
-        priceMin: 15000, priceMax: 18000,
-        subStart: addDays(today, -1), subEnd: addDays(today, 1), refundDate: addDays(today, 3)
-      },
-      {
-        id: "ipo-2", name: "OO바이오", market: "코스피", underwriter: "NH투자증권",
-        priceMin: 32000, priceMax: 38000,
-        subStart: today, subEnd: today, refundDate: addDays(today, 2)
-      },
-      {
-        id: "ipo-3", name: "OO소프트", market: "코스닥", underwriter: "미래에셋증권",
-        priceMin: 8000, priceMax: 9500,
-        subStart: addDays(today, 6), subEnd: addDays(today, 7), refundDate: addDays(today, 9)
-      },
-      {
-        id: "ipo-4", name: "OO모빌리티", market: "코스닥", underwriter: "삼성증권",
-        priceMin: 21000, priceMax: 25000,
-        subStart: addDays(today, -5), subEnd: addDays(today, -4), refundDate: addDays(today, -2)
-      }
-    ];
   }
 
   var IPO_SCHEDULES = [];
   var ipoSchedulesLoaded = false;
   var ipoActiveTab = "ipo";
 
+  var ipoSchedulesLoadFailed = false;
+
+  // DART 공모주 청약 일정 실시간 조회 — /api/ipo-schedules(Vercel api/ipo-schedules.js ·
+  // Firebase functions ipoSchedulesLive)가 증권신고서(지분증권) 공시를 조합해 내려준다.
+  // 응답은 날짜가 ISO 문자열이라 Date 객체로 변환해서 기존 renderIpoList()/getIpoDday()가
+  // 그대로 쓸 수 있게 맞춘다.
   function loadIpoSchedules(){
-    // 실연동 시 이 Promise 내부만 Firestore 조회로 교체 — 렌더 함수는 그대로 재사용 가능.
-    return Promise.resolve(buildIpoMockData()).then(function(data){
-      IPO_SCHEDULES = data;
-      ipoSchedulesLoaded = true;
-      renderIpoList();
-    });
+    ipoSchedulesLoadFailed = false;
+    return fetch("/api/ipo-schedules")
+      .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+      .then(function(result){
+        if (!result.ok || result.data.error || !Array.isArray(result.data.schedules)) {
+          throw new Error((result.data && result.data.error) || "조회 실패");
+        }
+        IPO_SCHEDULES = result.data.schedules.map(function(item){
+          return {
+            id: item.id,
+            name: item.name,
+            market: item.market,
+            underwriter: item.underwriter,
+            priceMin: item.priceMin,
+            priceMax: item.priceMax,
+            subStart: new Date(item.subStart),
+            subEnd: new Date(item.subEnd),
+            refundDate: item.refundDate ? new Date(item.refundDate) : null
+          };
+        });
+        ipoSchedulesLoaded = true;
+        renderIpoList();
+      })
+      .catch(function(error){
+        console.error("공모주 일정 조회 실패:", error);
+        ipoSchedulesLoadFailed = true;
+        ipoSchedulesLoaded = true;
+        IPO_SCHEDULES = [];
+        renderIpoList();
+      });
   }
 
   function getIpoDday(subEnd, todayStr){
@@ -3253,6 +3251,18 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     if (!ipoSchedulesLoaded) {
       listEl.innerHTML = "";
       heroCountEl.textContent = "…";
+      return;
+    }
+
+    if (ipoSchedulesLoadFailed) {
+      heroCountEl.textContent = "0";
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-cloud-slash"></i><p>실시간 공모주 일정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p></div>';
+      return;
+    }
+
+    if (!IPO_SCHEDULES.length) {
+      heroCountEl.textContent = "0";
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-calendar-blank"></i><p>최근 45일 내 신규 접수된 공모주 청약 일정이 없어요.</p></div>';
       return;
     }
 

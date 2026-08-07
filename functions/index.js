@@ -312,6 +312,138 @@ async function fetchDartDisclosures() {
   return kospi.concat(kosdaq);
 }
 
+// ---------- 공모주 청약 일정 (청약·공모주 페이지, /api/ipo-schedules) ----------
+// DART에는 "이번 주 공모주 목록"을 바로 주는 API가 없어서, 두 단계로 조합한다.
+//   1) list.json에서 corp_code 없이 "증권신고서(지분증권)"(pblntf_ty=C, pblntf_detail_ty=C001) 공시를
+//      최근 N일 범위로 검색해 회사 목록을 얻는다.
+//   2) 회사마다 정정(정정신고서) 공시가 여러 번 올라오므로 접수일(rcept_dt) 기준 최신 1건만 남긴 뒤,
+//      각 회사의 corp_code로 estkRs.json(지분증권 증권신고서 상세)을 조회해 청약기일(sbd)·납입기일(pymd)
+//      등 실제 일정 필드를 가져온다.
+// 주의: opendart 가이드 문서 기준으로 구현했고, 실제 발급받은 키로 라이브 응답을 검증하지 못한 상태라
+// sbd/pymd의 정확한 날짜 표기 형식(예: "2026.08.07~08" 등)은 실사용 중 조정이 필요할 수 있다.
+const DART_ESTKRS_URL = "https://opendart.fss.or.kr/api/estkRs.json";
+
+// "2026.08.07 ~ 2026.08.08" / "2026년 08월 07일~08일" 등 다양한 표기에서 날짜를 최대한 관대하게 뽑아낸다.
+function extractDartDates(str) {
+  if (!str) return [];
+  const re = /(\d{4})[.\-년]\s*(\d{1,2})[.\-월]\s*(\d{1,2})/g;
+  const out = [];
+  let m;
+  while ((m = re.exec(str)) !== null) {
+    out.push(new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  }
+  return out;
+}
+
+function parseDartDateRange(str) {
+  const dates = extractDartDates(str);
+  if (!dates.length) return null;
+  return { start: dates[0], end: dates[dates.length - 1] };
+}
+
+async function fetchDartIpoFilingList() {
+  const bgnDe = dartDateCompact(-45);
+  const endDe = dartDateCompact(0);
+  const pageCount = 100;
+  let pageNo = 1;
+  const filings = [];
+
+  for (;;) {
+    const url = DART_LIST_URL +
+      "?crtfc_key=" + encodeURIComponent(DART_API_KEY) +
+      "&pblntf_ty=C" +
+      "&pblntf_detail_ty=C001" +
+      "&bgn_de=" + bgnDe +
+      "&end_de=" + endDe +
+      "&page_no=" + pageNo +
+      "&page_count=" + pageCount;
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("DART IPO 목록 조회 오류:", res.status);
+      break;
+    }
+    const data = await res.json();
+    if (data.status === "013") break; // 조회된 데이터 없음
+    if (data.status !== "000") {
+      console.error("DART IPO 목록 API 오류:", data.status, data.message);
+      break;
+    }
+
+    filings.push.apply(filings, data.list || []);
+    if ((data.list || []).length < pageCount) break;
+    pageNo += 1;
+    if (pageNo > 10) break;
+  }
+
+  return filings;
+}
+
+// 같은 회사가 정정신고서를 여러 번 낼 수 있어, corp_code당 접수일이 가장 최근인 1건만 남긴다.
+function dedupeLatestByCorp(filings) {
+  const latest = {};
+  filings.forEach((f) => {
+    const prev = latest[f.corp_code];
+    if (!prev || f.rcept_dt > prev.rcept_dt) latest[f.corp_code] = f;
+  });
+  return Object.values(latest);
+}
+
+async function fetchDartIpoDetail(filing) {
+  const bgnDe = dartDateCompact(-60);
+  const endDe = dartDateCompact(30);
+  const url = DART_ESTKRS_URL +
+    "?crtfc_key=" + encodeURIComponent(DART_API_KEY) +
+    "&corp_code=" + filing.corp_code +
+    "&bgn_de=" + bgnDe +
+    "&end_de=" + endDe;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.status !== "000" || !data.list || !data.list.length) return null;
+
+    const rows = data.list;
+    const generalRow = rows.find((r) => r.sbd) || rows[0];
+    const priceRow = rows.find((r) => r.slprc);
+    const underwriterRow = rows.find((r) => r.actnmn);
+
+    const subRange = parseDartDateRange(generalRow && generalRow.sbd);
+    if (!subRange) return null; // 청약기일을 못 찾으면 목록에 올리지 않는다(추측 데이터 방지)
+
+    const paymentDates = extractDartDates(generalRow && generalRow.pymd);
+    const priceRaw = priceRow && priceRow.slprc ? String(priceRow.slprc).replace(/[^0-9]/g, "") : "";
+    const price = priceRaw ? parseInt(priceRaw, 10) : null;
+
+    return {
+      id: filing.corp_code,
+      name: filing.corp_name,
+      market: filing.corp_cls === "Y" ? "코스피" : (filing.corp_cls === "K" ? "코스닥" : "기타"),
+      underwriter: underwriterRow ? underwriterRow.actnmn : "",
+      priceMin: price,
+      priceMax: price,
+      subStart: subRange.start.toISOString(),
+      subEnd: subRange.end.toISOString(),
+      refundDate: paymentDates.length ? paymentDates[paymentDates.length - 1].toISOString() : null,
+      sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + filing.rcept_no
+    };
+  } catch (error) {
+    console.error("DART IPO 상세 조회 실패(" + filing.corp_name + "):", error.message);
+    return null;
+  }
+}
+
+async function fetchDartIpoSchedules() {
+  if (!DART_API_KEY) {
+    console.warn("DART_API_KEY가 설정되지 않아 공모주 일정 수집을 건너뜁니다.");
+    return [];
+  }
+  const filings = dedupeLatestByCorp(await fetchDartIpoFilingList());
+  const details = await Promise.all(filings.map(fetchDartIpoDetail));
+  return details.filter(Boolean);
+}
+
 // 청약홈(한국부동산원) APT 분양정보 — data.go.kr 표준 응답 포맷(response.body.items)을 기본으로 하되,
 // 서비스별로 조금씩 다른 실제 필드명 후보들도 함께 대비해둔다. 활용신청 승인 후 실제 응답을 보고
 // 아래 필드 매핑(houseNm/pblancNo/rceptBgnde 등)을 문서와 대조해 필요시 조정할 것.
@@ -966,5 +1098,20 @@ exports.financeProductsLive = onRequest({ cors: true, region: "asia-northeast3" 
   } catch (error) {
     console.error("financeProductsLive 실패:", error);
     res.status(502).json({ error: "실시간 금융상품 정보를 불러오지 못했습니다." });
+  }
+});
+
+exports.ipoSchedulesLive = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 120 }, async (req, res) => {
+  try {
+    if (!DART_API_KEY) {
+      res.status(500).json({ error: "DART_API_KEY가 설정되지 않았습니다." });
+      return;
+    }
+    const schedules = await fetchDartIpoSchedules();
+    res.set("Cache-Control", "public, max-age=1800");
+    res.status(200).json({ schedules: schedules });
+  } catch (error) {
+    console.error("ipoSchedulesLive 실패:", error);
+    res.status(502).json({ error: "실시간 공모주 일정을 불러오지 못했습니다." });
   }
 });
