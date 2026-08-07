@@ -3581,14 +3581,151 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 })();
 
-// 26. 청약가점 계산기 — 무주택기간(32점)+부양가족수(35점)+청약통장가입기간(17점) = 84점 만점
+// 26. 청약가점 계산기 — 무주택기간(32점, 생년월일·혼인일 기반 자동산정) + 부양가족수(35점)
+//     + 청약통장가입기간(17점, 가입일 기반 자동산정) = 84점 만점. 여기에 지역별 예치금 충족 판정,
+//     특별공급 자격 셀프체크, 당첨 가능성 참고 리포트까지 함께 계산한다.
 (function () {
+    // 무주택기간/청약통장 가입기간 점수 구간표 — 기존에 select 옵션으로 하드코딩돼 있던 것과 동일한
+    // 공식 청약가점제 점수표를 그대로 쓰되, 이제는 실제 날짜로부터 역산한 경과연수로 구간을 찾는다.
+    var NO_HOUSE_BRACKETS = [
+        { years: 1, score: 2 }, { years: 2, score: 4 }, { years: 3, score: 6 }, { years: 4, score: 8 },
+        { years: 5, score: 10 }, { years: 6, score: 12 }, { years: 7, score: 14 }, { years: 8, score: 16 },
+        { years: 9, score: 18 }, { years: 10, score: 20 }, { years: 11, score: 22 }, { years: 12, score: 24 },
+        { years: 13, score: 26 }, { years: 14, score: 28 }, { years: 15, score: 30 }
+    ];
+    var TERM_BRACKETS = [
+        { years: 0.5, score: 1 }, { years: 1, score: 2 }, { years: 2, score: 3 }, { years: 3, score: 4 },
+        { years: 4, score: 5 }, { years: 5, score: 6 }, { years: 6, score: 7 }, { years: 7, score: 8 },
+        { years: 8, score: 9 }, { years: 9, score: 10 }, { years: 10, score: 11 }, { years: 11, score: 12 },
+        { years: 12, score: 13 }, { years: 13, score: 14 }, { years: 14, score: 15 }, { years: 15, score: 16 }
+    ];
+
+    function scoreFromBrackets(years, brackets, maxScore) {
+        if (years == null || isNaN(years) || years < 0) years = 0;
+        for (var i = 0; i < brackets.length; i++) {
+            if (years < brackets[i].years) return brackets[i].score;
+        }
+        return maxScore;
+    }
+
+    function yearsBetween(startDate, endDate) {
+        if (!startDate || isNaN(startDate.getTime())) return null;
+        var ms = endDate.getTime() - startDate.getTime();
+        if (ms < 0) return 0;
+        return ms / (365.25 * 24 * 60 * 60 * 1000);
+    }
+
+    function addYears(date, years) {
+        var d = new Date(date.getTime());
+        d.setFullYear(d.getFullYear() + years);
+        return d;
+    }
+
+    // 민영주택 청약 예치금 기준(주택공급에관한규칙 별표) — 지역 × 희망 전용면적별 최소 예치금
+    var DEPOSIT_TABLE = {
+        seoul_busan: { "85": 3000000, "102": 6000000, "135": 10000000, all: 15000000 },
+        other_metro: { "85": 2500000, "102": 4000000, "135": 7000000, all: 10000000 },
+        other: { "85": 2000000, "102": 3000000, "135": 4000000, all: 5000000 }
+    };
+    var REGION_LABEL = { seoul_busan: "서울·부산", other_metro: "기타 광역시", other: "기타 시·군" };
+    var AREA_LABEL = { "85": "85㎡ 이하", "102": "102㎡ 이하", "135": "135㎡ 이하", all: "모든 면적" };
+
+    function computeNoHouseScore() {
+        var birthInput = document.getElementById("subscriptionBirthDate").value;
+        if (!birthInput) return null;
+        var birth = new Date(birthInput);
+        var age30 = addYears(birth, 30);
+
+        // 무주택기간 기산일 = 만 30세가 되는 날. 단 그 이전에 혼인했다면 혼인신고일부터 기산한다(공식 규정).
+        var startDate = age30;
+        var married = document.getElementById("subscriptionMarried").checked;
+        if (married) {
+            var marriageInput = document.getElementById("subscriptionMarriageDate").value;
+            if (marriageInput) {
+                var marriageDate = new Date(marriageInput);
+                if (marriageDate < age30) startDate = marriageDate;
+            }
+        }
+
+        var years = yearsBetween(startDate, new Date());
+        if (years === null) return null;
+        return scoreFromBrackets(years, NO_HOUSE_BRACKETS, 32);
+    }
+
+    function computeTermScore() {
+        var joinInput = document.getElementById("subscriptionJoinDate").value;
+        if (!joinInput) return null;
+        var joinDate = new Date(joinInput);
+        var years = yearsBetween(joinDate, new Date());
+        if (years === null) return null;
+        return scoreFromBrackets(years, TERM_BRACKETS, 17);
+    }
+
+    function renderDepositCheck() {
+        var region = document.getElementById("subscriptionRegion").value;
+        var area = document.getElementById("subscriptionAreaTier").value;
+        var deposit = parseNumber(document.getElementById("subscriptionDepositAmount").value);
+        var required = DEPOSIT_TABLE[region][area];
+        var ok = deposit >= required;
+        return '<div class="subscription-deposit-badge">' +
+            '<span class="label">' + REGION_LABEL[region] + ' · ' + AREA_LABEL[area] + ' 필요 예치금 ' + formatResult(required) + '원</span>' +
+            '<span class="status ' + (ok ? "ok" : "short") + '">' + (ok ? "충족" : ("부족 " + formatResult(required - deposit) + "원")) + '</span>' +
+            '</div>';
+    }
+
+    function renderSpTally() {
+        var groups = {
+            firstHome: { label: "생애최초", total: 0, checked: 0 },
+            newlywed: { label: "신혼부부", total: 0, checked: 0 },
+            youth: { label: "청년", total: 0, checked: 0 }
+        };
+        document.querySelectorAll(".subscription-sp-check").forEach(function (cb) {
+            var sp = cb.getAttribute("data-sp");
+            if (!groups[sp]) return;
+            groups[sp].total++;
+            if (cb.checked) groups[sp].checked++;
+        });
+        var lines = Object.keys(groups).map(function (key) {
+            var g = groups[key];
+            var full = g.total > 0 && g.checked === g.total;
+            return (full ? "✅ " : "▫️ ") + g.label + " 특별공급: " + g.checked + "/" + g.total + " 항목 충족" + (full ? " (자가진단 요건 모두 체크됨)" : "");
+        });
+        return '<div class="subscription-sp-tally">' + lines.join("<br>") + '</div>';
+    }
+
+    function renderReportBand(total) {
+        var band;
+        if (total >= 70) {
+            band = { title: "당첨 가능성: 높음", text: "서울 인기 지역을 포함한 대부분 지역에서 경쟁력 있는 점수대예요. 다만 초인기 단지는 여전히 만점에 가까운 경쟁이 있을 수 있어요." };
+        } else if (total >= 50) {
+            band = { title: "당첨 가능성: 중상", text: "수도권 외곽이나 비강남권에서는 당첨 사례가 많은 점수대예요. 인기 단지는 추첨제 물량이나 다른 전략도 함께 고려해보세요." };
+        } else if (total >= 30) {
+            band = { title: "당첨 가능성: 중", text: "지방 및 비인기 단지 중심으로 당첨 가능성이 있는 점수대예요. 특별공급이나 추첨제(85㎡ 초과 물량 일부) 병행을 추천해요." };
+        } else {
+            band = { title: "당첨 가능성: 보완 필요", text: "일반공급 가점제만으로는 경쟁이 쉽지 않은 점수대예요. 특별공급 자격, 추첨제, 청약통장 가입기간을 늘리는 전략을 함께 검토해보세요." };
+        }
+        return '<div class="subscription-report-band">' +
+            '<p class="band-title">' + band.title + ' · 참고용 리포트</p>' +
+            '<p>' + band.text + '</p>' +
+            '</div>' +
+            '<p class="subscription-report-disclaimer">실제 당첨 커트라인은 단지·지역·회차별 경쟁률에 따라 크게 달라져요. 위 구간은 최근 몇 년간의 일반적인 경향을 참고용으로 정리한 것이며, 정확한 최신 결과는 청약홈에서 확인해주세요.</p>';
+    }
+
     window.calculateSubscriptionScore = function (skipHistory) {
         skipHistory = skipHistory || false;
 
-        var noHouseScore = parseInt(document.getElementById("subscriptionNoHouse").value, 10) || 0;
+        var noHouseScore = computeNoHouseScore();
+        var termScore = computeTermScore();
+
+        if (noHouseScore === null && termScore === null) {
+            document.getElementById("subscription-hero-empty").style.display = "flex";
+            document.getElementById("subscription-hero-content").style.display = "none";
+            return;
+        }
+
+        noHouseScore = noHouseScore || 0;
+        termScore = termScore || 0;
         var dependentsScore = parseInt(document.getElementById("subscriptionDependents").value, 10) || 0;
-        var termScore = parseInt(document.getElementById("subscriptionTerm").value, 10) || 0;
         var total = noHouseScore + dependentsScore + termScore;
 
         document.getElementById("subscription-hero-empty").style.display = "none";
@@ -3599,12 +3736,42 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("subscriptionDependentsScore").innerText = dependentsScore + "점";
         document.getElementById("subscriptionTermScore").innerText = termScore + "점";
 
+        var reportEl = document.getElementById("subscriptionExtraReport");
+        if (reportEl) {
+            reportEl.innerHTML = renderDepositCheck() + renderSpTally() + renderReportBand(total);
+        }
+
         if (!skipHistory && typeof addHistoryRecord === "function") {
             var title = "청약가점 총점 " + total + "점 / 84점";
-            var params = {};
-            addHistoryRecord("subscription", "청약가점 계산", title, params);
+            addHistoryRecord("subscription", "청약가점 계산", title, {});
         }
     };
+
+    // 값이 바뀔 때마다 버튼 클릭 없이 바로 재계산 — SCAMPER 요구사항의 "즉시 반영"
+    document.addEventListener("DOMContentLoaded", function () {
+        var marriedToggle = document.getElementById("subscriptionMarried");
+        var marriageGroup = document.getElementById("subscriptionMarriageDateGroup");
+        if (marriedToggle && marriageGroup) {
+            marriedToggle.addEventListener("change", function () {
+                marriageGroup.style.display = marriedToggle.checked ? "block" : "none";
+                calculateSubscriptionScore(true);
+            });
+        }
+
+        [
+            "subscriptionBirthDate", "subscriptionMarriageDate", "subscriptionDependents", "subscriptionJoinDate",
+            "subscriptionRegion", "subscriptionAreaTier", "subscriptionDepositAmount"
+        ].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener("input", function () { calculateSubscriptionScore(true); });
+            el.addEventListener("change", function () { calculateSubscriptionScore(true); });
+        });
+
+        document.querySelectorAll(".subscription-sp-check").forEach(function (cb) {
+            cb.addEventListener("change", function () { calculateSubscriptionScore(true); });
+        });
+    });
 })();
 
 // 27. 내집마련 계산기 — 자기자본(LTV 역산) vs 자기자본+DSR대출한도 중 낮은 금액으로 매수가능 목표가 산출

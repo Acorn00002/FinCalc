@@ -2353,3 +2353,110 @@ input.avg-inline-input-qty {
     color: var(--text-muted);
     line-height: 1.6;
 }
+
+/* ---------- 청약가점 계산기: 특별공급 셀프체크 / 예치금·당첨가능성 리포트 ---------- */
+.subscription-sp-group {
+    margin-bottom: 12px;
+}
+.subscription-sp-group:last-of-type {
+    margin-bottom: 0;
+}
+.subscription-sp-title {
+    margin: 0 0 6px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+.subscription-sp-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+.subscription-sp-item input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+.subscription-sp-note {
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.subscription-extra-report {
+    margin-top: 16px;
+}
+.subscription-extra-report:empty {
+    margin-top: 0;
+}
+.subscription-deposit-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: var(--card-soft, var(--bg-color));
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+}
+.subscription-deposit-badge .label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+.subscription-deposit-badge .status {
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+.subscription-deposit-badge .status.ok {
+    background: rgba(5, 150, 105, 0.12);
+    color: var(--profit-color);
+}
+.subscription-deposit-badge .status.short {
+    background: rgba(220, 38, 38, 0.12);
+    color: var(--loss-color);
+}
+.subscription-sp-tally {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    background: var(--card-soft, var(--bg-color));
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    line-height: 1.7;
+}
+.subscription-report-band {
+    background: var(--accent-light);
+    border-radius: 12px;
+    padding: 14px;
+}
+.subscription-report-band p {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.7;
+}
+.subscription-report-band .band-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    margin-bottom: 4px;
+}
+.subscription-report-disclaimer {
+    margin: 8px 0 0;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}

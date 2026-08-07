@@ -3585,26 +3585,27 @@
                 <div class="calc-grid">
                     <div class="input-panel glass-panel">
                         <div class="input-group">
-                            <label for="subscriptionNoHouse">무주택기간 (최대 32점)</label>
-                            <div class="select-field-fp">
-                                <select id="subscriptionNoHouse">
-                                    <option value="2">1년 미만 (2점)</option>
-                                    <option value="4">1년~2년 (4점)</option>
-                                    <option value="6">2년~3년 (6점)</option>
-                                    <option value="8">3년~4년 (8점)</option>
-                                    <option value="10">4년~5년 (10점)</option>
-                                    <option value="12">5년~6년 (12점)</option>
-                                    <option value="14">6년~7년 (14점)</option>
-                                    <option value="16">7년~8년 (16점)</option>
-                                    <option value="18">8년~9년 (18점)</option>
-                                    <option value="20">9년~10년 (20점)</option>
-                                    <option value="22">10년~11년 (22점)</option>
-                                    <option value="24">11년~12년 (24점)</option>
-                                    <option value="26">12년~13년 (26점)</option>
-                                    <option value="28">13년~14년 (28점)</option>
-                                    <option value="30" selected>14년~15년 (30점)</option>
-                                    <option value="32">15년 이상 (32점)</option>
-                                </select>
+                            <label for="subscriptionBirthDate">생년월일 (무주택기간 산정 기준, 최대 32점)</label>
+                            <div class="date-field">
+                                <input type="date" id="subscriptionBirthDate">
+                            </div>
+                            <p class="field-help-text">무주택기간은 만 30세가 되는 날부터 계산해요. 그 전에 혼인했다면 혼인신고일부터예요.</p>
+                        </div>
+
+                        <div class="input-group">
+                            <div class="switch-row">
+                                <label for="subscriptionMarried">혼인 여부</label>
+                                <label class="switch">
+                                    <input type="checkbox" id="subscriptionMarried">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="input-group" id="subscriptionMarriageDateGroup" style="display:none;">
+                            <label for="subscriptionMarriageDate">혼인신고일</label>
+                            <div class="date-field">
+                                <input type="date" id="subscriptionMarriageDate">
                             </div>
                         </div>
 
@@ -3624,27 +3625,66 @@
                         </div>
 
                         <div class="input-group">
-                            <label for="subscriptionTerm">청약통장 가입기간 (최대 17점)</label>
-                            <div class="select-field-fp">
-                                <select id="subscriptionTerm">
-                                    <option value="1">6개월 미만 (1점)</option>
-                                    <option value="2">6개월~1년 (2점)</option>
-                                    <option value="3">1년~2년 (3점)</option>
-                                    <option value="4">2년~3년 (4점)</option>
-                                    <option value="5">3년~4년 (5점)</option>
-                                    <option value="6">4년~5년 (6점)</option>
-                                    <option value="7">5년~6년 (7점)</option>
-                                    <option value="8">6년~7년 (8점)</option>
-                                    <option value="9">7년~8년 (9점)</option>
-                                    <option value="10">8년~9년 (10점)</option>
-                                    <option value="11">9년~10년 (11점)</option>
-                                    <option value="12">10년~11년 (12점)</option>
-                                    <option value="13">11년~12년 (13점)</option>
-                                    <option value="14">12년~13년 (14점)</option>
-                                    <option value="15">13년~14년 (15점)</option>
-                                    <option value="16">14년~15년 (16점)</option>
-                                    <option value="17" selected>15년 이상 (17점)</option>
-                                </select>
+                            <label for="subscriptionJoinDate">청약통장 가입일 (최대 17점)</label>
+                            <div class="date-field">
+                                <input type="date" id="subscriptionJoinDate">
+                            </div>
+                        </div>
+
+                        <div class="advanced-options-toggle" onclick="toggleAdvancedOptions(this)">
+                            <span>지역별 예치금 · 특별공급 자격 확인 ⚙️</span>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="advanced-options-panel" style="display: none;">
+                            <div class="input-group">
+                                <label for="subscriptionRegion">청약 지역</label>
+                                <div class="select-field-fp">
+                                    <select id="subscriptionRegion">
+                                        <option value="seoul_busan">서울 · 부산</option>
+                                        <option value="other_metro">기타 광역시</option>
+                                        <option value="other">기타 시 · 군</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="subscriptionAreaTier">희망 전용면적</label>
+                                <div class="select-field-fp">
+                                    <select id="subscriptionAreaTier">
+                                        <option value="85">85㎡ 이하</option>
+                                        <option value="102">102㎡ 이하</option>
+                                        <option value="135">135㎡ 이하</option>
+                                        <option value="all">모든 면적</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label for="subscriptionDepositAmount">현재 청약 예치금</label>
+                                <div class="underline-input">
+                                    <input type="text" id="subscriptionDepositAmount" placeholder="0" inputmode="numeric">
+                                    <span class="underline-unit">원</span>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label>특별공급 자격 셀프 체크</label>
+                                <div class="subscription-sp-group">
+                                    <p class="subscription-sp-title">생애최초 특별공급</p>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="firstHome">세대구성원 전원 주택 소유 이력 없음</label>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="firstHome">5년 이상 소득세 납부(근로·사업소득)</label>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="firstHome">혼인 중이거나 미혼 자녀 있음 (1인가구 일부 예외)</label>
+                                </div>
+                                <div class="subscription-sp-group">
+                                    <p class="subscription-sp-title">신혼부부 특별공급</p>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="newlywed">혼인기간 7년 이내 (또는 6세 이하 자녀 있는 한부모가족)</label>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="newlywed">세대구성원 전원 무주택</label>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="newlywed">도시근로자 가구당 월평균소득 기준 이내</label>
+                                </div>
+                                <div class="subscription-sp-group">
+                                    <p class="subscription-sp-title">청년 특별공급</p>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="youth">만 19~39세 무주택 (유형별 미혼 요건 존재)</label>
+                                    <label class="subscription-sp-item"><input type="checkbox" class="subscription-sp-check" data-sp="youth">소득 · 자산 기준 이내</label>
+                                </div>
+                                <p class="subscription-sp-note">셀프 체크 결과는 참고용이에요. 실제 자격은 청약홈에서 세대·소득 정보로 최종 확인해야 해요.</p>
                             </div>
                         </div>
 
@@ -3686,6 +3726,8 @@
                                     <span id="subscriptionTermScore">0점</span>
                                 </div>
                             </div>
+
+                            <div class="subscription-extra-report" id="subscriptionExtraReport"></div>
                         </div>
                     </div>
                 </div>
