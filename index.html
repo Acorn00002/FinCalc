@@ -1480,6 +1480,29 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   </div>
 </main>
 
+<!-- 관리자 전용 세무사 상담 신청 목록 화면 — #admin-tax-consult로 직접 진입, 비밀값으로 보호됨.
+     taxConsultLeads는 firestore.rules에서 클라이언트 read가 전면 차단돼 있어, 이 화면은 Firestore를
+     직접 읽지 않고 비밀값을 서버(getTaxConsultLeads)에 넘겨 Admin SDK로 대신 조회해온 결과만 받는다. -->
+<main class="wrap app-view" id="view-admin-tax-consult">
+  <div class="mypage-head">
+    <p class="mypage-eyebrow">관리자</p>
+    <h2>세무사 상담 신청 목록</h2>
+    <p>사용자가 남긴 절세 상담 신청 내역을 확인해요.</p>
+  </div>
+
+  <div class="mypage-section">
+    <label class="admin-push-label">비밀값</label>
+    <input type="password" class="admin-push-input" id="adminTaxSecret" placeholder="SEND_PUSH_SECRET">
+    <button type="button" class="admin-push-submit-btn" id="adminTaxLoadBtn">불러오기</button>
+    <p class="admin-push-result" id="adminTaxResult"></p>
+  </div>
+
+  <div class="mypage-section">
+    <h3 class="mypage-section-title">신청 내역 (최신순 200건)</h3>
+    <div id="adminTaxList"></div>
+  </div>
+</main>
+
 <main class="wrap app-view" id="view-news">
   <div class="news-head">
     <p class="mypage-eyebrow">뉴스 · 금융소식</p>
@@ -1938,7 +1961,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 (function(){
   "use strict";
 
-  var VIEWS = ["home", "finpilot", "taxpilot", "finance", "subsidy", "ipo", "news", "calendar", "lounge", "mypage", "dictionary", "market", "settings", "info", "notice", "faq", "admin-push", "admin-calendar"];
+  var VIEWS = ["home", "finpilot", "taxpilot", "finance", "subsidy", "ipo", "news", "calendar", "lounge", "mypage", "dictionary", "market", "settings", "info", "notice", "faq", "admin-push", "admin-calendar", "admin-tax-consult"];
   // 사이드바 ↔ 상단 메뉴바 드롭다운 항목까지 전부 포함해, data-view가 일치하는 모든 요소가
   // 한 곳에서만 갱신해도 두 위치 동시에 활성화 스타일이 켜지도록(양방향 동기화) 넓게 잡은 선택자
   var tabBtns = document.querySelectorAll(".tab-btn, .sidebar-item, .navbar-dropdown-item, .bottom-nav-item");
@@ -7169,6 +7192,70 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     cancelBtn.addEventListener("click", resetForm);
 
     loadAdminCalList();
+  })();
+
+  // ---------- 관리자 세무사 상담 신청 목록 조회 (#admin-tax-consult) ----------
+  (function initAdminTaxConsult(){
+    var loadBtn = document.getElementById("adminTaxLoadBtn");
+    if (!loadBtn) return;
+    var resultEl = document.getElementById("adminTaxResult");
+    var listEl = document.getElementById("adminTaxList");
+
+    function escapeLeadHtml(str){
+      return String(str || "").replace(/[&<>"']/g, function(ch){
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+      });
+    }
+
+    function formatLeadDate(iso){
+      if (!iso) return "";
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") +
+        " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    }
+
+    loadBtn.addEventListener("click", function(){
+      var secret = document.getElementById("adminTaxSecret").value.trim();
+      if (!secret) {
+        resultEl.textContent = "비밀값을 입력하세요.";
+        return;
+      }
+      loadBtn.disabled = true;
+      resultEl.textContent = "불러오는 중...";
+      listEl.innerHTML = "";
+
+      fetch("/api/tax-consult-leads?secret=" + encodeURIComponent(secret))
+        .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+        .then(function(result){
+          if (!result.ok) {
+            resultEl.textContent = "실패: " + (result.data.error || "알 수 없는 오류");
+            return;
+          }
+          var leads = result.data.leads || [];
+          resultEl.textContent = leads.length + "건";
+          if (!leads.length) {
+            listEl.innerHTML = '<p class="admin-push-result">신청 내역이 없어요.</p>';
+            return;
+          }
+          listEl.innerHTML = leads.map(function(lead){
+            return '' +
+              '<div class="admin-cal-item">' +
+                '<div class="admin-cal-item-body">' +
+                  '<p class="admin-cal-item-title">[' + escapeLeadHtml(lead.category) + '] ' + escapeLeadHtml(lead.contact) + '</p>' +
+                  '<p class="admin-cal-item-meta">' + escapeLeadHtml(lead.message || "(내용 없음)") + '</p>' +
+                  '<p class="admin-cal-item-meta">' + formatLeadDate(lead.createdAt) + '</p>' +
+                '</div>' +
+              '</div>';
+          }).join("");
+        })
+        .catch(function(error){
+          resultEl.textContent = "요청 실패: " + error.message;
+        })
+        .then(function(){
+          loadBtn.disabled = false;
+        });
+    });
   })();
 
   // ---------- Sidebar: accordion groups ----------

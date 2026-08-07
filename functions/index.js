@@ -781,6 +781,34 @@ exports.deleteCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
   }
 });
 
+// ---------- 세무사 1:1 절세 상담 신청 목록 조회 ----------
+// taxConsultLeads는 연락처 등 개인정보라 firestore.rules에서 클라이언트 read를 전면 차단해뒀다
+// (본인조차 다시 못 봄). 그래서 조회는 Admin SDK로 규칙을 우회하는 이 함수를 통해서만 가능하고,
+// 다른 관리자 함수와 동일하게 SEND_PUSH_SECRET을 아는 사람만 호출할 수 있다.
+exports.getTaxConsultLeads = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  try {
+    const snapshot = await db.collection("taxConsultLeads").orderBy("createdAt", "desc").limit(200).get();
+    const leads = snapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        category: data.category || "",
+        contact: data.contact || "",
+        message: data.message || "",
+        createdAt: data.createdAt && data.createdAt.toDate ? data.createdAt.toDate().toISOString() : null
+      };
+    });
+    res.status(200).json({ leads });
+  } catch (error) {
+    console.error("절세 상담 목록 조회 실패:", error);
+    res.status(500).json({ error: "목록을 불러오지 못했습니다." });
+  }
+});
+
 // ---------- D-Day 일정 알림(🔔) 발송 ----------
 // 사용자가 특정 일정에 알림을 켜면 users/{uid}/eventReminders/{eventId} 문서가 생기고(클라이언트가 직접
 // 자기 서브컬렉션에 쓰는 것이라 관리자 비밀값이 필요 없음 — firestore.rules에서 본인 uid만 허용),
