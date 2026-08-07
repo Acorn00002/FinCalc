@@ -3762,7 +3762,13 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     }
 
     var todayStr = formatDateYMD(new Date());
-    var filtered = APT_LISTINGS.filter(function(item){ return matchesAptCategory(item, aptActiveCategory); });
+    // 마감된 지 너무 오래된 건 안 보여준다 — 1~2주(14일) 넘게 지난 마감 공고는 목록에서 제외.
+    var APT_CLOSED_VISIBLE_DAYS = 14;
+    var filtered = APT_LISTINGS.filter(function(item){
+      if (!matchesAptCategory(item, aptActiveCategory)) return false;
+      var dday = getIpoDday(item.subEnd, todayStr);
+      return !dday.closed || dday.days >= -APT_CLOSED_VISIBLE_DAYS;
+    });
     var sorted = filtered.slice().sort(function(a, b){ return a.subEnd - b.subEnd; });
 
     heroCountEl.textContent = sorted.filter(function(item){ return !getIpoDday(item.subEnd, todayStr).closed; }).length;
