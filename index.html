@@ -5000,8 +5000,10 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
       db.collection(POSTS_COLLECTION).add({
         uid: user.uid,
-        authorName: user.displayName || "익명 파일럿",
-        authorPhoto: user.photoURL || "",
+        // 구글 계정 원본 표시 이름/사진이 아니라, 마이페이지에서 바꾼 닉네임(users/{uid}.nickname을
+        // authState.userProfile.name에 반영)과 기본 아바타를 쓴다.
+        authorName: (authState.userProfile && authState.userProfile.name) || "익명 파일럿",
+        authorPhoto: "",
         authorTier: tier.label,
         title: title,
         content: content,
@@ -5237,8 +5239,8 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       db.collection(COMMENTS_COLLECTION).add({
         postId: postId,
         uid: user.uid,
-        authorName: user.displayName || "익명 파일럿",
-        authorPhoto: user.photoURL || "",
+        authorName: (authState.userProfile && authState.userProfile.name) || "익명 파일럿",
+        authorPhoto: "",
         authorTier: tier.label,
         content: text,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
