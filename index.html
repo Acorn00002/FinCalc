@@ -269,6 +269,11 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       </div>
 
       <div class="sidebar-standalone">
+        <button type="button" class="sidebar-item sidebar-item-highlight" id="sidebarTaxConsultBtn">
+          <span class="sidebar-item-icon-plate sidebar-item-icon-plate-highlight"><i class="ph-duotone ph-scales"></i></span>
+          세무사 1:1 절세 상담
+          <span class="badge new sidebar-item-badge">BETA</span>
+        </button>
         <a class="sidebar-item" href="#news" data-view="news">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-newspaper"></i></span>뉴스 · 금융소식
         </a>
@@ -866,6 +871,51 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       <button type="button" class="lounge-report-reason-btn" data-reason="욕설·비방">욕설 / 비방</button>
     </div>
     <button type="button" class="lounge-report-cancel-btn" id="loungeReportCancelBtn">취소</button>
+  </div>
+</div>
+
+<!-- 세무사 1:1 절세 상담 (베타) — 신청 폼 -->
+<div class="tax-consult-overlay" id="taxConsultOverlay" hidden>
+  <div class="tax-consult-modal" role="dialog" aria-modal="true" aria-labelledby="taxConsultTitle">
+    <div class="tax-consult-top">
+      <span class="tax-consult-icon-plate"><i class="ph-duotone ph-scales"></i></span>
+      <button type="button" class="tax-consult-close-btn" id="taxConsultCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+    </div>
+    <p class="tax-consult-eyebrow">베타 서비스 신청</p>
+    <h3 id="taxConsultTitle">세무사 1:1 절세 상담</h3>
+    <p class="tax-consult-desc">관심 있는 절세 분야와 연락처를 남겨주시면, 서비스 정식 오픈 시 가장 먼저 안내해드릴게요.</p>
+
+    <div class="tax-consult-form">
+      <label class="tax-consult-label" for="taxConsultCategory">관심 분야</label>
+      <div class="tax-consult-select-wrap">
+        <select class="tax-consult-select" id="taxConsultCategory">
+          <option value="양도세">양도세</option>
+          <option value="증여세">증여세</option>
+          <option value="종합소득세">종합소득세</option>
+        </select>
+        <i class="ph-duotone ph-caret-down tax-consult-select-caret"></i>
+      </div>
+
+      <label class="tax-consult-label" for="taxConsultContact">연락처 또는 이메일</label>
+      <input type="text" class="tax-consult-input" id="taxConsultContact" autocomplete="off" maxlength="100" placeholder="010-0000-0000 또는 email@example.com">
+
+      <label class="tax-consult-label" for="taxConsultMessage">상담 내용 (선택)</label>
+      <textarea class="tax-consult-textarea" id="taxConsultMessage" maxlength="500" rows="3" placeholder="궁금하신 내용을 간단히 남겨주세요"></textarea>
+
+      <p class="tax-consult-notice" id="taxConsultNotice"></p>
+
+      <button type="button" class="tax-consult-submit-btn" id="taxConsultSubmitBtn">상담 신청하기</button>
+      <p class="tax-consult-fineprint">남겨주신 정보는 상담 안내 목적으로만 사용되며, 현재는 베타 신청 접수 단계로 실제 상담 연결까지는 시간이 걸릴 수 있어요.</p>
+    </div>
+
+    <div class="tax-consult-success" id="taxConsultSuccess" hidden>
+      <span class="tax-consult-success-icon"><i class="ph-duotone ph-check-circle"></i></span>
+      <p class="tax-consult-success-title">상담 신청이 접수됐어요!</p>
+      <p class="tax-consult-success-desc">서비스 정식 오픈 시 남겨주신 연락처로 가장 먼저 안내해드릴게요.</p>
+      <button type="button" class="tax-consult-success-close-btn" id="taxConsultSuccessCloseBtn">확인</button>
+    </div>
   </div>
 </div>
 
@@ -3691,6 +3741,82 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
     detailCloseBtn.addEventListener("click", closeIpoDetail);
     detailOverlay.addEventListener("click", function(e){ if (e.target === detailOverlay) closeIpoDetail(); });
+  })();
+
+  // ---------- 세무사 1:1 절세 상담 (베타 신청 폼) ----------
+  // 실제로 연결된 세무사·상담 인프라는 아직 없다 — 그래서 "24시간 내 전문가가 연락드립니다" 같은
+  // 확정 약속 문구 대신, 있는 그대로("베타 신청 접수, 정식 오픈 시 안내") 정직하게 안내한다.
+  // 연락처·상담내용은 실제 개인정보라 로그인 사용자만 남길 수 있게 해서 스팸/오남용을 막는다.
+  (function initTaxConsult(){
+    var openBtn = document.getElementById("sidebarTaxConsultBtn");
+    var overlay = document.getElementById("taxConsultOverlay");
+    var closeBtn = document.getElementById("taxConsultCloseBtn");
+    var form = document.querySelector(".tax-consult-form");
+    var successPanel = document.getElementById("taxConsultSuccess");
+    var successCloseBtn = document.getElementById("taxConsultSuccessCloseBtn");
+    var categorySelect = document.getElementById("taxConsultCategory");
+    var contactInput = document.getElementById("taxConsultContact");
+    var messageInput = document.getElementById("taxConsultMessage");
+    var noticeEl = document.getElementById("taxConsultNotice");
+    var submitBtn = document.getElementById("taxConsultSubmitBtn");
+    if (!openBtn || !overlay) return;
+
+    function resetForm(){
+      form.hidden = false;
+      successPanel.hidden = true;
+      categorySelect.value = "양도세";
+      contactInput.value = "";
+      messageInput.value = "";
+      noticeEl.textContent = "";
+    }
+
+    function openModal(){
+      resetForm();
+      overlay.hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal(){
+      overlay.hidden = true;
+      document.body.style.overflow = "";
+    }
+
+    // 모바일 사이드바 닫기는 이 버튼도 .sidebar-item이라 기존 전역 로직(sidebarItems.forEach)이
+    // 이미 자동으로 처리해준다 — 여기서는 모달 열기만 담당.
+    openBtn.addEventListener("click", openModal);
+    closeBtn.addEventListener("click", closeModal);
+    successCloseBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", function(e){ if (e.target === overlay) closeModal(); });
+
+    submitBtn.addEventListener("click", function(){
+      if (!firebaseAuth.currentUser) {
+        showToast("로그인 후 상담 신청이 가능해요", "ph-lock-simple");
+        return;
+      }
+      var contact = contactInput.value.trim();
+      if (!contact) {
+        noticeEl.textContent = "연락처 또는 이메일을 입력해주세요.";
+        contactInput.focus();
+        return;
+      }
+
+      var user = firebaseAuth.currentUser;
+      submitBtn.disabled = true;
+      db.collection("taxConsultLeads").add({
+        uid: user.uid,
+        category: categorySelect.value,
+        contact: contact,
+        message: messageInput.value.trim(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function(){
+        form.hidden = true;
+        successPanel.hidden = false;
+      }).catch(function(error){
+        console.error("절세 상담 신청 실패:", error);
+        noticeEl.textContent = "신청 처리에 실패했어요. 잠시 후 다시 시도해주세요.";
+      }).finally(function(){
+        submitBtn.disabled = false;
+      });
+    });
   })();
 
   // ---------- 아파트 청약 (한국부동산원_청약홈 분양정보 조회 서비스) ----------

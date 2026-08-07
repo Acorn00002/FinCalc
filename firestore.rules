@@ -75,5 +75,14 @@ service cloud.firestore {
       allow create, update: if request.resource.data.token is string;
       allow delete: if false;
     }
+
+    // 세무사 1:1 절세 상담(베타 신청) 리드 — 연락처 등 개인정보라 로그인한 본인만 남길 수 있고,
+    // 쓰기 전용(read: false)이라 다른 사용자는 물론 작성자 본인도 클라이언트에서 다시 읽을 수 없다.
+    // 실제 상담 연결 인프라가 아직 없어 신청 접수만 하는 단계라, 수정/삭제도 막아둔다.
+    match /taxConsultLeads/{leadId} {
+      allow read: if false;
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
   }
 }
