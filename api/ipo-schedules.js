@@ -138,14 +138,22 @@ async function fetchDartIpoDetail(apiKey, filing) {
     const price = priceRaw ? parseInt(priceRaw, 10) : null;
     const category = classifyIpoCategory(filing.corp_name, slmthn);
 
+    // 공모금액(slta)·공모주식수(stkcnt) — 시가총액은 상장 전 회사의 "총발행주식수"를 이 API로
+    // 얻을 수 없어(공모 대상 수량만 나옴) 계산하지 않는다(추측 수치 제공 금지, 프론트에서 "미정" 처리).
+    const amountRaw = priceRow && priceRow.slta ? String(priceRow.slta).replace(/[^0-9]/g, "") : "";
+    const sharesRaw = priceRow && priceRow.stkcnt ? String(priceRow.stkcnt).replace(/[^0-9]/g, "") : "";
+
     return {
       id: filing.corp_code,
       name: filing.corp_name,
+      stockCode: filing.stock_code || null,
       market: filing.stock_code ? (filing.corp_cls === "Y" ? "코스피" : "코스닥") : "신규상장",
       category: category,
       underwriter: underwriterRow ? underwriterRow.actnmn : "",
       priceMin: price,
       priceMax: price,
+      offeringAmount: amountRaw ? parseInt(amountRaw, 10) : null,
+      offeringShares: sharesRaw ? parseInt(sharesRaw, 10) : null,
       subStart: subRange.start.toISOString(),
       subEnd: subRange.end.toISOString(),
       refundDate: paymentDates.length ? paymentDates[paymentDates.length - 1].toISOString() : null,

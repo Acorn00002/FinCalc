@@ -1675,31 +1675,52 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   </div>
 </div>
 
-<!-- 청약·공모주: 상세 모달 -->
+<!-- 청약·공모주: 상세 모달 — 일육공(160) 스타일 카드·타임라인 구조.
+     증권사 앱 연결/이동 버튼은 의도적으로 제외했다(요청 사항). -->
 <div class="calendar-detail-overlay-v2" id="ipoDetailOverlay" hidden>
-  <div class="calendar-detail-modal-v2 ipo-detail-modal" role="dialog" aria-modal="true" aria-labelledby="ipoDetailTitle">
+  <div class="calendar-detail-modal-v2 ipo160-modal" role="dialog" aria-modal="true" aria-labelledby="ipoDetailTitle">
     <div class="ipo-detail-scroll">
-      <div class="calendar-detail-top-v2">
-        <span class="calendar-detail-cat-v2" id="ipoDetailMarket"></span>
-        <button type="button" class="calendar-detail-close-v2" id="ipoDetailCloseBtn" aria-label="닫기">
-          <i class="ph-duotone ph-x"></i>
+      <button type="button" class="ipo160-close-btn" id="ipoDetailCloseBtn" aria-label="닫기">
+        <i class="ph-duotone ph-x"></i>
+      </button>
+
+      <!-- 1. 헤더 & 기업 프로필 -->
+      <div class="ipo160-profile">
+        <div class="ipo160-logo" id="ipoDetailLogo"></div>
+        <h3 id="ipoDetailTitle"></h3>
+        <p class="ipo160-market-line" id="ipoDetailMarketLine"></p>
+        <p class="ipo160-tagline" id="ipoDetailTagline"></p>
+      </div>
+
+      <!-- 2. 청약증거금 카드 -->
+      <div class="ipo160-card ipo160-broker-card">
+        <div class="ipo160-broker-row">
+          <span class="ipo160-broker-badge" id="ipoDetailBrokerBadge"></span>
+          <span class="ipo160-broker-name" id="ipoDetailBrokerName"></span>
+        </div>
+        <p class="ipo160-min-unit" id="ipoDetailMinUnit"></p>
+      </div>
+
+      <!-- 3. 수직 타임라인 -->
+      <div class="ipo160-card">
+        <p class="ipo160-section-title">청약 일정</p>
+        <div class="ipo160-timeline" id="ipoDetailTimeline"></div>
+      </div>
+
+      <!-- 4. 공모주 정보 (accordion) -->
+      <div class="ipo160-card">
+        <button type="button" class="ipo160-accordion-toggle" id="ipoInfoAccordionToggle" aria-expanded="false">
+          <span>공모주 정보</span>
+          <span class="ipo160-accordion-arrow">▼</span>
         </button>
+        <div class="ipo160-accordion-body" id="ipoInfoAccordionBody"></div>
       </div>
-      <h3 id="ipoDetailTitle"></h3>
-      <p class="calendar-detail-date-v2" id="ipoDetailUnderwriter"></p>
-
-      <div class="ipo-detail-price-box">
-        <p class="ipo-detail-price-eyebrow">예상 공모가</p>
-        <p class="ipo-detail-price" id="ipoDetailPrice"></p>
-      </div>
-
-      <div class="calendar-detail-fields-v2" id="ipoDetailFields"></div>
 
       <!-- IpoAllocationCalculator: 원터치 자금 칩으로 필요 증거금·예상 비례배정 주식수를 계산.
            균등배정은 청약자 수에 따라 사후 결정되는 값이라 정확한 사전 계산이 불가능하므로,
            계산 가능한 값만 계산하고 균등배정은 안내 문구로 대체한다(추측 수치 제공 금지). -->
-      <div class="ipo-alloc-section">
-        <p class="ipo-section-title"><i class="ph-duotone ph-calculator"></i>배정 주식수 계산기</p>
+      <div class="ipo160-card">
+        <p class="ipo160-section-title">배정 주식수 계산기</p>
         <div class="ipo-alloc-chip-row" id="ipoAllocChipRow">
           <button type="button" class="ipo-alloc-chip" data-amount="3000000">300만원</button>
           <button type="button" class="ipo-alloc-chip" data-amount="10000000">1,000만원</button>
@@ -1718,20 +1739,32 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
         <div class="ipo-alloc-result" id="ipoAllocResult"></div>
       </div>
 
-      <!-- IpoScoringReport: 기관 수요예측 경쟁률·의무보유확약 비율·유통가능물량 비율은 DART API로
-           사전에 구조화된 형태로 받을 수 있는 값이 아니라서(청약 임박 시점 별도 공시로만 공개),
-           실존하지 않는 점수를 지어내는 대신 "지금 시점에 공개된 정보가 무엇인지"를 정직하게 보여준다. -->
-      <div class="ipo-scoring-section">
-        <p class="ipo-section-title"><i class="ph-duotone ph-chart-donut"></i>투자 판단 참고 정보</p>
-        <div class="ipo-scoring-body" id="ipoScoringBody"></div>
+      <!-- 5. 수요예측 결과 — 기관 수요예측 경쟁률·참여기관수 등은 DART API로 사전에 구조화된 형태로
+           받을 수 없어(청약 임박 시점 별도 공시로만 공개), 실존하지 않는 숫자를 지어내지 않고
+           정직하게 "미정"으로 표시한다(요청 사항 그대로). -->
+      <div class="ipo160-card">
+        <p class="ipo160-section-title">수요예측 결과</p>
+        <div class="ipo160-demand-grid" id="ipoDemandGrid"></div>
+        <a class="ipo-scoring-source-link" id="ipoDetailSourceLink" href="#" target="_blank" rel="noopener">
+          <i class="ph-duotone ph-file-text"></i>DART 원문 공시 확인하기 <i class="ph-duotone ph-arrow-square-out"></i>
+        </a>
+      </div>
+
+      <!-- 6. 투자 유의사항 -->
+      <div class="ipo160-disclaimer-card">
+        <p class="ipo160-section-title">투자 유의사항</p>
+        <ul class="ipo160-disclaimer-list">
+          <li>공모주 투자는 원금 손실 위험이 있으며, 상장 후 주가는 공모가를 하회할 수 있어요.</li>
+          <li>확정 공모가와 수요예측 결과는 투자자에게 불리한 방향으로 결정될 수 있어요.</li>
+          <li>청약 경쟁률에 따라 실제 배정 주식수는 신청 수량보다 크게 줄어들 수 있어요.</li>
+          <li>일정(청약기일·환불일 등)은 회사 사정에 따라 변경될 수 있으니 반드시 최신 공시를 확인하세요.</li>
+          <li>본 정보는 DART 공시 기반의 참고 자료이며, 투자 판단과 그 결과에 대한 책임은 투자자 본인에게 있어요.</li>
+        </ul>
       </div>
     </div>
 
     <div class="ipo-detail-actionbar">
-      <button type="button" class="ipo-broker-btn-v2" id="ipoDetailBrokerBtn">
-        <i class="ph-duotone ph-bank"></i>증권사 계좌 개설하기
-      </button>
-      <button type="button" class="ipo-share-btn-v2" id="ipoDetailShareBtn">
+      <button type="button" class="ipo-share-btn-v2 ipo160-share-btn-full" id="ipoDetailShareBtn">
         <i class="ph-duotone ph-share-network"></i>청약 일정 공유하기
       </button>
     </div>
@@ -3387,30 +3420,6 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     });
   });
 
-  // BrokerCtaButton — 실제 제휴(CPA) 계약이 없어 가짜 딥링크 대신 각 증권사 공식 홈페이지로
-  // 연결한다(주소는 실제 접속 확인 완료). 목록에 없는 주관사는 검색 결과로 폴백.
-  var IPO_BROKER_URLS = {
-    "한국투자증권": "https://securities.koreainvestment.com",
-    "KB증권": "https://www.kbsec.com",
-    "NH투자증권": "https://www.nhqv.com",
-    "미래에셋증권": "https://securities.miraeasset.com",
-    "대신증권": "https://www.daishin.com",
-    "아이비케이투자증권": "https://www.ibks.com",
-    "IBK투자증권": "https://www.ibks.com",
-    "신한투자증권": "https://www.shinhaninvest.com",
-    "삼성증권": "https://www.samsungpop.com",
-    "하나증권": "https://www.hanaw.com",
-    "유진투자증권": "https://www.eugenefn.com",
-    "키움증권": "https://www.kiwoom.com",
-    "미래에셋대우": "https://securities.miraeasset.com"
-  };
-
-  function getBrokerUrl(underwriterName){
-    if (IPO_BROKER_URLS[underwriterName]) return IPO_BROKER_URLS[underwriterName];
-    var matchedKey = Object.keys(IPO_BROKER_URLS).filter(function(k){ return underwriterName && underwriterName.indexOf(k) > -1; })[0];
-    return matchedKey ? IPO_BROKER_URLS[matchedKey] : "https://www.google.com/search?q=" + encodeURIComponent(underwriterName + " 비대면 계좌개설");
-  }
-
   // IpoAllocationCalculator — 균등배정은 청약 마감 후 청약자 수에 따라 정해지는 값이라
   // 사전에 정확히 계산할 수 없다(공식 자체가 존재하지 않음). 계산 가능한 값(신청 가능 주식수,
   // 필요 증거금, 경쟁률 입력 시의 비례배정 추정치)만 계산하고 균등배정은 안내 문구로 대체한다.
@@ -3463,36 +3472,95 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     recalc();
   }
 
-  // IpoScoringReport — 기관 수요예측 경쟁률·의무보유확약 비율·유통가능물량 비율은 DART API로
-  // 사전에 구조화된 값을 받을 수 없어(청약 임박 시점 별도 공시로만 공개), 실존하지 않는 점수를
-  // 지어내지 않고 지금 시점에 실제로 확인 가능한 공시 정보로 안내한다.
-  function renderIpoScoringReport(item){
-    var el = document.getElementById("ipoScoringBody");
-    el.innerHTML =
-      '<p class="ipo-scoring-note">기관 수요예측 경쟁률·의무보유확약 비율·유통가능물량 비율은 청약일이 가까워지면 별도 공시(수요예측 결과)로 공개돼요. 지금은 실제 공시된 값이 없어 임의의 점수를 만들어 보여드리지 않아요.</p>' +
-      '<a class="ipo-scoring-source-link" href="' + (item.sourceUrl || "https://dart.fss.or.kr") + '" target="_blank" rel="noopener">' +
-        '<i class="ph-duotone ph-file-text"></i>DART 원문 공시 확인하기 <i class="ph-duotone ph-arrow-square-out"></i>' +
-      '</a>';
+  var IPO_CATEGORY_TAGLINE = {
+    general: "코스닥·코스피 신규상장 공모주",
+    spac: "기업인수목적회사(SPAC) 공모",
+    reit: "부동산투자회사(리츠) 공모",
+    rights: "주주배정 후 실권주 일반공모"
+  };
+
+  // 수직 타임라인 — 수요예측일은 DART에 별도 필드가 없어 "청약 시작 2일 전"으로 근사(예상 표기),
+  // 상장일도 별도 필드가 없어 추측 날짜를 지어내지 않고 "미정"으로 둔다.
+  function buildIpoTimeline(item, todayStr){
+    var today = new Date(todayStr + "T00:00:00");
+    var subStart = new Date(formatDateYMD(item.subStart) + "T00:00:00");
+    var subEnd = new Date(formatDateYMD(item.subEnd) + "T00:00:00");
+    var refund = item.refundDate ? new Date(formatDateYMD(item.refundDate) + "T00:00:00") : null;
+    var demandDate = new Date(subStart.getTime() - 2 * 86400000);
+
+    var steps = [
+      { label: "수요예측일 (예상)", dateText: formatIpoDate(demandDate), done: today > demandDate },
+      { label: "청약일", dateText: formatIpoDate(item.subStart) + " ~ " + formatIpoDate(item.subEnd), done: today > subEnd, active: today >= subStart && today <= subEnd },
+      { label: "환불일", dateText: refund ? formatIpoDate(item.refundDate) : "미정", done: refund ? today > refund : false },
+      { label: "상장일", dateText: "미정", done: false }
+    ];
+
+    return steps.map(function(step){
+      var stateClass = step.done ? "is-done" : (step.active ? "is-active" : "");
+      return '<div class="ipo160-timeline-step ' + stateClass + '">' +
+        '<div class="ipo160-timeline-dot"></div>' +
+        '<div class="ipo160-timeline-body">' +
+          '<p class="ipo160-timeline-label">' + step.label + '</p>' +
+          '<p class="ipo160-timeline-date">' + step.dateText + '</p>' +
+        '</div>' +
+      '</div>';
+    }).join("");
   }
 
   function openIpoDetail(item){
-    document.getElementById("ipoDetailMarket").textContent = item.market;
-    document.getElementById("ipoDetailTitle").textContent = item.name;
-    document.getElementById("ipoDetailUnderwriter").textContent = "주관사 " + item.underwriter;
-    document.getElementById("ipoDetailPrice").textContent = item.priceMin.toLocaleString() + "원 ~ " + item.priceMax.toLocaleString() + "원";
+    var todayStr = formatDateYMD(new Date());
 
-    var fieldsEl = document.getElementById("ipoDetailFields");
-    fieldsEl.innerHTML =
-      '<div class="calendar-detail-field-row"><span class="calendar-detail-field-label">청약 기간</span><span class="calendar-detail-field-value">' + formatIpoDate(item.subStart) + ' ~ ' + formatIpoDate(item.subEnd) + '</span></div>' +
-      '<div class="calendar-detail-field-row"><span class="calendar-detail-field-label">환불일</span><span class="calendar-detail-field-value">' + formatIpoDate(item.refundDate) + '</span></div>' +
-      '<div class="calendar-detail-field-row"><span class="calendar-detail-field-label">시장 구분</span><span class="calendar-detail-field-value">' + escapeMyPageHtml(item.market) + '</span></div>';
+    // 1. 헤더 & 기업 프로필 — 실제 로고 이미지 소스가 없어 회사명 첫 글자 텍스트 뱃지로 대체
+    document.getElementById("ipoDetailLogo").textContent = (item.name || "").charAt(0);
+    document.getElementById("ipoDetailTitle").textContent = item.name;
+    document.getElementById("ipoDetailMarketLine").textContent =
+      item.market + " · " + (item.stockCode ? item.stockCode : "상장 후 종목코드 배정");
+    document.getElementById("ipoDetailTagline").textContent = IPO_CATEGORY_TAGLINE[item.category] || IPO_CATEGORY_TAGLINE.general;
+
+    // 2. 청약증거금 카드
+    document.getElementById("ipoDetailBrokerBadge").textContent = (item.underwriter || "").charAt(0);
+    document.getElementById("ipoDetailBrokerName").textContent = item.underwriter || "주관사 정보 없음";
+    document.getElementById("ipoDetailMinUnit").textContent = "최소청약 " + IPO_UNIT_SHARES + "주 · 청약증거금율 50% 가정";
+
+    // 3. 타임라인
+    document.getElementById("ipoDetailTimeline").innerHTML = buildIpoTimeline(item, todayStr);
+
+    // 4. 공모주 정보 아코디언
+    var priceText = item.priceMin === item.priceMax
+      ? item.priceMin.toLocaleString("ko-KR") + "원"
+      : item.priceMin.toLocaleString("ko-KR") + "원 ~ " + item.priceMax.toLocaleString("ko-KR") + "원";
+    document.getElementById("ipoInfoAccordionBody").innerHTML =
+      '<div class="ipo160-info-row"><span>희망(확정) 공모가</span><strong>' + priceText + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>공모 금액</span><strong>' + (item.offeringAmount ? item.offeringAmount.toLocaleString("ko-KR") + "원" : "미정") + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>공모 주식수</span><strong>' + (item.offeringShares ? item.offeringShares.toLocaleString("ko-KR") + "주" : "미정") + '</strong></div>' +
+      '<div class="ipo160-info-row"><span>시가총액</span><strong class="muted">미정 (총발행주식수 미공시)</strong></div>';
 
     renderIpoAllocation(item);
-    renderIpoScoringReport(item);
 
-    document.getElementById("ipoDetailBrokerBtn").onclick = function(){
-      window.open(getBrokerUrl(item.underwriter), "_blank", "noopener");
+    // 5. 수요예측 결과 — DART API로 구조화된 값을 받을 수 없어 정직하게 "미정" 처리
+    document.getElementById("ipoDemandGrid").innerHTML =
+      '<div class="ipo160-demand-item"><span>단순기관경쟁률</span><strong class="muted">미정</strong></div>' +
+      '<div class="ipo160-demand-item"><span>수요예측 참여기관수</span><strong class="muted">미정</strong></div>' +
+      '<div class="ipo160-demand-item"><span>공모가 상단이상 경쟁률</span><strong class="muted">미정</strong></div>' +
+      '<div class="ipo160-demand-item"><span>공모가 상단이상 참여기관수</span><strong class="muted">미정</strong></div>';
+    document.getElementById("ipoDetailSourceLink").href = item.sourceUrl || "https://dart.fss.or.kr";
+
+    // 아코디언 토글 (매번 새로 열 때 접힌 상태로 초기화)
+    var accToggle = document.getElementById("ipoInfoAccordionToggle");
+    var accBody = document.getElementById("ipoInfoAccordionBody");
+    accBody.style.maxHeight = "0px";
+    accToggle.setAttribute("aria-expanded", "false");
+    accToggle.onclick = function(){
+      var open = accToggle.getAttribute("aria-expanded") === "true";
+      if (open) {
+        accBody.style.maxHeight = "0px";
+        accToggle.setAttribute("aria-expanded", "false");
+      } else {
+        accBody.style.maxHeight = accBody.scrollHeight + "px";
+        accToggle.setAttribute("aria-expanded", "true");
+      }
     };
+
     document.getElementById("ipoDetailShareBtn").onclick = function(){
       var text = item.name + " 공모주 청약 일정: " + formatIpoDate(item.subStart) + " ~ " + formatIpoDate(item.subEnd) + " (주관사 " + item.underwriter + ")";
       if (navigator.share) {

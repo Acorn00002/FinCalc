@@ -3443,39 +3443,118 @@
   .ipo-card-meta-label{color:var(--ink-3);font-weight:600;flex-shrink:0;}
   .ipo-card-meta-value{color:var(--ink-1);font-weight:700;text-align:right;}
 
+  /* .ipo-detail-modal 등은 이름과 달리 청약·공모주 전용이 아니라 finance-products 상세 모달
+     (financeDetailRateLabel/financeDetailRate/financeDetailSiteBtn)도 같이 쓰는 공용 클래스라
+     삭제하지 않고 그대로 둔다 — 청약 모달 전용 스타일은 전부 .ipo160-* 새 클래스로 분리했다. */
   .ipo-detail-modal{display:flex;flex-direction:column;padding:0;}
-  .ipo-detail-scroll{overflow-y:auto;padding:22px;flex:1;min-height:0;}
   .ipo-detail-price-box{
     margin:0 0 18px;padding:14px 16px;background:var(--brand-soft);border-radius:14px;
   }
   .ipo-detail-price-eyebrow{margin:0 0 4px;font-size:11.5px;font-weight:800;color:var(--brand);}
   .ipo-detail-price{margin:0;font-size:17px;font-weight:800;color:var(--ink-1);}
-  .ipo-detail-fields{display:flex;flex-direction:column;gap:10px;}
-  .ipo-detail-actionbar{
-    display:flex;gap:8px;flex-shrink:0;
-    padding:14px 22px calc(14px + env(safe-area-inset-bottom, 0px));
-    border-top:1px solid var(--line);background:var(--card);
-  }
   .ipo-broker-btn-v2{
     flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
     background:var(--brand);color:#fff;border:none;border-radius:12px;padding:14px;
     font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
     box-shadow:0 6px 16px -4px var(--brand);
   }
+
+  /* ---------- 청약·공모주 상세 모달: 일육공(160) 스타일 카드·타임라인 ---------- */
+  .ipo160-modal{display:flex;flex-direction:column;padding:0;}
+  .ipo-detail-scroll{overflow-y:auto;padding:22px;flex:1;min-height:0;position:relative;}
+  .ipo160-close-btn{
+    position:absolute;top:18px;right:18px;z-index:2;
+    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:999px;cursor:pointer;
+  }
+
+  .ipo160-profile{text-align:center;padding:8px 0 20px;}
+  .ipo160-logo{
+    width:56px;height:56px;margin:0 auto 12px;border-radius:50%;
+    background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;
+  }
+  .ipo160-profile h3{margin:0 0 6px;font-size:19px;font-weight:800;color:var(--ink-1);}
+  .ipo160-market-line{margin:0 0 8px;font-size:12.5px;font-weight:700;color:var(--brand);}
+  .ipo160-tagline{margin:0;font-size:12.5px;color:var(--ink-3);font-weight:600;}
+
+  .ipo160-card{background:var(--card-soft);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .ipo160-section-title{margin:0 0 12px;font-size:13px;font-weight:800;color:var(--ink-1);}
+
+  .ipo160-broker-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .ipo160-broker-row{display:flex;align-items:center;gap:10px;}
+  .ipo160-broker-badge{
+    width:32px;height:32px;border-radius:10px;flex-shrink:0;
+    background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:800;
+  }
+  .ipo160-broker-name{font-size:13.5px;font-weight:800;color:var(--ink-1);}
+  .ipo160-min-unit{margin:0;font-size:11.5px;font-weight:700;color:var(--ink-3);}
+
+  .ipo160-timeline{padding:4px 4px 0;}
+  .ipo160-timeline-step{display:flex;gap:12px;position:relative;padding-bottom:20px;}
+  .ipo160-timeline-step:last-child{padding-bottom:0;}
+  .ipo160-timeline-step::before{
+    content:"";position:absolute;left:5px;top:16px;bottom:0;width:1px;
+    border-left:1.5px dashed var(--line);
+  }
+  .ipo160-timeline-step:last-child::before{display:none;}
+  .ipo160-timeline-dot{
+    width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px;
+    background:var(--card);border:2px solid var(--ink-3);
+  }
+  .ipo160-timeline-step.is-done .ipo160-timeline-dot{background:var(--profit-color, var(--brand));border-color:var(--profit-color, var(--brand));}
+  .ipo160-timeline-step.is-active .ipo160-timeline-dot{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft);}
+  .ipo160-timeline-label{margin:0 0 3px;font-size:12px;font-weight:700;color:var(--ink-3);}
+  .ipo160-timeline-step.is-active .ipo160-timeline-label{color:var(--brand);}
+  .ipo160-timeline-date{margin:0;font-size:13.5px;font-weight:800;color:var(--ink-1);}
+
+  .ipo160-accordion-toggle{
+    display:flex;align-items:center;justify-content:space-between;width:100%;
+    background:none;border:none;cursor:pointer;font-family:inherit;
+    font-size:13px;font-weight:800;color:var(--ink-1);padding:0;
+  }
+  .ipo160-accordion-arrow{font-size:10px;color:var(--ink-3);transition:transform .2s ease;}
+  .ipo160-accordion-toggle[aria-expanded="true"] .ipo160-accordion-arrow{transform:rotate(180deg);}
+  .ipo160-accordion-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .ipo160-info-row{
+    display:flex;justify-content:space-between;gap:10px;font-size:13px;
+    padding:10px 0;border-top:1px solid var(--line);
+  }
+  .ipo160-info-row:first-child{border-top:none;padding-top:12px;}
+  .ipo160-info-row span{color:var(--ink-3);font-weight:600;}
+  .ipo160-info-row strong{color:var(--ink-1);font-weight:800;}
+  .ipo160-info-row strong.muted{color:var(--ink-3);font-weight:700;font-size:12px;}
+
+  .ipo160-demand-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .ipo160-demand-item{
+    background:var(--card);border-radius:12px;padding:12px;text-align:center;
+  }
+  .ipo160-demand-item span{display:block;font-size:11px;font-weight:600;color:var(--ink-3);margin-bottom:6px;}
+  .ipo160-demand-item strong{font-size:14px;font-weight:800;color:var(--ink-1);}
+  .ipo160-demand-item strong.muted{color:var(--ink-3);}
+
+  .ipo160-disclaimer-card{background:var(--card-soft);border-radius:16px;padding:16px;}
+  .ipo160-disclaimer-list{margin:0;padding-left:18px;}
+  .ipo160-disclaimer-list li{font-size:12px;line-height:1.7;color:var(--ink-3);margin-bottom:6px;}
+  .ipo160-disclaimer-list li:last-child{margin-bottom:0;}
+
+  .ipo-detail-actionbar{
+    display:flex;gap:8px;flex-shrink:0;
+    padding:14px 22px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line);background:var(--card);
+  }
   .ipo-share-btn-v2{
     display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
     background:var(--card-soft);color:var(--ink-2);border:none;border-radius:12px;
     padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
   }
+  .ipo160-share-btn-full{flex:1;background:var(--brand);color:#fff;box-shadow:0 6px 16px -4px var(--brand);}
 
-  /* ---------- IpoAllocationCalculator / IpoScoringReport (청약 상세 모달 내) ---------- */
-  .ipo-section-title{
-    display:flex;align-items:center;gap:6px;margin:22px 0 12px;
-    font-size:13.5px;font-weight:800;color:var(--ink-1);
-  }
+  /* ---------- IpoAllocationCalculator (청약 상세 모달 내) ---------- */
   .ipo-alloc-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
   .ipo-alloc-chip{
-    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:999px;
+    background:var(--card);color:var(--ink-2);border:none;border-radius:999px;
     padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
   }
   .ipo-alloc-chip:hover{background:var(--brand-soft);color:var(--brand);}
@@ -3483,18 +3562,16 @@
   .ipo-alloc-input-group{flex:1;min-width:0;}
   .ipo-alloc-input-group label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-3);margin-bottom:5px;}
   .ipo-alloc-input-group input{
-    width:100%;background:var(--card-soft);border:1px solid var(--line);border-radius:10px;
+    width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;
     padding:10px 12px;font-size:13.5px;font-weight:700;color:var(--ink-1);font-family:inherit;
   }
-  .ipo-alloc-result{background:var(--card-soft);border-radius:12px;padding:14px;}
+  .ipo-alloc-result{background:var(--card);border-radius:12px;padding:14px;}
   .ipo-alloc-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;}
   .ipo-alloc-row span{color:var(--ink-3);font-weight:600;}
   .ipo-alloc-row strong{color:var(--ink-1);font-weight:800;}
   .ipo-alloc-row strong.muted{color:var(--ink-3);font-weight:700;font-size:12px;}
   .ipo-alloc-hint{margin:8px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.6;}
 
-  .ipo-scoring-body{background:var(--card-soft);border-radius:12px;padding:14px;}
-  .ipo-scoring-note{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);line-height:1.65;}
   .ipo-scoring-source-link{
     display:inline-flex;align-items:center;gap:6px;
     font-size:12.5px;font-weight:800;color:var(--brand);
