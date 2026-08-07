@@ -2023,6 +2023,7 @@
     font-size:13px;
     font-weight:600;
   }
+  .finance-loading[hidden]{display:none;}
   .finance-spinner{
     width:28px;height:28px;
     border-radius:50%;
@@ -2043,6 +2044,7 @@
     font-weight:600;
     text-align:center;
   }
+  .finance-error[hidden]{display:none;}
   .finance-error i{font-size:32px;--ph-duotone-secondary-opacity:0;}
   .finance-rank-item:hover{
     box-shadow:0 6px 18px rgba(15,23,42,0.08);
@@ -2142,6 +2144,7 @@
     align-items:flex-start;
     padding:2px 4px 40px;
   }
+  .finance-disclaimer[hidden]{display:none;}
   .finance-disclaimer i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;margin-top:1px;}
   .finance-disclaimer-body{display:flex;flex-direction:column;gap:6px;}
   .finance-disclaimer-asof{
