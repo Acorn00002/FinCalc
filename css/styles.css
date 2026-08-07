@@ -3402,8 +3402,14 @@
   .ipo-segmented-tab.is-active{background:var(--card);color:var(--ink-1);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
 
   .ipo-hero{margin-bottom:20px;}
-  .ipo-hero-title{margin:0;font-size:21px;font-weight:800;color:var(--ink-1);line-height:1.4;letter-spacing:-0.02em;}
+  .ipo-hero-title{margin:0 0 12px;font-size:21px;font-weight:800;color:var(--ink-1);line-height:1.4;letter-spacing:-0.02em;}
   .ipo-hero-title strong{color:var(--brand);}
+  .ipo-hero-score-link{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--brand-soft);color:var(--brand);border:none;border-radius:999px;
+    padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .ipo-hero-score-link:hover{background:var(--brand-soft-2);}
 
   .ipo-card-list{display:flex;flex-direction:column;gap:10px;}
   .ipo-card{
@@ -3438,14 +3444,47 @@
     border-top:1px solid var(--line);background:var(--card);
   }
   .ipo-broker-btn-v2{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--brand);color:#fff;border:none;border-radius:12px;padding:14px;
+    font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+    box-shadow:0 6px 16px -4px var(--brand);
+  }
+  .ipo-share-btn-v2{
     display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
     background:var(--card-soft);color:var(--ink-2);border:none;border-radius:12px;
     padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
   }
-  .ipo-share-btn-v2{
-    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-    background:var(--brand);color:#fff;border:none;border-radius:12px;padding:14px;
-    font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+
+  /* ---------- IpoAllocationCalculator / IpoScoringReport (청약 상세 모달 내) ---------- */
+  .ipo-section-title{
+    display:flex;align-items:center;gap:6px;margin:22px 0 12px;
+    font-size:13.5px;font-weight:800;color:var(--ink-1);
+  }
+  .ipo-alloc-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .ipo-alloc-chip{
+    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .ipo-alloc-chip:hover{background:var(--brand-soft);color:var(--brand);}
+  .ipo-alloc-input-row{display:flex;gap:8px;margin-bottom:12px;}
+  .ipo-alloc-input-group{flex:1;min-width:0;}
+  .ipo-alloc-input-group label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-3);margin-bottom:5px;}
+  .ipo-alloc-input-group input{
+    width:100%;background:var(--card-soft);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:13.5px;font-weight:700;color:var(--ink-1);font-family:inherit;
+  }
+  .ipo-alloc-result{background:var(--card-soft);border-radius:12px;padding:14px;}
+  .ipo-alloc-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;}
+  .ipo-alloc-row span{color:var(--ink-3);font-weight:600;}
+  .ipo-alloc-row strong{color:var(--ink-1);font-weight:800;}
+  .ipo-alloc-row strong.muted{color:var(--ink-3);font-weight:700;font-size:12px;}
+  .ipo-alloc-hint{margin:8px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.6;}
+
+  .ipo-scoring-body{background:var(--card-soft);border-radius:12px;padding:14px;}
+  .ipo-scoring-note{margin:0 0 10px;font-size:12.5px;color:var(--ink-2);line-height:1.65;}
+  .ipo-scoring-source-link{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:800;color:var(--brand);
   }
 
   /* ---------- 경제사전 (오늘의 경제용어) ---------- */
