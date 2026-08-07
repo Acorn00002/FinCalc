@@ -315,18 +315,20 @@ async function fetchDartDisclosures() {
 // ---------- 공모주 청약 일정 (청약·공모주 페이지, /api/ipo-schedules) ----------
 // DART에는 "이번 주 공모주 목록"을 바로 주는 API가 없어서, 두 단계로 조합한다.
 //   1) list.json에서 corp_code 없이 "증권신고서(지분증권)"(pblntf_ty=C, pblntf_detail_ty=C001) 공시를
-//      최근 N일 범위로 검색한다. 이 상세유형은 지분증권 관련 공시를 폭넓게 묶어서, 실제로는
+//      최근 60일 범위로 검색한다. 이 상세유형은 지분증권 관련 공시를 폭넓게 묶어서, 실제로는
 //      상장사의 유상증자·일괄신고(회사채/ELS) 실적보고서 등이 훨씬 더 많이 섞여 나온다(실측 확인:
-//      45일 검색에 3800여 건). report_nm에 "증권신고서(지분증권)"이 포함된 것만 남기고([기재정정]/
-//      [발행조건확정] 접두어 포함), 그중에서도 stock_code가 비어있는(=아직 상장 전인) 건만
-//      "신규 공모주 청약"으로 취급한다 — stock_code가 있는 건 이미 상장된 회사의 유상증자다.
+//      45일 검색에 3800여 건). report_nm에 "증권신고서(지분증권)"이 포함된 것만 남긴다([기재정정]/
+//      [발행조건확정] 접두어 포함) — stock_code 유무로는 더 이상 걸러내지 않는다(2단계에서 판단).
 //   2) 회사마다 정정 공시가 여러 번 올라오므로 접수일(rcept_dt) 기준 최신 1건만 남긴 뒤,
-//      각 회사의 corp_code로 estkRs.json(지분증권 증권신고서 상세)을 조회해 청약기일(sbd)·납입기일(pymd)
-//      등 실제 일정 필드를 가져온다.
+//      각 회사의 corp_code로 estkRs.json(지분증권 증권신고서 상세)을 조회해 청약기일(sbd)·납입기일(pymd)·
+//      모집방법(slmthn) 등을 가져온다. 실제 키로 slmthn 값을 확인해보니, 이미 상장된 회사의 유상증자는
+//      "실권주 일반공모"라는 명시적 문구가 있는 것만 일반 투자자가 청약 가능한 물량이고 — 그 외
+//      (주주배정/제3자배정 등)는 청약 불가능한 사모성 공시라 stock_code가 있으면서 slmthn에
+//      "실권주"가 없는 건 제외한다. 스팩/리츠는 회사명 패턴("기업인수목적"/"리츠")으로 분류한다
+//      (국내에서 이 명명 규칙은 사실상 강제 사항이라 신뢰도가 높음).
 // 주의: 실제 발급받은 키로 라이브 검증까지 마쳤다(2026-08 기준). estkRs 응답은 data.list가 아니라
 // data.group[].list(그룹별 배열)로 내려온다는 것과, sbd 형식이 "2026년 09월 16일 ~ 2026년 09월 17일"인
-// 것도 실측으로 확인했다. 다만 아직 상장 전 회사는 corp_cls만으로 코스피/코스닥을 구분할 수 없어
-// market은 "신규상장"으로 통일했다(추측 라벨을 붙이지 않기 위함).
+// 것도 실측으로 확인했다.
 const DART_ESTKRS_URL = "https://opendart.fss.or.kr/api/estkRs.json";
 
 // "2026.08.07 ~ 2026.08.08" / "2026년 08월 07일~08일" 등 다양한 표기에서 날짜를 최대한 관대하게 뽑아낸다.
@@ -348,7 +350,7 @@ function parseDartDateRange(str) {
 }
 
 async function fetchDartIpoFilingList() {
-  const bgnDe = dartDateCompact(-45);
+  const bgnDe = dartDateCompact(-60);
   const endDe = dartDateCompact(0);
   const pageCount = 100;
   let pageNo = 1;
@@ -382,9 +384,10 @@ async function fetchDartIpoFilingList() {
     if (pageNo > 10) break;
   }
 
-  // 증권신고서(지분증권) 본문/정정/발행조건확정만 남기고, 이미 상장된 회사(=유상증자)는 제외한다.
+  // 증권신고서(지분증권) 본문/정정/발행조건확정만 남긴다. 이미 상장된 회사도 일단은 통과시키고
+  // (실권주 일반공모인지는 상세 조회에서 slmthn으로 가려낸다), 그 외 유형(실적보고서/일괄신고 등)은 제외.
   return filings.filter(function (f) {
-    return f.report_nm && f.report_nm.indexOf("증권신고서(지분증권)") > -1 && !f.stock_code;
+    return f.report_nm && f.report_nm.indexOf("증권신고서(지분증권)") > -1;
   });
 }
 
@@ -398,9 +401,19 @@ function dedupeLatestByCorp(filings) {
   return Object.values(latest);
 }
 
+// 회사명 패턴으로 스팩/리츠를 가려낸다 — 국내 스팩은 반드시 회사명에 "기업인수목적"이 들어가고
+// (예: "엔에이치기업인수목적34호"), 리츠는 "리츠" 또는 "위탁관리부동산투자회사"가 들어가는 게
+// 사실상 강제되는 명명 규칙이라 신뢰도가 높다.
+function classifyIpoCategory(corpName, slmthn) {
+  if (slmthn && slmthn.indexOf("실권주") > -1) return "rights";
+  if (corpName.indexOf("기업인수목적") > -1) return "spac";
+  if (corpName.indexOf("리츠") > -1 || corpName.indexOf("위탁관리부동산투자회사") > -1) return "reit";
+  return "general";
+}
+
 async function fetchDartIpoDetail(filing) {
   const bgnDe = dartDateCompact(-60);
-  const endDe = dartDateCompact(30);
+  const endDe = dartDateCompact(60);
   const url = DART_ESTKRS_URL +
     "?crtfc_key=" + encodeURIComponent(DART_API_KEY) +
     "&corp_code=" + filing.corp_code +
@@ -418,6 +431,12 @@ async function fetchDartIpoDetail(filing) {
     const generalRow = rows.find((r) => r.sbd) || rows[0];
     const priceRow = rows.find((r) => r.slprc);
     const underwriterRow = rows.find((r) => r.actnmn);
+    const methodRow = rows.find((r) => r.slmthn);
+    const slmthn = methodRow ? methodRow.slmthn : "";
+
+    // 이미 상장된 회사의 지분증권 신고서는 대부분 주주배정(제3자배정 등) 사모 성격이라 일반 투자자가
+    // 청약할 수 없다 — "실권주 일반공모"라고 명시된 것만 실제 청약 가능한 물량이라 통과시킨다.
+    if (filing.stock_code && slmthn.indexOf("실권주") === -1) return null;
 
     const subRange = parseDartDateRange(generalRow && generalRow.sbd);
     if (!subRange) return null; // 청약기일을 못 찾으면 목록에 올리지 않는다(추측 데이터 방지)
@@ -425,11 +444,15 @@ async function fetchDartIpoDetail(filing) {
     const paymentDates = extractDartDates(generalRow && generalRow.pymd);
     const priceRaw = priceRow && priceRow.slprc ? String(priceRow.slprc).replace(/[^0-9]/g, "") : "";
     const price = priceRaw ? parseInt(priceRaw, 10) : null;
+    const category = classifyIpoCategory(filing.corp_name, slmthn);
 
     return {
       id: filing.corp_code,
       name: filing.corp_name,
-      market: "신규상장", // 상장 전 회사라 코스피/코스닥이 확정 표기되지 않아 통일된 라벨을 쓴다
+      // 상장 전 회사는 코스피/코스닥이 확정 표기되지 않아 "신규상장"으로 통일하고,
+      // 이미 상장된 회사(실권주 청약)는 실제 시장 구분(코스피 Y/코스닥 K)을 보여준다.
+      market: filing.stock_code ? (filing.corp_cls === "Y" ? "코스피" : "코스닥") : "신규상장",
+      category: category,
       underwriter: underwriterRow ? underwriterRow.actnmn : "",
       priceMin: price,
       priceMax: price,

@@ -1220,6 +1220,13 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       </button>
     </div>
 
+    <div class="ipo-category-filter" id="ipoCategoryFilter">
+      <button type="button" class="ipo-category-chip is-active" data-category="all">전체</button>
+      <button type="button" class="ipo-category-chip" data-category="general">일반기업</button>
+      <button type="button" class="ipo-category-chip" data-category="spac-reit">스팩·리츠</button>
+      <button type="button" class="ipo-category-chip" data-category="rights">실권주</button>
+    </div>
+
     <div class="ipo-card-list" id="ipoCardList"></div>
   </div>
 
@@ -3247,6 +3254,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
             id: item.id,
             name: item.name,
             market: item.market,
+            category: item.category || "general",
             underwriter: item.underwriter,
             priceMin: item.priceMin,
             priceMax: item.priceMax,
@@ -3277,6 +3285,32 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     return { label: "D-" + diffDays, closed: false, days: diffDays };
   }
 
+  // 수요예측/청약예정/청약진행중/상장대기 단계 라벨 — DART에는 "수요예측일"이 별도 필드로 없어서,
+  // 통상 수요예측이 청약 시작 이틀 전에 마무리된다는 업계 관행을 참고용으로 근사한다(확정 공시 아님).
+  // 상장일도 별도 필드가 없어 환불일 이후는 뭉뚱그려 "상장 대기"로 표시한다.
+  function getIpoStageLabel(item, todayStr){
+    var today = new Date(todayStr + "T00:00:00");
+    var subStart = new Date(formatDateYMD(item.subStart) + "T00:00:00");
+    var subEnd = new Date(formatDateYMD(item.subEnd) + "T00:00:00");
+    var refund = item.refundDate ? new Date(formatDateYMD(item.refundDate) + "T00:00:00") : null;
+    var twoDaysBeforeStart = new Date(subStart.getTime() - 2 * 86400000);
+
+    if (today < twoDaysBeforeStart) return "수요예측 예정";
+    if (today < subStart) return "청약 예정";
+    if (today <= subEnd) return "청약 진행중";
+    if (refund && today <= refund) return "상장 대기";
+    return null; // 마감 이후는 D-day 배지가 "청약 마감"으로 이미 표시하므로 중복 안 함
+  }
+
+  var IPO_CATEGORY_LABEL = { general: "일반기업", spac: "스팩", reit: "리츠", rights: "실권주" };
+  var ipoActiveCategory = "all";
+
+  function matchesIpoCategory(item, activeCategory){
+    if (activeCategory === "all") return true;
+    if (activeCategory === "spac-reit") return item.category === "spac" || item.category === "reit";
+    return item.category === activeCategory;
+  }
+
   function renderIpoList(){
     var listEl = document.getElementById("ipoCardList");
     var heroCountEl = document.getElementById("ipoHeroCount");
@@ -3296,23 +3330,33 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
     if (!IPO_SCHEDULES.length) {
       heroCountEl.textContent = "0";
-      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-calendar-blank"></i><p>최근 45일 내 신규 접수된 공모주 청약 일정이 없어요.</p></div>';
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-calendar-blank"></i><p>최근 60일 내 신규 접수된 공모주·실권주 청약 일정이 없어요.</p></div>';
       return;
     }
 
     var todayStr = formatDateYMD(new Date());
-    var sorted = IPO_SCHEDULES.slice().sort(function(a, b){
+    var filtered = IPO_SCHEDULES.filter(function(item){ return matchesIpoCategory(item, ipoActiveCategory); });
+    var sorted = filtered.slice().sort(function(a, b){
       return a.subEnd - b.subEnd;
     });
 
     heroCountEl.textContent = sorted.filter(function(item){ return !getIpoDday(item.subEnd, todayStr).closed; }).length;
 
+    if (!sorted.length) {
+      listEl.innerHTML = '<div class="finance-error"><i class="ph-duotone ph-funnel"></i><p>이 분류에는 표시할 청약 일정이 없어요.</p></div>';
+      return;
+    }
+
     listEl.innerHTML = sorted.map(function(item){
       var dday = getIpoDday(item.subEnd, todayStr);
       var ddayClass = dday.closed ? "is-closed" : (dday.days <= 1 ? "is-urgent" : "");
+      var stageLabel = getIpoStageLabel(item, todayStr);
+      var categoryLabel = IPO_CATEGORY_LABEL[item.category] || "";
       return '<div class="ipo-card" data-id="' + item.id + '">' +
         '<div class="ipo-card-top">' +
           '<span class="ipo-card-dday ' + ddayClass + '">' + dday.label + '</span>' +
+          (categoryLabel ? '<span class="ipo-card-category ipo-card-category-' + item.category + '">' + categoryLabel + '</span>' : '') +
+          (stageLabel ? '<span class="ipo-card-stage">' + stageLabel + '</span>' : '') +
           '<span class="ipo-card-underwriter">' + escapeMyPageHtml(item.underwriter) + '</span>' +
         '</div>' +
         '<h3 class="ipo-card-name">' + escapeMyPageHtml(item.name) + '</h3>' +
@@ -3332,6 +3376,16 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
       });
     });
   }
+
+  document.querySelectorAll("#ipoCategoryFilter .ipo-category-chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      ipoActiveCategory = chip.getAttribute("data-category");
+      document.querySelectorAll("#ipoCategoryFilter .ipo-category-chip").forEach(function(c){
+        c.classList.toggle("is-active", c === chip);
+      });
+      renderIpoList();
+    });
+  });
 
   // BrokerCtaButton — 실제 제휴(CPA) 계약이 없어 가짜 딥링크 대신 각 증권사 공식 홈페이지로
   // 연결한다(주소는 실제 접속 확인 완료). 목록에 없는 주관사는 검색 결과로 폴백.
