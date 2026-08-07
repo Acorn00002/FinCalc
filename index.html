@@ -3249,8 +3249,8 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     if (!listEl || !heroCountEl) return;
 
     if (!ipoSchedulesLoaded) {
-      listEl.innerHTML = "";
       heroCountEl.textContent = "…";
+      listEl.innerHTML = '<div class="finance-loading"><div class="finance-spinner"></div><p>실시간 공모주 일정을 불러오는 중이에요...</p></div>';
       return;
     }
 

@@ -5,11 +5,16 @@
 //
 // DART에는 "이번 주 공모주 목록"을 바로 주는 API가 없어서, 두 단계로 조합한다.
 //   1) list.json에서 corp_code 없이 "증권신고서(지분증권)"(pblntf_ty=C, pblntf_detail_ty=C001) 공시를
-//      최근 45일 범위로 검색해 회사 목록을 얻는다.
+//      최근 45일 범위로 검색한다. 이 상세유형은 지분증권 관련 공시를 폭넓게 묶어서, 실제로는
+//      상장사의 유상증자·일괄신고(회사채/ELS) 실적보고서 등이 훨씬 더 많이 섞여 나온다(실측 확인:
+//      45일 검색에 3800여 건). report_nm에 "증권신고서(지분증권)"이 포함된 것만 남기고([기재정정]/
+//      [발행조건확정] 접두어 포함), 그중에서도 stock_code가 비어있는(=아직 상장 전인) 건만
+//      "신규 공모주 청약"으로 취급한다 — stock_code가 있는 건 이미 상장된 회사의 유상증자다.
 //   2) 정정신고서가 여러 번 올라올 수 있어 corp_code당 접수일(rcept_dt) 최신 1건만 남긴 뒤,
 //      각 회사의 corp_code로 estkRs.json(지분증권 증권신고서 상세)을 조회해 청약기일(sbd)·납입기일(pymd)을 가져온다.
-// opendart 가이드 문서 기준으로 구현했고 실제 발급 키로 라이브 응답을 검증하지 못한 상태라,
-// sbd/pymd의 정확한 날짜 표기 형식은 실사용 중 조정이 필요할 수 있다.
+// 실제 발급받은 키로 라이브 검증까지 마쳤다(2026-08 기준). estkRs 응답은 data.list가 아니라
+// data.group[].list(그룹별 배열)로 내려온다는 것과, sbd 형식이 "2026년 09월 16일 ~ 2026년 09월 17일"인
+// 것도 실측으로 확인했다. 상장 전 회사라 코스피/코스닥이 확정 표기되지 않아 market은 "신규상장"으로 통일한다.
 
 const DART_LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 const DART_ESTKRS_URL = "https://opendart.fss.or.kr/api/estkRs.json";
@@ -68,7 +73,8 @@ async function fetchDartIpoFilingList(apiKey) {
     if (pageNo > 10) break;
   }
 
-  return filings;
+  // 증권신고서(지분증권) 본문/정정/발행조건확정만 남기고, 이미 상장된 회사(=유상증자)는 제외한다.
+  return filings.filter((f) => f.report_nm && f.report_nm.includes("증권신고서(지분증권)") && !f.stock_code);
 }
 
 function dedupeLatestByCorp(filings) {
@@ -93,9 +99,10 @@ async function fetchDartIpoDetail(apiKey, filing) {
     const res = await fetch(url);
     if (!res.ok) return null;
     const data = await res.json();
-    if (data.status !== "000" || !data.list || !data.list.length) return null;
+    if (data.status !== "000" || !data.group || !data.group.length) return null;
 
-    const rows = data.list;
+    // estkRs 응답은 그룹(일반사항/증권의종류/인수인정보/...)별로 나뉜 배열이라 하나로 펼쳐서 찾는다.
+    const rows = data.group.reduce((acc, g) => acc.concat(g.list || []), []);
     const generalRow = rows.find((r) => r.sbd) || rows[0];
     const priceRow = rows.find((r) => r.slprc);
     const underwriterRow = rows.find((r) => r.actnmn);
@@ -110,7 +117,7 @@ async function fetchDartIpoDetail(apiKey, filing) {
     return {
       id: filing.corp_code,
       name: filing.corp_name,
-      market: filing.corp_cls === "Y" ? "코스피" : (filing.corp_cls === "K" ? "코스닥" : "기타"),
+      market: "신규상장",
       underwriter: underwriterRow ? underwriterRow.actnmn : "",
       priceMin: price,
       priceMax: price,
