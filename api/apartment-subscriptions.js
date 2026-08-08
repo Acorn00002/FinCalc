@@ -79,7 +79,10 @@ export default async function handler(req, res) {
 
   try {
     const listings = await fetchApartmentSubscriptions(apiKey);
-    res.setHeader("Cache-Control", "public, max-age=1800");
+    // max-age만 있으면 Vercel Edge CDN에는 캐시되지 않고 브라우저 캐시로만 적용돼서, 방문자마다
+    // 매번 청약홈 API 왕복(2초+)을 그대로 겪는다 — s-maxage/stale-while-revalidate를 추가해
+    // Edge에서 30분간 모든 방문자에게 즉시 응답하고, 그 이후는 백그라운드 갱신 중에도 캐시를 계속 서빙한다.
+    res.setHeader("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600");
     return res.status(200).json({ listings: listings });
   } catch (error) {
     console.error("apartment-subscriptions 실패:", error);

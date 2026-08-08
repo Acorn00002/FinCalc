@@ -182,7 +182,7 @@ export default async function handler(req, res) {
     const details = await Promise.all(filings.map((f) => fetchDartIpoDetail(apiKey, f)));
     const schedules = details.filter(Boolean);
 
-    res.setHeader("Cache-Control", "public, max-age=1800");
+    res.setHeader("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600");
     return res.status(200).json({ schedules: schedules });
   } catch (error) {
     console.error("ipo-schedules 실패:", error);

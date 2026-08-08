@@ -126,7 +126,7 @@ export default async function handler(req, res) {
       };
     }).filter((p) => p.baseRate !== null || p.maxRate !== null);
 
-    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=7200");
     return res.status(200).json({ products: products, asOf: baseList[0] ? baseList[0].dcls_month : "" });
   } catch (error) {
     console.error("finance-products 실패:", error);

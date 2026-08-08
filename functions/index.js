@@ -1164,7 +1164,7 @@ exports.financeProductsLive = onRequest({ cors: true, region: "asia-northeast3" 
       };
     }).filter((p) => p.baseRate !== null || p.maxRate !== null);
 
-    res.set("Cache-Control", "public, max-age=3600");
+    res.set("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=7200");
     res.status(200).json({ products: products, asOf: baseList[0] ? baseList[0].dcls_month : "" });
   } catch (error) {
     console.error("financeProductsLive 실패:", error);
@@ -1179,7 +1179,7 @@ exports.ipoSchedulesLive = onRequest({ cors: true, region: "asia-northeast3", ti
       return;
     }
     const schedules = await fetchDartIpoSchedules();
-    res.set("Cache-Control", "public, max-age=1800");
+    res.set("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600");
     res.status(200).json({ schedules: schedules });
   } catch (error) {
     console.error("ipoSchedulesLive 실패:", error);
@@ -1254,7 +1254,7 @@ exports.apartmentSubscriptionsLive = onRequest({ cors: true, region: "asia-north
       return;
     }
     const listings = await fetchApartmentSubscriptions();
-    res.set("Cache-Control", "public, max-age=1800");
+    res.set("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600");
     res.status(200).json({ listings: listings });
   } catch (error) {
     console.error("apartmentSubscriptionsLive 실패:", error);
