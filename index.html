@@ -969,6 +969,8 @@ try {
       <button type="button" class="mypage-logout-btn" id="mypageLogoutBtn">로그아웃</button>
     </div>
 
+    <!-- 보유 포인트 요약 + 포인트 히스토리를 한 카드로 결합 — 예전엔 히스토리가 마이페이지 맨 아래
+         떨어져 있어서 포인트와 그 내역이 한눈에 이어져 보이지 않았다. -->
     <div class="mypage-points-card">
       <p class="mypage-points-label">보유 포인트</p>
       <p class="mypage-points-value"><span id="mypagePointsValue">0</span> <span>P</span></p>
@@ -977,6 +979,10 @@ try {
         <span id="mypageProgressPct">0%</span>
       </div>
       <div class="mypage-progress-track"><div class="mypage-progress-fill" id="mypageProgressFill"></div></div>
+
+      <div class="mypage-points-history-divider"></div>
+      <h3 class="mypage-section-title">포인트 히스토리</h3>
+      <div class="mypage-history-list" id="mypageHistoryList"></div>
     </div>
 
     <!-- 내 자산 현황 및 동향 대시보드 — 카테고리별(현금/예적금, 주식/투자금, 부동산/기타) 자산을 입력하면
@@ -1099,6 +1105,7 @@ try {
     <section class="home-score-section">
       <div class="home-score-card" id="homeScoreInputCard">
         <p class="home-score-input-title">내 자산, 동연령대 상위 몇 %일까요?</p>
+        <p class="home-score-sync-hint"><i class="ph-duotone ph-arrows-clockwise"></i>위 '내 자산 현황'에 저장한 총자산이 자동으로 채워져요</p>
         <div class="home-score-bracket-row" id="homeScoreBracketRow"></div>
         <div class="home-score-input-row">
           <label class="home-score-input-label">총자산</label>
@@ -1140,11 +1147,6 @@ try {
         <button type="button" class="home-score-edit-btn" id="homeScoreEditBtn">내 자산 정보 다시 입력하기</button>
       </div>
     </section>
-
-    <div class="mypage-section">
-      <h3 class="mypage-section-title">포인트 히스토리</h3>
-      <div class="mypage-history-list" id="mypageHistoryList"></div>
-    </div>
 
   </div>
 
@@ -5056,6 +5058,13 @@ try {
         inputEl.value = values[c.key] > 0 ? String(values[c.key]) : "";
       }
     });
+
+    // 실제로 저장된 자산 데이터가 있을 때만(문서가 존재할 때만) "자산 상위 %" 카드에 반영한다 —
+    // 최초 진입처럼 아직 저장 전이라 total이 0으로 잡히는 경우까지 반영하면, 그 카드에 이미 저장돼
+    // 있던 자산 등급 결과를 로그인 직후에 실수로 0으로 덮어써버릴 수 있다.
+    if (data && typeof window.applyAssetDashTotalToScoreCard === "function") {
+      window.applyAssetDashTotalToScoreCard(total);
+    }
   }
 
   function subscribeUserAssets(uid){
@@ -6425,6 +6434,26 @@ try {
       inputCard.hidden = true;
       resultCard.hidden = false;
     }
+
+    // 마이페이지 "내 자산 현황" 대시보드(현금+주식+부동산 합계)에서 저장이 일어날 때마다 그 총자산을
+    // 이 카드에도 그대로 반영한다 — 입력 폼이면 총자산 필드만 채워두고, 이미 결과가 표시 중이면
+    // 그 자리에서 즉시 재계산해서 보여준다(총자산을 두 화면에 각각 입력할 필요가 없도록).
+    function applyExternalTotalAssets(total){
+      if (typeof total !== "number" || !isFinite(total) || total < 0) return;
+      if (document.activeElement !== assetsInput) {
+        assetsInput.value = total > 0 ? String(total) : "";
+      }
+      if (!resultCard.hidden) {
+        var profile = {
+          ageBracket: selectedBracket,
+          totalAssets: total,
+          totalDebt: Number(debtInput.value) || 0
+        };
+        saveProfile(profile);
+        renderResult(profile);
+      }
+    }
+    window.applyAssetDashTotalToScoreCard = applyExternalTotalAssets;
 
     var existing = loadProfile();
     if (existing) {

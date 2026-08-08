@@ -1224,6 +1224,8 @@
   .home-score-section{margin-bottom:24px;}
   .home-score-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
   .home-score-input-title{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .home-score-sync-hint{display:flex;align-items:center;gap:4px;margin:-8px 0 14px;font-size:11.5px;font-weight:600;color:var(--brand);}
+  .home-score-sync-hint i{font-size:12px;--ph-duotone-secondary-opacity:0;}
   .home-score-bracket-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
   .home-score-bracket-chip{
     background:var(--card-soft);
@@ -3294,6 +3296,9 @@
   .mypage-progress-top{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:8px;}
   .mypage-progress-track{height:8px;background:rgba(255,255,255,0.7);border-radius:999px;overflow:hidden;}
   .mypage-progress-fill{height:100%;background:var(--brand);border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+  .mypage-points-history-divider{height:1px;background:rgba(88,92,229,0.14);margin:24px 0 18px;}
+  .mypage-points-card .mypage-section-title{margin:0 0 12px;}
+  .mypage-points-card .mypage-history-list{margin:0 -4px;}
 
   .mypage-section-title{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
 
