@@ -1316,6 +1316,12 @@
     cursor:pointer;
   }
   .asset-dash-quick-add-btn:active{background:var(--brand-soft);}
+  .asset-dash-quick-add-btn--reset{
+    color:var(--ink-3);
+    border-color:var(--line);
+  }
+  .asset-dash-quick-add-btn--reset:hover{color:#dc2626;border-color:rgba(220,38,38,0.35);background:rgba(220,38,38,0.08);}
+  .asset-dash-quick-add-btn--reset:active{background:rgba(220,38,38,0.12);}
   .asset-dash-save-btn{
     width:100%;
     background:var(--brand);

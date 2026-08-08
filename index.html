@@ -1013,6 +1013,7 @@ try {
           <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000">+100만</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+          <button type="button" class="asset-dash-quick-add-btn asset-dash-quick-add-btn--reset" data-reset="true">정정</button>
         </div>
 
         <div class="asset-dash-input-row">
@@ -1025,6 +1026,7 @@ try {
           <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000">+100만</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+          <button type="button" class="asset-dash-quick-add-btn asset-dash-quick-add-btn--reset" data-reset="true">정정</button>
         </div>
 
         <div class="asset-dash-input-row">
@@ -1037,6 +1039,7 @@ try {
           <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
           <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000000">+10억</button>
+          <button type="button" class="asset-dash-quick-add-btn asset-dash-quick-add-btn--reset" data-reset="true">정정</button>
         </div>
 
         <button type="button" class="asset-dash-save-btn" id="assetDashSaveBtn">저장하기</button>
@@ -5099,6 +5102,11 @@ try {
       if (!targetInput) return;
       row.querySelectorAll(".asset-dash-quick-add-btn").forEach(function(btn){
         btn.addEventListener("click", function(){
+          if (btn.getAttribute("data-reset") === "true") {
+            targetInput.value = "";
+            targetInput.focus();
+            return;
+          }
           var current = parseInt(targetInput.value, 10) || 0;
           targetInput.value = current + parseInt(btn.getAttribute("data-amount"), 10);
         });
