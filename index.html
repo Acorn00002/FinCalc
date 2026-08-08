@@ -979,6 +979,79 @@ try {
       <div class="mypage-progress-track"><div class="mypage-progress-fill" id="mypageProgressFill"></div></div>
     </div>
 
+    <!-- 내 자산 현황 및 동향 대시보드 — 카테고리별(현금/예적금, 주식/투자금, 부동산/기타) 자산을 입력하면
+         Firestore(userAssets/{uid})에 저장되고, 총자산 요약과 구성비 바 차트로 바로 보여준다. -->
+    <section class="asset-dash-section">
+      <div class="asset-dash-card">
+        <p class="asset-dash-total-label">내 총자산</p>
+        <p class="asset-dash-total-value" id="assetDashTotalValue">0원</p>
+        <div class="asset-dash-bar-track">
+          <div class="asset-dash-bar-seg asset-dash-bar-seg--cash" id="assetDashBarCash" style="width:0%;"></div>
+          <div class="asset-dash-bar-seg asset-dash-bar-seg--stock" id="assetDashBarStock" style="width:0%;"></div>
+          <div class="asset-dash-bar-seg asset-dash-bar-seg--realestate" id="assetDashBarRealestate" style="width:0%;"></div>
+        </div>
+        <div class="asset-dash-legend">
+          <div class="asset-dash-legend-item">
+            <span class="asset-dash-legend-dot asset-dash-legend-dot--cash"></span>
+            <span class="asset-dash-legend-label">현금/예적금</span>
+            <span class="asset-dash-legend-pct" id="assetDashPctCash">0%</span>
+          </div>
+          <div class="asset-dash-legend-item">
+            <span class="asset-dash-legend-dot asset-dash-legend-dot--stock"></span>
+            <span class="asset-dash-legend-label">주식/투자금</span>
+            <span class="asset-dash-legend-pct" id="assetDashPctStock">0%</span>
+          </div>
+          <div class="asset-dash-legend-item">
+            <span class="asset-dash-legend-dot asset-dash-legend-dot--realestate"></span>
+            <span class="asset-dash-legend-label">부동산/기타</span>
+            <span class="asset-dash-legend-pct" id="assetDashPctRealestate">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="asset-dash-card">
+        <p class="asset-dash-form-title">자산 항목 입력</p>
+
+        <div class="asset-dash-input-row">
+          <label class="asset-dash-input-label" for="assetDashCashInput">현금/예적금</label>
+          <input type="number" class="asset-dash-input" id="assetDashCashInput" placeholder="0" inputmode="numeric" min="0">
+          <span class="asset-dash-input-suffix">원</span>
+        </div>
+        <div class="asset-dash-quick-add-row" data-target="assetDashCashInput">
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000">+10만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000">+100만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+        </div>
+
+        <div class="asset-dash-input-row">
+          <label class="asset-dash-input-label" for="assetDashStockInput">주식/투자금</label>
+          <input type="number" class="asset-dash-input" id="assetDashStockInput" placeholder="0" inputmode="numeric" min="0">
+          <span class="asset-dash-input-suffix">원</span>
+        </div>
+        <div class="asset-dash-quick-add-row" data-target="assetDashStockInput">
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000">+10만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000">+100만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+        </div>
+
+        <div class="asset-dash-input-row">
+          <label class="asset-dash-input-label" for="assetDashRealestateInput">부동산/기타</label>
+          <input type="number" class="asset-dash-input" id="assetDashRealestateInput" placeholder="0" inputmode="numeric" min="0">
+          <span class="asset-dash-input-suffix">원</span>
+        </div>
+        <div class="asset-dash-quick-add-row" data-target="assetDashRealestateInput">
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000">+100만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000000">+10억</button>
+        </div>
+
+        <button type="button" class="asset-dash-save-btn" id="assetDashSaveBtn">저장하기</button>
+      </div>
+    </section>
+
     <!-- 오늘의 3초 자산 꿀팁 — 웹은 푸시 알림 대신, 매일 하나씩 짧은 꿀팁을 읽고 체크하는
          달성 카드로 대체해 체류를 유도한다(모바일 앱의 자산 출석 챌린지+푸시 알림에 대응).
          홈 화면이 장황해 보인다는 피드백으로 마이페이지(아이디/포인트 바로 아래)로 옮겼다. -->
@@ -4612,6 +4685,7 @@ try {
       authState.userEmail = user.email || "";
       subscribeToUserDoc(user.uid);
       if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(user.uid);
+      if (typeof subscribeUserAssets === "function") subscribeUserAssets(user.uid);
     } else {
       authState.isLoggedIn = false;
       authState.userProfile = { name: DEFAULT_USER_PROFILE.name, avatar: DEFAULT_USER_PROFILE.avatar };
@@ -4620,6 +4694,7 @@ try {
       authState.pointHistory = [];
       if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
       if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(null);
+      if (typeof subscribeUserAssets === "function") subscribeUserAssets(null);
     }
     syncAuthUI();
   });
@@ -4942,6 +5017,108 @@ try {
   if (mypageLogoutBtn) mypageLogoutBtn.addEventListener("click", handleGoogleLogout);
   var settingsLogoutBtn = document.getElementById("settingsLogoutBtn");
   if (settingsLogoutBtn) settingsLogoutBtn.addEventListener("click", handleGoogleLogout);
+
+  // ---------- 마이페이지: 내 자산 현황 및 동향 대시보드 (Firestore userAssets/{uid}) ----------
+  // 카테고리별(현금/예적금, 주식/투자금, 부동산/기타) 자산을 최상위 컬렉션 userAssets에 문서 ID=uid로
+  // 저장한다(firestore.rules에서 본인 uid만 read/write하도록 제한 + 필드/타입/음수 검증까지 서버에서 재확인).
+  // subscribePersonalEvents와 동일하게 onAuthStateChanged에서 로그인/로그아웃 시 구독을 걸고 끊는다.
+  var userAssetsUnsubscribe = null;
+  var ASSET_DASH_CATEGORIES = [
+    { key: "cash", inputId: "assetDashCashInput", barId: "assetDashBarCash", pctId: "assetDashPctCash" },
+    { key: "stock", inputId: "assetDashStockInput", barId: "assetDashBarStock", pctId: "assetDashPctStock" },
+    { key: "realestate", inputId: "assetDashRealestateInput", barId: "assetDashBarRealestate", pctId: "assetDashPctRealestate" }
+  ];
+
+  function renderAssetDashboard(data){
+    var totalEl = document.getElementById("assetDashTotalValue");
+    if (!totalEl) return;
+
+    var values = {};
+    var total = 0;
+    ASSET_DASH_CATEGORIES.forEach(function(c){
+      var raw = data && typeof data[c.key] === "number" && isFinite(data[c.key]) ? data[c.key] : 0;
+      values[c.key] = Math.max(0, raw);
+      total += values[c.key];
+    });
+
+    totalEl.textContent = total.toLocaleString("ko-KR") + "원";
+
+    ASSET_DASH_CATEGORIES.forEach(function(c){
+      var pct = total > 0 ? Math.round((values[c.key] / total) * 100) : 0;
+      var barEl = document.getElementById(c.barId);
+      var pctEl = document.getElementById(c.pctId);
+      if (barEl) barEl.style.width = pct + "%";
+      if (pctEl) pctEl.textContent = pct + "%";
+
+      // 입력 중인 필드는 실시간 구독이 타이핑 중인 값을 덮어쓰지 않도록 건드리지 않는다.
+      var inputEl = document.getElementById(c.inputId);
+      if (inputEl && document.activeElement !== inputEl) {
+        inputEl.value = values[c.key] > 0 ? String(values[c.key]) : "";
+      }
+    });
+  }
+
+  function subscribeUserAssets(uid){
+    if (userAssetsUnsubscribe) { userAssetsUnsubscribe(); userAssetsUnsubscribe = null; }
+    if (!uid) {
+      renderAssetDashboard(null);
+      return;
+    }
+    userAssetsUnsubscribe = db.collection("userAssets").doc(uid).onSnapshot(function(docSnap){
+      renderAssetDashboard(docSnap.exists ? docSnap.data() : null);
+    }, function(error){
+      console.error("자산 현황 구독 실패:", error);
+    });
+  }
+
+  // 자산 입력값은 음수/소수/문자를 전부 걸러내고 0 이상의 정수로만 취급한다(방어적 파싱) —
+  // firestore.rules에서도 동일하게 number && >=0 조건으로 서버 쪽에서 다시 한 번 검증한다.
+  function parseAssetDashInput(el){
+    if (!el) return 0;
+    var n = parseInt(String(el.value || "").replace(/[^0-9]/g, ""), 10);
+    return isFinite(n) && !isNaN(n) && n >= 0 ? n : 0;
+  }
+
+  (function initAssetDashboardForm(){
+    var saveBtn = document.getElementById("assetDashSaveBtn");
+    if (!saveBtn) return;
+
+    document.querySelectorAll(".asset-dash-quick-add-row").forEach(function(row){
+      var targetInput = document.getElementById(row.getAttribute("data-target"));
+      if (!targetInput) return;
+      row.querySelectorAll(".asset-dash-quick-add-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var current = parseInt(targetInput.value, 10) || 0;
+          targetInput.value = current + parseInt(btn.getAttribute("data-amount"), 10);
+        });
+      });
+    });
+
+    saveBtn.addEventListener("click", function(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+        handleGoogleLogin();
+        return;
+      }
+      var uid = firebaseAuth.currentUser.uid;
+      var payload = {
+        cash: parseAssetDashInput(document.getElementById("assetDashCashInput")),
+        stock: parseAssetDashInput(document.getElementById("assetDashStockInput")),
+        realestate: parseAssetDashInput(document.getElementById("assetDashRealestateInput")),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      saveBtn.disabled = true;
+      db.collection("userAssets").doc(uid).set(payload, { merge: true }).then(function(){
+        saveBtn.disabled = false;
+        showToast("자산 현황이 저장됐어요", "ph-check-circle");
+      }).catch(function(error){
+        saveBtn.disabled = false;
+        console.error("자산 현황 저장 실패:", error);
+        showToast("저장에 실패했어요. 다시 시도해주세요.", "ph-warning");
+      });
+    });
+  })();
 
   // ---------- 화면 테마 설정 (마이페이지) ----------
   // 실제 적용/저장 로직은 <head>의 조기 실행 스크립트(window.setThemePreference)가 전담하고,
