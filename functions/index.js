@@ -6,16 +6,28 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // ---------- /api/news ----------
-// 구글 뉴스 "경제(Business)" 카테고리 RSS — topic ID는 opaque 값이라 임의로 만들 수 없으므로
-// 실제 요청이 200/XML로 응답하는 것을 확인한 ID만 사용한다.
-const GOOGLE_NEWS_RSS_URL =
-  "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko";
+// 구글 뉴스 카테고리별 RSS — 정치/경제는 고정 topic ID(opaque 값, 실제 200/XML 응답을 확인한 것만 사용),
+// 시사/생활은 대응하는 topic ID가 없어(구글 뉴스 상단 탭에 없음) 검색 RSS(q=키워드)로 대체한다.
+// 참고: "지역" topic ID는 지오로케이션에 묶여있는지 응답이 불안정해서(200 → 이후 요청 시 404) 배제했다.
+// category 쿼리 파라미터가 없거나 목록에 없으면 기존 기본값(경제)을 그대로 쓴다 — 홈 위젯/모바일 앱은
+// category 없이 호출하므로 하위 호환이 깨지지 않는다.
+const NEWS_CATEGORY_URLS = {
+  politics: "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRFp4WkRNU0FtdHZLQUFQAQ?hl=ko&gl=KR&ceid=KR:ko",
+  economy: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
+  society: "https://news.google.com/rss/search?q=" + encodeURIComponent("사회") + "&hl=ko&gl=KR&ceid=KR:ko",
+  life: "https://news.google.com/rss/search?q=" + encodeURIComponent("생활") + "&hl=ko&gl=KR&ceid=KR:ko"
+};
+const DEFAULT_NEWS_CATEGORY = "economy";
+
+function resolveNewsUrl(category) {
+  return NEWS_CATEGORY_URLS[category] || NEWS_CATEGORY_URLS[DEFAULT_NEWS_CATEGORY];
+}
 
 // 홈 화면(index.html)이 /api/news로 호출하면 Firebase Hosting rewrite를 통해 이 함수로 들어온다.
 // 서버 대 서버로 구글 뉴스를 대신 가져오기 때문에 브라우저 쪽 CORS 문제가 발생하지 않는다.
 exports.newsProxy = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
   try {
-    const upstream = await fetch(GOOGLE_NEWS_RSS_URL, {
+    const upstream = await fetch(resolveNewsUrl(req.query.category), {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; AssetPilotNewsProxy/1.0)" }
     });
 

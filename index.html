@@ -1518,8 +1518,14 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 <main class="wrap app-view" id="view-news">
   <div class="news-head">
     <p class="mypage-eyebrow">뉴스 · 금융소식</p>
-    <h2>실시간 경제 뉴스</h2>
-    <p>구글 뉴스 경제 토픽을 실시간으로 모아봤어요.</p>
+    <h2>실시간 뉴스</h2>
+    <p>정치·경제·시사·생활 소식을 한 곳에서 모아봤어요.</p>
+  </div>
+  <div class="news-category-filter" id="newsCategoryFilter">
+    <button type="button" class="news-category-chip" data-category="politics">정치</button>
+    <button type="button" class="news-category-chip is-active" data-category="economy">경제</button>
+    <button type="button" class="news-category-chip" data-category="society">시사</button>
+    <button type="button" class="news-category-chip" data-category="life">생활</button>
   </div>
   <div class="news-page-list" id="newsPageList">
     <div class="news-page-skel"></div>
@@ -4089,6 +4095,8 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
 
   // ---------- 뉴스 · 금융소식 (홈 위젯과 같은 /api/news RSS 프록시를 재사용, 더 긴 전체 목록만 별도 렌더링) ----------
   var newsPageLoaded = false;
+  var newsActiveCategory = "economy";
+  var newsCache = {};
 
   function splitNewsPageTitle(rawTitle, sourceText){
     var title = rawTitle || "";
@@ -4184,20 +4192,48 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     }).join("");
   }
 
-  function initNewsView(){
-    if (newsPageLoaded) return;
-    newsPageLoaded = true;
-    fetch("/api/news")
+  function loadNewsCategory(category){
+    if (newsCache[category]) {
+      renderNewsPage(newsCache[category]);
+      return;
+    }
+    var listEl = document.getElementById("newsPageList");
+    if (listEl) {
+      listEl.innerHTML = '<div class="news-page-skel"></div><div class="news-page-skel"></div>' +
+        '<div class="news-page-skel"></div><div class="news-page-skel"></div><div class="news-page-skel"></div>';
+    }
+    fetch("/api/news?category=" + encodeURIComponent(category))
       .then(function(res){
         if (!res.ok) throw new Error("응답 오류: " + res.status);
         return res.text();
       })
-      .then(function(xmlText){ renderNewsPage(parseNewsPageXml(xmlText)); })
+      .then(function(xmlText){
+        var items = parseNewsPageXml(xmlText);
+        newsCache[category] = items;
+        renderNewsPage(items);
+      })
       .catch(function(error){
         console.error("뉴스·금융소식 로드 실패:", error);
-        newsPageLoaded = false;
         renderNewsPage([]);
       });
+  }
+
+  document.querySelectorAll("#newsCategoryFilter .news-category-chip").forEach(function(chip){
+    chip.addEventListener("click", function(){
+      var category = chip.getAttribute("data-category");
+      if (category === newsActiveCategory) return;
+      newsActiveCategory = category;
+      document.querySelectorAll("#newsCategoryFilter .news-category-chip").forEach(function(c){
+        c.classList.toggle("is-active", c === chip);
+      });
+      loadNewsCategory(category);
+    });
+  });
+
+  function initNewsView(){
+    if (newsPageLoaded) return;
+    newsPageLoaded = true;
+    loadNewsCategory(newsActiveCategory);
   }
 
   // ---------- 경제사전: 오늘의 경제용어 ----------

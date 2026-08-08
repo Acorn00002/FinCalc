@@ -2,8 +2,18 @@
 // Firebase Functions(functions/index.js)의 newsProxy와 동일한 RSS 소스를 그대로 프록시한다.
 // index.html의 fetchNewsXml()이 순수 XML 텍스트를 그대로 기대하므로 응답 형식을 맞춘다.
 
-const GOOGLE_NEWS_RSS_URL =
-  "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko";
+// category 매핑은 functions/index.js의 NEWS_CATEGORY_URLS와 반드시 같게 유지할 것.
+const NEWS_CATEGORY_URLS = {
+  politics: "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRFp4WkRNU0FtdHZLQUFQAQ?hl=ko&gl=KR&ceid=KR:ko",
+  economy: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
+  society: "https://news.google.com/rss/search?q=" + encodeURIComponent("사회") + "&hl=ko&gl=KR&ceid=KR:ko",
+  life: "https://news.google.com/rss/search?q=" + encodeURIComponent("생활") + "&hl=ko&gl=KR&ceid=KR:ko"
+};
+const DEFAULT_NEWS_CATEGORY = "economy";
+
+function resolveNewsUrl(category) {
+  return NEWS_CATEGORY_URLS[category] || NEWS_CATEGORY_URLS[DEFAULT_NEWS_CATEGORY];
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -14,7 +24,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const upstream = await fetch(GOOGLE_NEWS_RSS_URL, {
+    const upstream = await fetch(resolveNewsUrl(req.query.category), {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; AssetPilotNewsProxy/1.0)" }
     });
 
