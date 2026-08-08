@@ -3285,6 +3285,14 @@
   }
   .mypage-logout-btn:hover{background:#e5e8eb;}
 
+  /* 왼쪽: 보유 포인트+히스토리 / 오른쪽: 5년 뒤 목돈·이자 절감 시뮬레이터(.home-sim-section, 그 안에서
+     또 두 칸으로 세로 스택) 두 칸을 한 행에 배치. 좁은 화면에서는 자연스럽게 세로로 쌓인다. */
+  .mypage-split-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-bottom:24px;}
+  .mypage-split-row .home-sim-section{margin-bottom:0;}
+  @media (max-width:640px){
+    .mypage-split-row{grid-template-columns:1fr;}
+  }
+
   .mypage-points-card{
     background:linear-gradient(160deg, var(--brand-soft) 0%, var(--card) 70%);
     border:1px solid rgba(88,92,229,0.14);

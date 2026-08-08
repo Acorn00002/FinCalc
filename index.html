@@ -969,24 +969,9 @@ try {
       <button type="button" class="mypage-logout-btn" id="mypageLogoutBtn">로그아웃</button>
     </div>
 
-    <!-- 보유 포인트 요약 + 포인트 히스토리를 한 카드로 결합 — 예전엔 히스토리가 마이페이지 맨 아래
-         떨어져 있어서 포인트와 그 내역이 한눈에 이어져 보이지 않았다. -->
-    <div class="mypage-points-card">
-      <p class="mypage-points-label">보유 포인트</p>
-      <p class="mypage-points-value"><span id="mypagePointsValue">0</span> <span>P</span></p>
-      <div class="mypage-progress-top">
-        <span>스타벅스 아메리카노 교환까지</span>
-        <span id="mypageProgressPct">0%</span>
-      </div>
-      <div class="mypage-progress-track"><div class="mypage-progress-fill" id="mypageProgressFill"></div></div>
-
-      <div class="mypage-points-history-divider"></div>
-      <h3 class="mypage-section-title">포인트 히스토리</h3>
-      <div class="mypage-history-list" id="mypageHistoryList"></div>
-    </div>
-
-    <!-- 내 자산 현황 및 동향 대시보드 — 카테고리별(현금/예적금, 주식/투자금, 부동산/기타) 자산을 입력하면
-         Firestore(userAssets/{uid})에 저장되고, 총자산 요약과 구성비 바 차트로 바로 보여준다. -->
+    <!-- 내 자산 현황 및 동향 대시보드(총자산 박스) — 카테고리별(현금/예적금, 주식/투자금, 부동산/기타)
+         자산을 입력하면 Firestore(userAssets/{uid})에 저장되고, 총자산 요약과 구성비 바 차트로 바로
+         보여준다. 프로필(구글 로그인/닉네임) 바로 아래로 옮겨서 로그인하자마자 총자산이 먼저 보이게 했다. -->
     <section class="asset-dash-section">
       <div class="asset-dash-card">
         <p class="asset-dash-total-label">내 총자산</p>
@@ -1058,9 +1043,53 @@ try {
       </div>
     </section>
 
+    <!-- 왼쪽: 보유 포인트+히스토리 카드 / 오른쪽: 5년 뒤 목돈·이자 절감 시뮬레이터 두 칸을 한 행에 배치.
+         모바일 폭에서는 세로로 자연스럽게 쌓인다(.mypage-split-row 미디어쿼리). -->
+    <div class="mypage-split-row">
+      <div class="mypage-points-card">
+        <p class="mypage-points-label">보유 포인트</p>
+        <p class="mypage-points-value"><span id="mypagePointsValue">0</span> <span>P</span></p>
+        <div class="mypage-progress-top">
+          <span>스타벅스 아메리카노 교환까지</span>
+          <span id="mypageProgressPct">0%</span>
+        </div>
+        <div class="mypage-progress-track"><div class="mypage-progress-fill" id="mypageProgressFill"></div></div>
+
+        <div class="mypage-points-history-divider"></div>
+        <h3 class="mypage-section-title">포인트 히스토리</h3>
+        <div class="mypage-history-list" id="mypageHistoryList"></div>
+      </div>
+
+      <!-- 미래 자산 예측 시뮬레이터 — 입력창 없이 슬라이더 + 원터치 버튼만으로 월 저축액/대출 추가
+           상환금을 조절하면 5년 뒤 예상 자산과 절감 이자가 그 자리에서 실시간으로 갱신된다(토스 스타일). -->
+      <section class="home-sim-section">
+        <div class="home-sim-card">
+          <p class="home-sim-label" id="homeSimSavingsLabel">월 500,000원씩 모으면</p>
+          <h3 class="home-sim-value" id="homeSimSavingsValue">5년 뒤 +0원</h3>
+          <p class="home-sim-sub" id="homeSimSavingsSub">원금 0원 · 수익 0원 (연 4% 가정)</p>
+          <input type="range" class="home-sim-slider" id="homeSimSavingsSlider" min="0" max="2000000" step="10000" value="500000" aria-label="월 저축액">
+          <div class="home-sim-quick">
+            <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-add="100000">+10만 원</button>
+            <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-add="500000">+50만 원</button>
+            <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-reset="1">초기화</button>
+          </div>
+        </div>
+        <div class="home-sim-card home-sim-card--loan">
+          <p class="home-sim-label" id="homeSimLoanLabel">매달 200,000원씩 더 갚으면</p>
+          <h3 class="home-sim-value home-sim-value--loss" id="homeSimLoanValue">이자 -0원 절감</h3>
+          <p class="home-sim-sub">3억원 · 연 4% · 30년 대출 기준 시나리오</p>
+          <input type="range" class="home-sim-slider home-sim-slider--loan" id="homeSimLoanSlider" min="0" max="1000000" step="10000" value="200000" aria-label="대출 추가 상환금">
+          <div class="home-sim-quick">
+            <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-add="100000">+10만 원</button>
+            <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-add="500000">+50만 원</button>
+            <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-reset="1">초기화</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
     <!-- 오늘의 3초 자산 꿀팁 — 웹은 푸시 알림 대신, 매일 하나씩 짧은 꿀팁을 읽고 체크하는
-         달성 카드로 대체해 체류를 유도한다(모바일 앱의 자산 출석 챌린지+푸시 알림에 대응).
-         홈 화면이 장황해 보인다는 피드백으로 마이페이지(아이디/포인트 바로 아래)로 옮겼다. -->
+         달성 카드로 대체해 체류를 유도한다(모바일 앱의 자산 출석 챌린지+푸시 알림에 대응). -->
     <section class="home-tip-section">
       <div class="home-tip-card">
         <div class="home-tip-head">
@@ -1069,33 +1098,6 @@ try {
         </div>
         <p class="home-tip-text" id="homeTipText"></p>
         <button type="button" class="home-tip-btn" id="homeTipBtn">읽었어요</button>
-      </div>
-    </section>
-
-    <!-- 미래 자산 예측 시뮬레이터 — 입력창 없이 슬라이더 + 원터치 버튼만으로 월 저축액/대출 추가
-         상환금을 조절하면 5년 뒤 예상 자산과 절감 이자가 그 자리에서 실시간으로 갱신된다(토스 스타일). -->
-    <section class="home-sim-section">
-      <div class="home-sim-card">
-        <p class="home-sim-label" id="homeSimSavingsLabel">월 500,000원씩 모으면</p>
-        <h3 class="home-sim-value" id="homeSimSavingsValue">5년 뒤 +0원</h3>
-        <p class="home-sim-sub" id="homeSimSavingsSub">원금 0원 · 수익 0원 (연 4% 가정)</p>
-        <input type="range" class="home-sim-slider" id="homeSimSavingsSlider" min="0" max="2000000" step="10000" value="500000" aria-label="월 저축액">
-        <div class="home-sim-quick">
-          <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-add="100000">+10만 원</button>
-          <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-add="500000">+50만 원</button>
-          <button type="button" class="home-sim-quick-btn" data-sim-target="savings" data-sim-reset="1">초기화</button>
-        </div>
-      </div>
-      <div class="home-sim-card home-sim-card--loan">
-        <p class="home-sim-label" id="homeSimLoanLabel">매달 200,000원씩 더 갚으면</p>
-        <h3 class="home-sim-value home-sim-value--loss" id="homeSimLoanValue">이자 -0원 절감</h3>
-        <p class="home-sim-sub">3억원 · 연 4% · 30년 대출 기준 시나리오</p>
-        <input type="range" class="home-sim-slider home-sim-slider--loan" id="homeSimLoanSlider" min="0" max="1000000" step="10000" value="200000" aria-label="대출 추가 상환금">
-        <div class="home-sim-quick">
-          <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-add="100000">+10만 원</button>
-          <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-add="500000">+50만 원</button>
-          <button type="button" class="home-sim-quick-btn" data-sim-target="loan" data-sim-reset="1">초기화</button>
-        </div>
       </div>
     </section>
 
