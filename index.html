@@ -1022,10 +1022,22 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
           <input type="number" class="home-score-input" id="homeScoreAssetsInput" placeholder="0" inputmode="numeric">
           <span class="home-score-input-suffix">원</span>
         </div>
+        <div class="home-score-quick-add-row" data-target="homeScoreAssetsInput">
+          <button type="button" class="home-score-quick-add-btn" data-amount="100000">+10만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="1000000">+100만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="100000000">+1억</button>
+        </div>
         <div class="home-score-input-row">
           <label class="home-score-input-label">총부채</label>
           <input type="number" class="home-score-input" id="homeScoreDebtInput" placeholder="0" inputmode="numeric">
           <span class="home-score-input-suffix">원</span>
+        </div>
+        <div class="home-score-quick-add-row" data-target="homeScoreDebtInput">
+          <button type="button" class="home-score-quick-add-btn" data-amount="100000">+10만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="1000000">+100만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="home-score-quick-add-btn" data-amount="100000000">+1억</button>
         </div>
         <button type="button" class="home-score-submit-btn" id="homeScoreSubmitBtn">내 자산 등급 확인하기</button>
       </div>
@@ -6055,6 +6067,17 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     var debtInput = document.getElementById("homeScoreDebtInput");
     var submitBtn = document.getElementById("homeScoreSubmitBtn");
     var editBtn = document.getElementById("homeScoreEditBtn");
+
+    document.querySelectorAll(".home-score-quick-add-row").forEach(function(row){
+      var targetInput = document.getElementById(row.getAttribute("data-target"));
+      if (!targetInput) return;
+      row.querySelectorAll(".home-score-quick-add-btn").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var current = parseInt(targetInput.value, 10) || 0;
+          targetInput.value = current + parseInt(btn.getAttribute("data-amount"), 10);
+        });
+      });
+    });
     if (!inputCard || !resultCard || !bracketRow) return;
 
     // 통계청(국가데이터처) "2025년 가계금융복지조사 결과" 부록 통계표 원자료 그대로 — 20대는 "29세이하",

@@ -1236,7 +1236,19 @@
     cursor:pointer;
   }
   .home-score-bracket-chip.active{background:var(--brand);color:#fff;}
-  .home-score-input-row{display:flex;align-items:center;gap:8px;background:var(--card-soft);border-radius:14px;padding:12px 14px;margin-bottom:12px;}
+  .home-score-input-row{display:flex;align-items:center;gap:8px;background:var(--card-soft);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .home-score-quick-add-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .home-score-quick-add-btn{
+    background:transparent;
+    color:var(--brand);
+    border:1.5px solid var(--brand-soft);
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .home-score-quick-add-btn:active{background:var(--brand-soft);}
   .home-score-input-label{flex-shrink:0;font-size:13px;font-weight:700;color:var(--ink-2);width:52px;}
   .home-score-input{flex:1;min-width:0;border:none;background:transparent;font-size:16px;font-weight:700;color:var(--ink-1);}
   .home-score-input::placeholder{color:var(--ink-3);}
