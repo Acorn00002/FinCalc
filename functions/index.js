@@ -6,16 +6,17 @@ admin.initializeApp();
 const db = admin.firestore();
 
 // ---------- /api/news ----------
-// 구글 뉴스 카테고리별 RSS — 정치/경제는 고정 topic ID(opaque 값, 실제 200/XML 응답을 확인한 것만 사용),
+// 구글 뉴스 카테고리별 RSS — 헤드라인/경제/세계는 고정 topic ID(opaque 값, 실제 200/XML 응답을 확인한 것만 사용),
 // 시사/생활은 대응하는 topic ID가 없어(구글 뉴스 상단 탭에 없음) 검색 RSS(q=키워드)로 대체한다.
 // 참고: "지역" topic ID는 지오로케이션에 묶여있는지 응답이 불안정해서(200 → 이후 요청 시 404) 배제했다.
 // category 쿼리 파라미터가 없거나 목록에 없으면 기존 기본값(경제)을 그대로 쓴다 — 홈 위젯/모바일 앱은
 // category 없이 호출하므로 하위 호환이 깨지지 않는다.
 const NEWS_CATEGORY_URLS = {
-  politics: "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRFp4WkRNU0FtdHZLQUFQAQ?hl=ko&gl=KR&ceid=KR:ko",
+  headline: "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRFp4WkRNU0FtdHZLQUFQAQ?hl=ko&gl=KR&ceid=KR:ko",
   economy: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
   society: "https://news.google.com/rss/search?q=" + encodeURIComponent("사회") + "&hl=ko&gl=KR&ceid=KR:ko",
-  life: "https://news.google.com/rss/search?q=" + encodeURIComponent("생활") + "&hl=ko&gl=KR&ceid=KR:ko"
+  life: "https://news.google.com/rss/search?q=" + encodeURIComponent("생활") + "&hl=ko&gl=KR&ceid=KR:ko",
+  world: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko"
 };
 const DEFAULT_NEWS_CATEGORY = "economy";
 
