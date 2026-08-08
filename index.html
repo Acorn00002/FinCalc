@@ -76,6 +76,16 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     document.documentElement.classList.add("native-embed-skip-splash");
   }
 }
+
+// 사이드바/헤더 로고("자산 파일럿" 아이콘) 클릭은 최신 데이터 리셋을 위해 페이지를 완전히
+// 새로고침하는데(goHomeFromLogo), 그때마다 화살표 발사 스플래시가 다시 재생되면 안 된다.
+// goHomeFromLogo가 리로드 직전에 심어두는 1회용 플래그를 여기서 확인해 스플래시를 건너뛴다.
+try {
+  if (sessionStorage.getItem("apSkipSplashOnce") === "1") {
+    sessionStorage.removeItem("apSkipSplashOnce");
+    document.documentElement.classList.add("native-embed-skip-splash");
+  }
+} catch (e) {}
 </script>
 <title>자산 파일럿 | 쉽게 빠르게 끝내는 자산관리 & 금융계산기</title>
 <meta name="description" content="자산관리를 가장 쉽게, 빠르게! 주식 물타기·평단가 계산부터 복리·세금 계산기, 실시간 자산 라운지 커뮤니티까지. 스마트한 자산 관리는 자산 파일럿과 함께하세요.">
@@ -7473,6 +7483,7 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
   // 포함돼 있어 새로고침 직후에도 끊김 없이 바로 노출된다.
   var logoHomeBtn = document.getElementById("logoHomeBtn");
   function goHomeFromLogo(){
+    try { sessionStorage.setItem("apSkipSplashOnce", "1"); } catch (e) {}
     location.hash = "home";
     window.location.reload();
   }
