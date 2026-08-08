@@ -4,6 +4,18 @@
 // 고정 소스라 정규식 파싱으로 충분하다.
 export type NewsItem = { title: string; source: string; time: string; link: string };
 
+// index.html의 #view-news 카테고리 탭(헤드라인/경제/세계/시사/생활)과 1:1 매핑 — 서버 쪽 화이트리스트는
+// functions/index.js·api/news.js의 NEWS_CATEGORY_URLS를 참고. 값이 없거나 목록에 없으면 서버가 경제로 기본 처리한다.
+export type NewsCategory = 'headline' | 'economy' | 'world' | 'society' | 'life';
+
+export const NEWS_CATEGORIES: { key: NewsCategory; label: string }[] = [
+  { key: 'headline', label: '헤드라인' },
+  { key: 'economy', label: '경제' },
+  { key: 'world', label: '세계' },
+  { key: 'society', label: '시사' },
+  { key: 'life', label: '생활' },
+];
+
 // gofincalc.com(www 없음)은 308로 www.gofincalc.com에 리다이렉트되는데, RN fetch 폴리필이 리다이렉트를
 // 안정적으로 따라가지 않는 경우가 있어 처음부터 canonical(www) URL을 직접 호출한다.
 const NEWS_API_URL = 'https://www.gofincalc.com/api/news';
@@ -56,8 +68,9 @@ function formatNewsTime(pubDateStr: string): string {
   return `${parsed.getMonth() + 1}.${parsed.getDate()}`;
 }
 
-export async function fetchNewsItems(): Promise<NewsItem[]> {
-  const res = await fetch(NEWS_API_URL);
+export async function fetchNewsItems(category?: NewsCategory): Promise<NewsItem[]> {
+  const url = category ? `${NEWS_API_URL}?category=${encodeURIComponent(category)}` : NEWS_API_URL;
+  const res = await fetch(url);
   if (!res.ok) throw new Error(`news fetch failed: ${res.status}`);
   const xml = await res.text();
   const items: NewsItem[] = [];

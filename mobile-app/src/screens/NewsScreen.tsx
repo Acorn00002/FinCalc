@@ -1,27 +1,37 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 import AppScreen from '../components/AppScreen';
 import { useAppTheme } from '../context/ThemeContext';
 import type { ThemeColors } from '../constants/theme';
-import { fetchNewsItems, NewsItem } from '../lib/newsFeed';
+import { fetchNewsItems, NewsItem, NewsCategory, NEWS_CATEGORIES } from '../lib/newsFeed';
 import type { RootStackParamList } from '../navigation/types';
 
-// index.html의 #news(뉴스 · 금융소식) 뷰를 그대로 이식 — /api/news(Google 뉴스 경제 토픽 RSS 프록시)를
-// 그대로 fetch해서 목록으로 보여주고, 탭하면 앱 안(NewsArticle 화면)에서 원문을 바로 볼 수 있게 한다.
+const DEFAULT_CATEGORY: NewsCategory = 'economy';
+
+// index.html의 #view-news(카테고리 칩 + /api/news) 뷰를 그대로 이식 — 카테고리별로 한 번 받아온 목록은
+// 캐시해두고(newsCache) 탭을 오갈 때 다시 fetch하지 않는다. 당겨서 새로고침은 현재 탭만 다시 받아온다.
 export default function NewsScreen() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const [category, setCategory] = useState<NewsCategory>(DEFAULT_CATEGORY);
   const [items, setItems] = useState<NewsItem[] | null>(null);
   const [error, setError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const cache = useRef<Partial<Record<NewsCategory, NewsItem[]>>>({});
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (targetCategory: NewsCategory, forceRefresh?: boolean) => {
+    if (!forceRefresh && cache.current[targetCategory]) {
+      setItems(cache.current[targetCategory]!);
+      setError(false);
+      return;
+    }
     setError(false);
     try {
-      const result = await fetchNewsItems();
+      const result = await fetchNewsItems(targetCategory);
+      cache.current[targetCategory] = result;
       setItems(result);
     } catch {
       setError(true);
@@ -29,14 +39,20 @@ export default function NewsScreen() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    setItems(cache.current[category] ?? null);
+    load(category);
+  }, [category, load]);
+
+  const onSelectCategory = useCallback((next: NewsCategory) => {
+    if (next === category) return;
+    setCategory(next);
+  }, [category]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await load(category, true);
     setRefreshing(false);
-  }, [load]);
+  }, [category, load]);
 
   return (
     <AppScreen>
@@ -48,8 +64,22 @@ export default function NewsScreen() {
         ListHeaderComponent={
           <View style={styles.head}>
             <Text style={styles.eyebrow}>뉴스 · 금융소식</Text>
-            <Text style={styles.title}>실시간 경제 뉴스</Text>
-            <Text style={styles.subtitle}>구글 뉴스 경제 토픽을 실시간으로 모아봤어요.</Text>
+            <Text style={styles.title}>실시간 뉴스</Text>
+            <Text style={styles.subtitle}>헤드라인·경제·세계·시사·생활 소식을 한 곳에서 모아봤어요.</Text>
+            <View style={styles.chipRow}>
+              {NEWS_CATEGORIES.map((c) => {
+                const active = c.key === category;
+                return (
+                  <Pressable
+                    key={c.key}
+                    style={[styles.chip, active && styles.chipActive]}
+                    onPress={() => onSelectCategory(c.key)}
+                  >
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{c.label}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         }
         ListEmptyComponent={
@@ -90,7 +120,12 @@ function createStyles(colors: ThemeColors) {
     head: { marginBottom: 16 },
     eyebrow: { fontSize: 12.5, fontWeight: '700', color: colors.brand, marginBottom: 4 },
     title: { fontSize: 20, fontWeight: '800', color: colors.ink1, marginBottom: 4 },
-    subtitle: { fontSize: 13, color: colors.ink3 },
+    subtitle: { fontSize: 13, color: colors.ink3, marginBottom: 14 },
+    chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    chip: { backgroundColor: colors.cardSoft, paddingHorizontal: 15, paddingVertical: 8, borderRadius: 999 },
+    chipActive: { backgroundColor: colors.brand },
+    chipText: { fontSize: 12.5, fontWeight: '700', color: colors.ink2, letterSpacing: -0.2 },
+    chipTextActive: { color: '#fff' },
     item: {
       backgroundColor: colors.card,
       borderRadius: 16,
