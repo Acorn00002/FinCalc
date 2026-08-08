@@ -6057,44 +6057,70 @@ if (navigator.userAgent.indexOf("AssetPilotNativeApp") !== -1) {
     var editBtn = document.getElementById("homeScoreEditBtn");
     if (!inputCard || !resultCard || !bracketRow) return;
 
-    // 통계청 가계금융복지조사(가구주 연령대별 평균 자산/부채) 실측치 — 자세한 산출 근거는
-    // mobile-app/src/lib/calc/netWorthBenchmark.ts 상단 주석 참고(20대는 근사 추정치).
+    // 통계청(국가데이터처) "2025년 가계금융복지조사 결과" 부록 통계표 원자료 그대로 — 20대는 "29세이하",
+    // 30대는 "30~39세" 항목의 실제 발표 순자산 평균(표1)이라 더 이상 근사 추정치가 아니다.
+    // 자세한 산출 근거는 mobile-app/src/lib/calc/netWorthBenchmark.ts 상단 주석 참고.
     var AGE_BRACKETS = [
-      { id: "20s", label: "20대", averageNetWorth: 110320000 },
-      { id: "30s", label: "30대", averageNetWorth: 267500000 },
-      { id: "40s", label: "40대", averageNetWorth: 450640000 },
-      { id: "50s", label: "50대", averageNetWorth: 511310000 },
-      { id: "60plus", label: "60대 이상", averageNetWorth: 519220000 }
+      { id: "20s", label: "20대", averageNetWorth: 107960000 },
+      { id: "30s", label: "30대", averageNetWorth: 250600000 },
+      { id: "40s", label: "40대", averageNetWorth: 483890000 },
+      { id: "50s", label: "50대", averageNetWorth: 551610000 },
+      { id: "60plus", label: "60대 이상", averageNetWorth: 535910000 }
     ];
-    var NATIONAL_MEAN_NET_WORTH = 448940000;
-    // 전국 분포 실측 두 지점("3억 미만 56.9%", "10억 이상 10.9%")에 적합한 로그정규분포 파라미터.
-    var LOGNORMAL_SIGMA = 1.1374;
-    var LOGNORMAL_MU = 19.3212;
+    var NATIONAL_MEAN_NET_WORTH = 471440000;
 
-    function normalCdf(z){
-      var t = 1 / (1 + 0.2316419 * Math.abs(z));
-      var d = 0.3989423 * Math.exp((-z * z) / 2);
-      var poly = t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-      var p = 1 - d * poly;
-      return z >= 0 ? p : 1 - p;
-    }
+    // "표12. 순자산 분위별 평균, 점유율 및 경계값"에 실제 발표된 P10~P90 순자산 경계값(원) — 더 이상
+    // 로그정규분포로 "추정"하지 않고, 이 실측 구간표 사이를 그대로 선형 보간해서 백분위를 구한다.
+    // 표에 없는 구간(하위 10% 미만/상위 10% 초과)만 부득이하게 보간·연장한다(아래 estimateTopPercentile 참고).
+    var NATIONAL_PERCENTILE_BOUNDARIES = [
+      { p: 10, value: 12100000 },
+      { p: 20, value: 51080000 },
+      { p: 30, value: 102960000 },
+      { p: 40, value: 164720000 },
+      { p: 50, value: 238600000 },
+      { p: 60, value: 330500000 },
+      { p: 70, value: 461800000 },
+      { p: 80, value: 693800000 },
+      { p: 90, value: 1100200000 }
+    ];
 
     function bracketById(id){
       for (var i = 0; i < AGE_BRACKETS.length; i++) if (AGE_BRACKETS[i].id === id) return AGE_BRACKETS[i];
       return AGE_BRACKETS[0];
     }
 
-    function bracketMedian(id){
-      var b = bracketById(id);
-      var nationalMedian = Math.exp(LOGNORMAL_MU);
-      return nationalMedian * (b.averageNetWorth / NATIONAL_MEAN_NET_WORTH);
+    // 연령대별 원자료(P10~P90)는 발표되지 않아, 전국 구간표를 그 연령대 평균/전국 평균 비율만큼
+    // 그대로 스케일링해서 쓴다 — "분포 모양은 전국과 같고, 중심만 연령대 평균으로 이동한다"는 가정.
+    function bracketPercentileBoundaries(bracketId){
+      var ratio = bracketById(bracketId).averageNetWorth / NATIONAL_MEAN_NET_WORTH;
+      return NATIONAL_PERCENTILE_BOUNDARIES.map(function(pt){
+        return { p: pt.p, value: pt.value * ratio };
+      });
     }
 
     function estimateTopPercentile(bracketId, netWorth){
       if (netWorth <= 0) return 99;
-      var median = bracketMedian(bracketId);
-      var z = (Math.log(netWorth) - Math.log(median)) / LOGNORMAL_SIGMA;
-      var percentileFromBottom = normalCdf(z) * 100;
+      var pts = bracketPercentileBoundaries(bracketId);
+      var percentileFromBottom;
+
+      if (netWorth <= pts[0].value) {
+        // 발표 구간표 밖(하위 10% 미만) — 순자산 0(percentile 0)에서 P10까지 선형 보간
+        percentileFromBottom = (netWorth / pts[0].value) * 10;
+      } else if (netWorth >= pts[pts.length - 1].value) {
+        // 발표 구간표 밖(상위 10% 초과) — P80→P90 구간의 로그 기울기를 그대로 연장
+        var p80 = pts[pts.length - 2], p90 = pts[pts.length - 1];
+        var logSlope = 10 / (Math.log(p90.value) - Math.log(p80.value));
+        percentileFromBottom = 90 + (Math.log(netWorth) - Math.log(p90.value)) * logSlope;
+      } else {
+        for (var i = 0; i < pts.length - 1; i++) {
+          if (netWorth >= pts[i].value && netWorth <= pts[i + 1].value) {
+            var ratio2 = (netWorth - pts[i].value) / (pts[i + 1].value - pts[i].value);
+            percentileFromBottom = pts[i].p + ratio2 * (pts[i + 1].p - pts[i].p);
+            break;
+          }
+        }
+      }
+
       var topPercentile = 100 - percentileFromBottom;
       return Math.min(99, Math.max(1, Math.round(topPercentile)));
     }
