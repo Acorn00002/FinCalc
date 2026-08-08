@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- 배경: 기존 #6266F5보다 아주 살짝 진하고 신뢰감 있는 딥 블루 (#585CE5) 적용 -->
+  <rect width="1024" height="1024" rx="220" fill="#585CE5"/>
+  
+  <!-- 원형 프레임 (IMAGE_1의 비율 유지) -->
+  <circle cx="512" cy="512" r="345" fill="none" stroke="white" stroke-width="28"/>
+  
+  <!-- 2시 방향 화살표 심볼 (IMAGE_1의 3D 효과 및 대칭 유지) -->
+  <g transform="rotate(-45, 512, 512)">
+    <!-- 상단 날개 (밝은 화이트) -->
+    <path d="M720 512 L380 340 L450 512 Z" fill="white" fill-opacity="1"/>
+    
+    <!-- 하단 날개 (은은한 명암 차이로 3D 효과) -->
+    <path d="M720 512 L450 512 L380 684 Z" fill="white" fill-opacity="0.85"/>
+    
+    <!-- 중앙 분할선 -->
+    <line x1="450" y1="512" x2="720" y2="512" stroke="#585CE5" stroke-width="2" stroke-opacity="0.2"/>
+  </g>
+</svg>
