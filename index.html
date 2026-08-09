@@ -3538,34 +3538,40 @@ try {
 
   var ipoSchedulesLoadFailed = false;
 
-  // DART 공모주 청약 일정 실시간 조회 — /api/ipo-schedules(Vercel api/ipo-schedules.js ·
-  // Firebase functions ipoSchedulesLive)가 증권신고서(지분증권) 공시를 조합해 내려준다.
-  // 응답은 날짜가 ISO 문자열이라 Date 객체로 변환해서 기존 renderIpoList()/getIpoDday()가
-  // 그대로 쓸 수 있게 맞춘다.
-  function loadIpoSchedules(){
-    ipoSchedulesLoadFailed = false;
+  // DART 상세 조회(estkRs.json)는 최근 60일 내 매칭되는 신고서 건수만큼 병렬 호출을 만들어서,
+  // 매번 직접 받아오면 수 초~수십 초가 걸릴 수 있다(사용자 피드백: "청약 공모주는 좀 늦게 뜨는거 같아").
+  // 그래서 Firebase 스케줄 함수(syncIpoScheduleCache, functions/index.js)가 20분마다 미리 갱신해두는
+  // Firestore 캐시(ipoScheduleCache/latest)를 먼저 읽는다 — db.enablePersistence()로 오프라인 캐시까지
+  // 켜져 있어 재방문 시 네트워크 왕복 없이 즉시 뜬다. 캐시 문서가 아직 없거나 비어있으면(최초 배포
+  // 직후 스케줄이 한 번도 안 돈 경우 등) 기존처럼 /api/ipo-schedules 실시간 API로 안전하게 폴백한다.
+  function applyIpoSchedules(rawSchedules){
+    // 응답은 날짜가 ISO 문자열이라 Date 객체로 변환해서 기존 renderIpoList()/getIpoDday()가 그대로 쓸 수 있게 맞춘다.
+    IPO_SCHEDULES = rawSchedules.map(function(item){
+      return {
+        id: item.id,
+        name: item.name,
+        market: item.market,
+        category: item.category || "general",
+        underwriter: item.underwriter,
+        priceMin: item.priceMin,
+        priceMax: item.priceMax,
+        subStart: new Date(item.subStart),
+        subEnd: new Date(item.subEnd),
+        refundDate: item.refundDate ? new Date(item.refundDate) : null
+      };
+    });
+    ipoSchedulesLoaded = true;
+    renderIpoList();
+  }
+
+  function loadIpoSchedulesFromLiveApi(){
     return fetch("/api/ipo-schedules")
       .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
       .then(function(result){
         if (!result.ok || result.data.error || !Array.isArray(result.data.schedules)) {
           throw new Error((result.data && result.data.error) || "조회 실패");
         }
-        IPO_SCHEDULES = result.data.schedules.map(function(item){
-          return {
-            id: item.id,
-            name: item.name,
-            market: item.market,
-            category: item.category || "general",
-            underwriter: item.underwriter,
-            priceMin: item.priceMin,
-            priceMax: item.priceMax,
-            subStart: new Date(item.subStart),
-            subEnd: new Date(item.subEnd),
-            refundDate: item.refundDate ? new Date(item.refundDate) : null
-          };
-        });
-        ipoSchedulesLoaded = true;
-        renderIpoList();
+        applyIpoSchedules(result.data.schedules);
       })
       .catch(function(error){
         console.error("공모주 일정 조회 실패:", error);
@@ -3573,6 +3579,23 @@ try {
         ipoSchedulesLoaded = true;
         IPO_SCHEDULES = [];
         renderIpoList();
+      });
+  }
+
+  function loadIpoSchedules(){
+    ipoSchedulesLoadFailed = false;
+    return db.collection("ipoScheduleCache").doc("latest").get()
+      .then(function(docSnap){
+        var data = docSnap.exists ? docSnap.data() : null;
+        if (data && Array.isArray(data.schedules) && data.schedules.length) {
+          applyIpoSchedules(data.schedules);
+          return;
+        }
+        return loadIpoSchedulesFromLiveApi();
+      })
+      .catch(function(error){
+        console.error("공모주 캐시 조회 실패, 실시간 API로 폴백:", error);
+        return loadIpoSchedulesFromLiveApi();
       });
   }
 

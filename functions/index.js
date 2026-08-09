@@ -500,6 +500,19 @@ async function fetchDartIpoSchedules() {
   return details.filter(Boolean);
 }
 
+// fetchDartIpoSchedules()는 매칭된 신고서 건수만큼 DART 상세 조회(estkRs.json)를 병렬로 날려서
+// 한 번 실행에 수 초~수십 초가 걸릴 수 있다 — 클라이언트가 매번 이 비용을 직접 기다리지 않도록
+// 결과를 Firestore(ipoScheduleCache/latest)에 캐싱해둔다. index.html의 loadIpoSchedules()가 이
+// 문서를 먼저 읽고, syncIpoScheduleCache(아래 스케줄 함수)가 20분마다 미리 갱신해서 채워둔다.
+async function refreshIpoScheduleCache() {
+  const schedules = await fetchDartIpoSchedules();
+  await db.collection("ipoScheduleCache").doc("latest").set({
+    schedules: schedules,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+  return schedules;
+}
+
 // 청약홈(한국부동산원) APT 분양정보 — data.go.kr 표준 응답 포맷(response.body.items)을 기본으로 하되,
 // 서비스별로 조금씩 다른 실제 필드명 후보들도 함께 대비해둔다. 활용신청 승인 후 실제 응답을 보고
 // 아래 필드 매핑(houseNm/pblancNo/rceptBgnde 등)을 문서와 대조해 필요시 조정할 것.
@@ -1185,13 +1198,16 @@ exports.financeProductsLive = onRequest({ cors: true, region: "asia-northeast3" 
   }
 });
 
+// index.html은 이제 Firestore 캐시(ipoScheduleCache/latest)를 우선 읽고, 캐시가 비어있을 때만
+// 이 엔드포인트로 폴백한다 — 그래서 이 핸들러도 결과를 그냥 반환만 하지 않고 refreshIpoScheduleCache()로
+// 캐시를 함께 갱신해서, 폴백이 일어난 그 요청이 다음번 캐시 읽기를 즉시 성공시키게 해준다.
 exports.ipoSchedulesLive = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 120 }, async (req, res) => {
   try {
     if (!DART_API_KEY) {
       res.status(500).json({ error: "DART_API_KEY가 설정되지 않았습니다." });
       return;
     }
-    const schedules = await fetchDartIpoSchedules();
+    const schedules = await refreshIpoScheduleCache();
     res.set("Cache-Control", "public, max-age=1800, s-maxage=1800, stale-while-revalidate=3600");
     res.status(200).json({ schedules: schedules });
   } catch (error) {
@@ -1199,6 +1215,20 @@ exports.ipoSchedulesLive = onRequest({ cors: true, region: "asia-northeast3", ti
     res.status(502).json({ error: "실시간 공모주 일정을 불러오지 못했습니다." });
   }
 });
+
+// 20분마다 자동으로 청약·공모주 캐시를 미리 갱신 — 실사용자가 캐시 미스로 DART 상세 조회(병렬 수십 건)를
+// 직접 기다리는 일이 거의 없게 한다. DART_API_KEY가 없으면(로컬/미설정 환경) 조용히 건너뛴다.
+exports.syncIpoScheduleCache = onSchedule(
+  { schedule: "*/20 * * * *", timeZone: "Asia/Seoul", region: "asia-northeast3", timeoutSeconds: 120 },
+  async () => {
+    if (!DART_API_KEY) return;
+    try {
+      await refreshIpoScheduleCache();
+    } catch (error) {
+      console.error("청약·공모주 캐시 자동 갱신 실패:", error);
+    }
+  }
+);
 
 // ---------- 아파트 청약 일정 (청약·공모주 페이지 "아파트 청약" 탭, /api/apartment-subscriptions) ----------
 // 한국부동산원_청약홈 분양정보 조회 서비스(data.go.kr 데이터ID 15098547) — CHEONGYAKHOME_API_URL과

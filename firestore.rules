@@ -80,6 +80,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // 청약·공모주 캐시 — DART 상세 조회가 느려서(신고서 건수만큼 병렬 호출) 스케줄 함수
+    // (syncIpoScheduleCache, Admin SDK)가 20분마다 미리 갱신해두는 캐시. 클라이언트는 읽기만 가능.
+    match /ipoScheduleCache/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
     // 알림함 — 관리자 발송 Cloud Function(Admin SDK, 비밀키로 보호됨)만 쓸 수 있고 클라이언트는 읽기만 가능.
     // 읽음/삭제 상태는 전역 알림 문서가 아니라 기기(localStorage)에 개인화해서 저장한다.
     match /notifications/{notificationId} {
