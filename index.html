@@ -1739,6 +1739,22 @@ try {
   <div class="settings-section">
     <p class="settings-section-title">계정</p>
     <button type="button" class="settings-logout-btn" id="settingsLogoutBtn">로그아웃</button>
+    <button type="button" class="settings-logout-btn settings-danger-btn" id="settingsDeleteAccountBtn">회원 탈퇴</button>
+  </div>
+
+  <div class="settings-section">
+    <p class="settings-section-title">약관 및 정책</p>
+    <div class="settings-link-list">
+      <a class="settings-link-item" href="https://gofincalc.com/privacy/" target="_blank" rel="noopener noreferrer">
+        <span>개인정보처리방침</span><i class="ph-duotone ph-arrow-square-out"></i>
+      </a>
+      <a class="settings-link-item" href="https://gofincalc.com/terms/" target="_blank" rel="noopener noreferrer">
+        <span>이용약관</span><i class="ph-duotone ph-arrow-square-out"></i>
+      </a>
+      <a class="settings-link-item" href="https://gofincalc.com/account-deletion/" target="_blank" rel="noopener noreferrer">
+        <span>계정·데이터 삭제 안내</span><i class="ph-duotone ph-arrow-square-out"></i>
+      </a>
+    </div>
   </div>
 
   <p class="settings-version">자산 파일럿 · 웹 버전</p>
@@ -5239,6 +5255,52 @@ try {
   if (mypageLogoutBtn) mypageLogoutBtn.addEventListener("click", handleGoogleLogout);
   var settingsLogoutBtn = document.getElementById("settingsLogoutBtn");
   if (settingsLogoutBtn) settingsLogoutBtn.addEventListener("click", handleGoogleLogout);
+
+  // ---------- 회원 탈퇴(계정·데이터 삭제) ----------
+  // Google Play "계정 삭제" 정책 대응 — Admin SDK 권한이 필요한 삭제 작업이라 functions/index.js의
+  // deleteAccount로만 처리한다(Vercel엔 서비스 계정이 없어 이 엔드포인트를 못 만듦). 그래서 배포처
+  // (Firebase Hosting/Vercel) 상관없이 항상 Cloud Functions 절대 URL을 직접 호출한다 — newsFeed.ts 등
+  // 네이티브 쪽에서 이미 쓰는 것과 같은 방식.
+  var DELETE_ACCOUNT_URL = "https://asia-northeast3-asset-filot.cloudfunctions.net/deleteAccount";
+  var settingsDeleteAccountBtn = document.getElementById("settingsDeleteAccountBtn");
+  if (settingsDeleteAccountBtn) {
+    settingsDeleteAccountBtn.addEventListener("click", function(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+        return;
+      }
+      if (!window.confirm("정말 탈퇴하시겠어요?\n\n보유 포인트, 자산 기록, 개인 일정, 자산 라운지에 작성한 글·댓글이 모두 삭제되며 되돌릴 수 없습니다.")) {
+        return;
+      }
+      if (!window.confirm("한 번 더 확인할게요 — 계정을 완전히 삭제할까요?")) {
+        return;
+      }
+
+      settingsDeleteAccountBtn.disabled = true;
+      settingsDeleteAccountBtn.textContent = "탈퇴 처리 중...";
+      firebaseAuth.currentUser.getIdToken().then(function(idToken){
+        return fetch(DELETE_ACCOUNT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken }
+        });
+      }).then(function(res){
+        return res.json().then(function(data){ return { ok: res.ok, data: data || {} }; });
+      }).then(function(result){
+        if (!result.ok) {
+          throw new Error(result.data.error || "탈퇴 처리에 실패했습니다.");
+        }
+        showToast("탈퇴가 완료됐어요. 그동안 이용해주셔서 감사합니다.", "ph-check-circle");
+        return firebaseAuth.signOut();
+      }).then(function(){
+        setTimeout(function(){ location.hash = "home"; window.location.reload(); }, 800);
+      }).catch(function(error){
+        console.error("회원 탈퇴 실패:", error);
+        showToast(error.message || "탈퇴 처리에 실패했어요. 다시 시도해주세요.", "ph-warning");
+        settingsDeleteAccountBtn.disabled = false;
+        settingsDeleteAccountBtn.textContent = "회원 탈퇴";
+      });
+    });
+  }
 
   // ---------- 마이페이지: 내 자산 현황 및 동향 대시보드 (Firestore userAssets/{uid}) ----------
   // 카테고리별(현금/예적금, 주식/투자금, 부동산/기타) 자산을 최상위 컬렉션 userAssets에 문서 ID=uid로

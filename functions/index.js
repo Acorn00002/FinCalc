@@ -213,6 +213,63 @@ exports.aiAsk = onRequest({ cors: true, region: "asia-northeast3" }, async (req,
   }
 });
 
+// ---------- 회원 탈퇴(계정·데이터 삭제) ----------
+// Google Play "계정 삭제" 정책 대응 — 로그인 후 마이페이지/설정에서 이 엔드포인트를 호출하면
+// (1) users/{uid} 문서와 그 하위 컬렉션(eventReminders, personalEvents) 전부,
+// (2) userAssets/{uid} 문서와 하위 컬렉션(history) 전부,
+// (3) 자산 라운지에 본인이 쓴 게시글·댓글(공개 컬렉션이라 uid로 조회해서 배치 삭제),
+// (4) 등록된 FCM 푸시 토큰,
+// (5) Firebase Auth 계정 자체를 순서대로 삭제한다. recursiveDelete는 하위 컬렉션까지 통째로
+// 지워주므로 personalEvents/eventReminders/history를 따로 순회할 필요가 없다.
+// 앱을 삭제한 뒤에도 요청할 수 있도록 /account-deletion/ 웹페이지에서 같은 절차를 안내한다.
+exports.deleteAccount = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 요청만 지원합니다." });
+    return;
+  }
+
+  const authHeader = req.get("Authorization") || "";
+  const idToken = authHeader.indexOf("Bearer ") === 0 ? authHeader.slice(7) : "";
+  if (!idToken) {
+    res.status(401).json({ error: "로그인이 필요합니다." });
+    return;
+  }
+
+  let uid;
+  try {
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    uid = decoded.uid;
+  } catch (error) {
+    res.status(401).json({ error: "인증 정보가 유효하지 않습니다." });
+    return;
+  }
+
+  try {
+    await db.recursiveDelete(db.collection("users").doc(uid));
+    await db.recursiveDelete(db.collection("userAssets").doc(uid));
+
+    const [postsSnap, commentsSnap, tokensSnap] = await Promise.all([
+      db.collection("posts").where("uid", "==", uid).get(),
+      db.collection("comments").where("uid", "==", uid).get(),
+      db.collection("fcmTokens").where("uid", "==", uid).get()
+    ]);
+    const batch = db.batch();
+    postsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    commentsSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    tokensSnap.docs.forEach((doc) => batch.delete(doc.ref));
+    if (postsSnap.size || commentsSnap.size || tokensSnap.size) await batch.commit();
+
+    // Auth 계정 삭제는 가장 마지막에 — 이게 실패해도 위 데이터는 이미 정리된 상태로 남는 편이
+    // "데이터는 남았는데 로그인은 안 되는" 상황보다 낫다(재시도 시 Firestore 쪽은 이미 비어있어 멱등).
+    await admin.auth().deleteUser(uid);
+
+    res.status(200).json({ ok: true });
+  } catch (error) {
+    console.error("회원 탈퇴 처리 실패:", uid, error);
+    res.status(500).json({ error: "탈퇴 처리 중 오류가 발생했습니다. 잠시 후 다시 시도하거나 문의해주세요." });
+  }
+});
+
 // ---------- 금융 캘린더 자동 수집 (DART 공시 + 청약홈 청약 일정) ----------
 // 경제지표(FOMC, 실업수당청구건수 등) 발표 일정은 무료로 제공하는 국내 공공 API가 없어
 // 이 파이프라인 범위에서 제외했다 — index.html의 MANUAL_CALENDAR_EVENTS로 계속 수동 관리한다.
