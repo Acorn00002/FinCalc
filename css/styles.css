@@ -3957,14 +3957,22 @@
   }
   .news-category-chip.is-active{background:var(--brand);color:#fff;}
 
-  /* 실시간 트렌드 — 가로 스크롤 키워드 칩. 클릭하면 아래 목록이 그 키워드로 필터링된다. */
-  .news-trend-row{display:flex;align-items:center;gap:11px;margin-bottom:16px;overflow-x:auto;}
+  /* 실시간 트렌드 — 라벨은 고정하고 칩 트랙만 가로로 흐른다(JS가 자동으로 왕복 스크롤).
+     스크롤바는 시각적으로만 숨기고(overflow는 유지) 터치/드래그로 직접 넘기는 것도 그대로 된다. */
+  .news-trend-row{display:flex;align-items:center;gap:11px;margin-bottom:16px;}
   .news-trend-label{
     flex-shrink:0;display:flex;align-items:center;gap:5px;
     font-size:14px;font-weight:800;color:var(--ink-2);
   }
   .news-trend-label i{color:#f59e0b;font-size:16px;--ph-duotone-secondary-opacity:0;}
-  .news-trend-chips{display:flex;gap:7px;}
+  .news-trend-chips{
+    display:flex;gap:7px;
+    flex:1;min-width:0;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .news-trend-chips::-webkit-scrollbar{display:none;}
   .news-trend-chip{
     flex-shrink:0;background:var(--card-soft);color:var(--ink-2);border:none;
     padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;
