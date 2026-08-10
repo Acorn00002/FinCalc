@@ -26,6 +26,8 @@ const PROMPT_CHIPS: PromptChip[] = [
 
 // index.html의 "AI 자산파일럿 서포터" 카드를 그대로 이식 — 마크다운 렌더링 라이브러리를 새로
 // 추가하지 않고 우선 일반 텍스트로 답변을 보여준다(v1 단순화).
+const PORTFOLIO_CHIP = PROMPT_CHIPS.filter((c) => c.mode === 'fill')[0];
+
 export default function HomeAiCard() {
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -35,6 +37,9 @@ export default function HomeAiCard() {
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // "내 포트폴리오 분석" 칩을 누르면 [종목명: 비중] 작성 가이드를 함께 보여준다(index.html의
+  // 가이드 카드와 동일한 의도) — 처음 쓰는 사람도 예시만 보고 바로 감을 잡을 수 있게.
+  const [showGuide, setShowGuide] = useState(false);
 
   const ask = async (prompt: string) => {
     const trimmed = prompt.trim();
@@ -54,18 +59,26 @@ export default function HomeAiCard() {
     if (result.ok) {
       setAnswer(result.reply);
       setInput('');
+      setShowGuide(false);
     } else if (result.code !== 'unauthenticated') {
       setError(result.message);
     }
   };
 
+  const applyPortfolioTemplate = () => {
+    if (!PORTFOLIO_CHIP) return;
+    setInput(PORTFOLIO_CHIP.prompt);
+    inputRef.current?.focus();
+  };
+
   const handleChipPress = (chip: PromptChip) => {
     if (loading) return;
     if (chip.mode === 'fill') {
-      setInput(chip.prompt);
-      inputRef.current?.focus();
+      applyPortfolioTemplate();
+      setShowGuide(true);
       return;
     }
+    setShowGuide(false);
     ask(chip.prompt);
   };
 
@@ -84,6 +97,36 @@ export default function HomeAiCard() {
           </Pressable>
         ))}
       </View>
+
+      {showGuide ? (
+        <View style={styles.guideCard}>
+          <View style={styles.guideHead}>
+            <Ionicons name="pin" size={13} color={colors.brand} />
+            <Text style={styles.guideTitle}>
+              작성 예시: <Text style={styles.guideTitleStrong}>[종목명: 비중]</Text> 형태로 입력하시면 가장 정확해요
+            </Text>
+            <Pressable onPress={() => setShowGuide(false)} hitSlop={8}>
+              <Ionicons name="close" size={16} color={colors.ink3} />
+            </Pressable>
+          </View>
+          <View style={styles.guideExample}>
+            {[
+              ['삼성전자', '40%'],
+              ['SK하이닉스', '30%'],
+              ['현금', '30%'],
+            ].map(([label, pct]) => (
+              <View key={label} style={styles.guideExampleRow}>
+                <Text style={styles.guideExampleLabel}>{label}</Text>
+                <Text style={styles.guideExampleValue}>{pct}</Text>
+              </View>
+            ))}
+          </View>
+          <Pressable style={styles.guideApplyBtn} onPress={applyPortfolioTemplate}>
+            <Ionicons name="sparkles" size={13} color={colors.brand} />
+            <Text style={styles.guideApplyBtnText}>이 예시 양식 그대로 적용하기</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       <View style={styles.inputRow}>
         <TextInput
@@ -122,6 +165,34 @@ function createStyles(colors: ThemeColors) {
     chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
     chip: { backgroundColor: colors.cardSoft, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 999 },
     chipText: { fontSize: 12, fontWeight: '600', color: colors.ink2 },
+    guideCard: {
+      backgroundColor: colors.brandSoft,
+      borderRadius: 16,
+      padding: 14,
+      marginBottom: 12,
+    },
+    guideHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: 10 },
+    guideTitle: { flex: 1, fontSize: 12, fontWeight: '600', color: colors.ink2, lineHeight: 18 },
+    guideTitleStrong: { color: colors.brand, fontWeight: '800' },
+    guideExample: { backgroundColor: colors.card, borderRadius: 12, padding: 10, marginBottom: 10 },
+    guideExampleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 5,
+    },
+    guideExampleLabel: { fontSize: 12.5, fontWeight: '600', color: colors.ink2 },
+    guideExampleValue: { fontSize: 12.5, fontWeight: '800', color: colors.brand },
+    guideApplyBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: colors.card,
+      borderRadius: 12,
+      paddingVertical: 11,
+    },
+    guideApplyBtnText: { fontSize: 12, fontWeight: '700', color: colors.brand },
     inputRow: { gap: 10 },
     input: {
       backgroundColor: colors.cardSoft,

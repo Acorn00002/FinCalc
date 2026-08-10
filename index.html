@@ -477,9 +477,28 @@ try {
 
       <div class="home-ai-chips">
         <button type="button" class="home-ai-chip" data-prompt="오늘의 시장 브리핑을 요약해줘">오늘의 시장 브리핑</button>
-        <button type="button" class="home-ai-chip" data-prompt="내 포트폴리오 분석해줘:&#10;- 삼성전자: 40%&#10;- SK하이닉스: 30%&#10;- 현금: 30%">내 포트폴리오 분석</button>
+        <button type="button" class="home-ai-chip" data-mode="portfolio" data-prompt="내 포트폴리오 분석해줘:&#10;- 삼성전자: 40%&#10;- SK하이닉스: 30%&#10;- 현금: 30%">내 포트폴리오 분석</button>
         <button type="button" class="home-ai-chip" data-prompt="오늘 주요 경제 뉴스를 요약해줘">주요 경제 뉴스 요약</button>
         <button type="button" class="home-ai-chip" data-prompt="오늘 주요 세계 뉴스를 요약해줘">주요 세계 뉴스 요약</button>
+      </div>
+
+      <!-- 포트폴리오 분석 칩을 누르면(또는 아래 "적용하기" 버튼으로 언제든) 나타나는 작성 가이드 —
+           [종목명: 비중] 형식 예시를 실제 카드로 보여줘서 처음 쓰는 사람도 바로 감을 잡게 한다. -->
+      <div class="home-ai-guide-card" id="homeAiGuideCard" hidden>
+        <div class="home-ai-guide-head">
+          <p class="home-ai-guide-title"><i class="ph-duotone ph-push-pin"></i>작성 예시: <b>[종목명: 비중]</b> 형태로 입력하시면 가장 정확해요</p>
+          <button type="button" class="home-ai-guide-close" id="homeAiGuideCloseBtn" aria-label="가이드 닫기">
+            <i class="ph-duotone ph-x"></i>
+          </button>
+        </div>
+        <div class="home-ai-guide-example">
+          <div class="home-ai-guide-example-row"><span>삼성전자</span><b>40%</b></div>
+          <div class="home-ai-guide-example-row"><span>SK하이닉스</span><b>30%</b></div>
+          <div class="home-ai-guide-example-row"><span>현금</span><b>30%</b></div>
+        </div>
+        <button type="button" class="home-ai-guide-apply-btn" id="homeAiGuideApplyBtn">
+          <i class="ph-duotone ph-magic-wand"></i>이 예시 양식 그대로 적용하기
+        </button>
       </div>
 
       <div class="home-ai-input-wrap">
@@ -7018,6 +7037,34 @@ try {
     var aiInput = document.getElementById("homeAiInput");
     var aiSubmitBtn = document.getElementById("homeAiSubmitBtn");
     var aiAnswerEl = document.getElementById("homeAiAnswer");
+    var aiGuideCard = document.getElementById("homeAiGuideCard");
+    var aiGuideCloseBtn = document.getElementById("homeAiGuideCloseBtn");
+    var aiGuideApplyBtn = document.getElementById("homeAiGuideApplyBtn");
+    var aiPortfolioChip = document.querySelector('.home-ai-chip[data-mode="portfolio"]');
+
+    var AI_DEFAULT_PLACEHOLDER = "절세 꿀팁이나 금융 상품을 물어보세요 (Shift+Enter로 줄바꿈)";
+    var AI_PORTFOLIO_PLACEHOLDER = "예: 삼성전자: 40%, SK하이닉스: 30%, 현금: 30%";
+
+    // 포트폴리오 분석 가이드 카드 — 종목/비중을 어떻게 써야 하는지 감이 안 오는 신규 유저를 위해
+    // 예시 카드를 보여주고, placeholder도 같은 예시로 바꿔서 입력창만 봐도 형식을 알 수 있게 한다.
+    function showAiGuideCard(){
+      if (aiGuideCard) aiGuideCard.hidden = false;
+      if (aiInput) aiInput.placeholder = AI_PORTFOLIO_PLACEHOLDER;
+    }
+    function hideAiGuideCard(){
+      if (aiGuideCard) aiGuideCard.hidden = true;
+      if (aiInput) aiInput.placeholder = AI_DEFAULT_PLACEHOLDER;
+    }
+    // 칩과 "이 예시 양식 그대로 적용하기" 버튼이 같은 템플릿을 공유하도록, 칩의 data-prompt를
+    // 유일한 출처로 삼는다(문구를 두 곳에 따로 하드코딩하면 나중에 어긋나기 쉬움).
+    function applyPortfolioTemplate(){
+      if (!aiInput || !aiPortfolioChip) return;
+      aiInput.value = aiPortfolioChip.getAttribute("data-prompt") || "";
+      resizeAiInput();
+      aiInput.focus();
+      var len = aiInput.value.length;
+      if (typeof aiInput.setSelectionRange === "function") aiInput.setSelectionRange(len, len);
+    }
 
     // <textarea> 자동 높이 조절 — 내용에 맞춰 늘어나다가 AI_INPUT_MAX_HEIGHT를 넘으면 그 높이로
     // 고정하고 내부 스크롤로 전환한다(카드 전체가 한없이 길어지는 것 방지).
@@ -7050,11 +7097,17 @@ try {
 
     // 추천 질문 칩 — 클릭하면 입력창에 해당 질문(또는 예시 템플릿)을 채워주고 바로 수정/제출할 수
     // 있게 포커스와 커서를 끝으로 옮긴다. "내 포트폴리오 분석" 칩은 그냥 "분석해줘" 문장만 보내면
-    // AI가 실제 데이터 없이 일반적인 안내만 반환하므로, 종목/비중 예시가 채워진 템플릿을 넣어둬서
-    // 숫자만 고쳐 바로 엔터 치면 실제 분석이 나가게 했다(data-prompt 참고).
+    // AI가 실제 데이터 없이 일반적인 안내만 반환하므로, 종목/비중 예시가 채워진 템플릿과 함께
+    // 작성 가이드 카드를 띄워서 숫자만 고쳐 바로 엔터 치면 실제 분석이 나가게 했다.
     document.querySelectorAll(".home-ai-chip").forEach(function(chip){
       chip.addEventListener("click", function(){
         if (!aiInput) return;
+        if (chip.getAttribute("data-mode") === "portfolio") {
+          applyPortfolioTemplate();
+          showAiGuideCard();
+          return;
+        }
+        hideAiGuideCard();
         aiInput.value = chip.getAttribute("data-prompt") || chip.textContent;
         resizeAiInput();
         aiInput.focus();
@@ -7063,9 +7116,45 @@ try {
       });
     });
 
+    if (aiGuideApplyBtn) aiGuideApplyBtn.addEventListener("click", applyPortfolioTemplate);
+    if (aiGuideCloseBtn) aiGuideCloseBtn.addEventListener("click", hideAiGuideCard);
+
     // Gemini 응답의 마크다운(**볼드**, 리스트 등)을 HTML로 파싱해서 보여준다.
     // AI가 생성한 텍스트를 innerHTML로 꽂는 것이라, marked로 파싱한 결과를 DOMPurify로
     // 한 번 더 살균해 스크립트/이벤트 핸들러 등이 섞여 들어올 가능성을 차단한다.
+    //
+    // 포트폴리오 분석 답변은 서버 시스템 프롬프트(GEMINI_SYSTEM_INSTRUCTION)가 "## 진단 요약 /
+    // ## 리스크 및 취약점 / ## 개선 제안" 3개 ## 섹션으로만 답하도록 지시해둔다 — 여기서는 그
+    // ## 헤더를 찾아 각 섹션을 카드로 감싼다. 헤더가 하나도 없으면(포트폴리오 분석이 아닌 일반
+    // 질문) 손대지 않고 그대로 둔다 — AI가 매번 형식을 100% 지킨다는 보장이 없어 텍스트 파싱이
+    // 아니라 "있으면 카드로, 없으면 원래대로" 식으로 안전하게 열화되게 했다.
+    var AI_SECTION_META = [
+      { match: /진단|요약|현황/, cls: "summary" },
+      { match: /리스크|취약|위험/, cls: "risk" },
+      { match: /제안|개선|전략/, cls: "action" }
+    ];
+
+    function wrapAiAnswerSections(container){
+      var headings = Array.prototype.slice.call(container.querySelectorAll("h2"));
+      if (!headings.length) return;
+
+      headings.forEach(function(h){
+        var meta = AI_SECTION_META.filter(function(m){ return m.match.test(h.textContent); })[0];
+        var section = document.createElement("div");
+        section.className = "home-ai-section" + (meta ? " home-ai-section--" + meta.cls : "");
+
+        h.parentNode.insertBefore(section, h);
+        section.appendChild(h);
+        // H2를 만나기 전까지는 텍스트 노드든 다른 블록 요소든 전부 이 섹션 안으로 옮긴다.
+        var node = section.nextSibling;
+        while (node && !(node.nodeType === 1 && node.tagName === "H2")) {
+          var next = node.nextSibling;
+          section.appendChild(node);
+          node = next;
+        }
+      });
+    }
+
     function renderAiAnswer(rawText){
       if (!aiAnswerEl) return;
       if (typeof marked === "undefined" || typeof DOMPurify === "undefined") {
@@ -7074,6 +7163,7 @@ try {
       }
       var html = marked.parse(rawText, { breaks: true });
       aiAnswerEl.innerHTML = DOMPurify.sanitize(html);
+      wrapAiAnswerSections(aiAnswerEl);
     }
 
     if (aiForm) {
@@ -7105,6 +7195,7 @@ try {
             aiAnswerEl.hidden = false;
             aiInput.value = "";
             resizeAiInput();
+            hideAiGuideCard();
           }
         });
       });
