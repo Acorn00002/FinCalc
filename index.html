@@ -477,7 +477,7 @@ try {
 
       <div class="home-ai-chips">
         <button type="button" class="home-ai-chip" data-prompt="오늘의 시장 브리핑을 요약해줘">오늘의 시장 브리핑</button>
-        <button type="button" class="home-ai-chip" data-prompt="내 포트폴리오를 분석해줘">내 포트폴리오 분석</button>
+        <button type="button" class="home-ai-chip" data-prompt="내 포트폴리오 분석해줘:&#10;- 삼성전자: 40%&#10;- SK하이닉스: 30%&#10;- 현금: 30%">내 포트폴리오 분석</button>
         <button type="button" class="home-ai-chip" data-prompt="오늘 주요 경제 뉴스를 요약해줘">주요 경제 뉴스 요약</button>
         <button type="button" class="home-ai-chip" data-prompt="오늘 주요 세계 뉴스를 요약해줘">주요 세계 뉴스 요약</button>
       </div>
@@ -495,7 +495,7 @@ try {
               </linearGradient>
             </defs>
           </svg>
-          <input type="text" class="home-ai-input" id="homeAiInput" placeholder="절세 꿀팁이나 금융 상품을 물어보세요" autocomplete="off" maxlength="300">
+          <textarea class="home-ai-input" id="homeAiInput" placeholder="절세 꿀팁이나 금융 상품을 물어보세요 (Shift+Enter로 줄바꿈)" autocomplete="off" maxlength="300" rows="1"></textarea>
         </div>
         <button type="submit" class="home-ai-submit-btn" id="homeAiSubmitBtn">질문하기</button>
       </div>
@@ -3322,6 +3322,7 @@ try {
       var input = document.getElementById("homeAiInput");
       if (!input) return;
       input.value = "'" + program.title + "' 지원금 신청 자격이 저한테 맞는지 확인해줘. 지원 내용: " + (program.benefits || "").slice(0, 200);
+      if (typeof window.resizeAiInput === "function") window.resizeAiInput();
       input.focus();
     }, 50);
   }
@@ -6756,12 +6757,47 @@ try {
     var aiSubmitBtn = document.getElementById("homeAiSubmitBtn");
     var aiAnswerEl = document.getElementById("homeAiAnswer");
 
-    // 추천 질문 칩 — 클릭하면 입력창에 해당 질문을 채워주고 바로 수정/제출할 수 있게 포커스만 준다
+    // <textarea> 자동 높이 조절 — 내용에 맞춰 늘어나다가 AI_INPUT_MAX_HEIGHT를 넘으면 그 높이로
+    // 고정하고 내부 스크롤로 전환한다(카드 전체가 한없이 길어지는 것 방지).
+    var AI_INPUT_MAX_HEIGHT = 160;
+    function resizeAiInput(){
+      if (!aiInput) return;
+      aiInput.style.height = "auto";
+      var next = Math.min(aiInput.scrollHeight, AI_INPUT_MAX_HEIGHT);
+      aiInput.style.height = next + "px";
+      aiInput.style.overflowY = aiInput.scrollHeight > AI_INPUT_MAX_HEIGHT ? "auto" : "hidden";
+    }
+
+    // askAiAboutSubsidy()(정부지원금 상세 화면)처럼 이 위젯 바깥 스코프에서도 값을 채운 뒤
+    // 높이를 다시 맞출 수 있어야 해서 전역에도 노출해둔다.
+    window.resizeAiInput = resizeAiInput;
+
+    if (aiInput) {
+      aiInput.addEventListener("input", resizeAiInput);
+      // Enter=제출, Shift+Enter=줄바꿈(모바일/PC 공통). 한글 등 IME 조합 중에 조합을 확정하는 Enter도
+      // keydown을 발생시키는데, 그 순간까지 제출로 처리하면 아직 다 쓰지도 않은 문장이 그대로
+      // 전송돼버린다 — isComposing이 true인 동안의 Enter는 반드시 걸러야 한다.
+      aiInput.addEventListener("keydown", function(e){
+        if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
+        e.preventDefault();
+        if (aiForm && typeof aiForm.requestSubmit === "function") aiForm.requestSubmit();
+        else if (aiForm) aiForm.dispatchEvent(new Event("submit", { cancelable: true }));
+      });
+      resizeAiInput();
+    }
+
+    // 추천 질문 칩 — 클릭하면 입력창에 해당 질문(또는 예시 템플릿)을 채워주고 바로 수정/제출할 수
+    // 있게 포커스와 커서를 끝으로 옮긴다. "내 포트폴리오 분석" 칩은 그냥 "분석해줘" 문장만 보내면
+    // AI가 실제 데이터 없이 일반적인 안내만 반환하므로, 종목/비중 예시가 채워진 템플릿을 넣어둬서
+    // 숫자만 고쳐 바로 엔터 치면 실제 분석이 나가게 했다(data-prompt 참고).
     document.querySelectorAll(".home-ai-chip").forEach(function(chip){
       chip.addEventListener("click", function(){
         if (!aiInput) return;
         aiInput.value = chip.getAttribute("data-prompt") || chip.textContent;
+        resizeAiInput();
         aiInput.focus();
+        var len = aiInput.value.length;
+        if (typeof aiInput.setSelectionRange === "function") aiInput.setSelectionRange(len, len);
       });
     });
 
@@ -6806,6 +6842,7 @@ try {
             renderAiAnswer(reply);
             aiAnswerEl.hidden = false;
             aiInput.value = "";
+            resizeAiInput();
           }
         });
       });
