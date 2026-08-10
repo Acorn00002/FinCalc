@@ -3945,29 +3945,29 @@
   }
 
   /* ---------- 뉴스 · 금융소식 ---------- */
-  .news-head{margin-bottom:18px;}
-  .news-head h2{margin:4px 0 6px;font-size:20px;font-weight:800;color:var(--ink-1);}
-  .news-head p{margin:0;font-size:13px;color:var(--ink-3);}
+  .news-head{margin-bottom:20px;}
+  .news-head h2{margin:4px 0 7px;font-size:23px;font-weight:800;color:var(--ink-1);}
+  .news-head p{margin:0;font-size:14.5px;color:var(--ink-3);}
 
-  .news-category-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .news-category-filter{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
   .news-category-chip{
-    padding:8px 15px;border-radius:999px;border:none;
+    padding:10px 17px;border-radius:999px;border:none;
     background:var(--card-soft);color:var(--ink-2);
-    font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-0.02em;
+    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-0.02em;
   }
   .news-category-chip.is-active{background:var(--brand);color:#fff;}
 
   /* 실시간 트렌드 — 가로 스크롤 키워드 칩. 클릭하면 아래 목록이 그 키워드로 필터링된다. */
-  .news-trend-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;overflow-x:auto;}
+  .news-trend-row{display:flex;align-items:center;gap:11px;margin-bottom:16px;overflow-x:auto;}
   .news-trend-label{
-    flex-shrink:0;display:flex;align-items:center;gap:4px;
-    font-size:12.5px;font-weight:800;color:var(--ink-2);
+    flex-shrink:0;display:flex;align-items:center;gap:5px;
+    font-size:14px;font-weight:800;color:var(--ink-2);
   }
-  .news-trend-label i{color:#f59e0b;font-size:14px;--ph-duotone-secondary-opacity:0;}
-  .news-trend-chips{display:flex;gap:6px;}
+  .news-trend-label i{color:#f59e0b;font-size:16px;--ph-duotone-secondary-opacity:0;}
+  .news-trend-chips{display:flex;gap:7px;}
   .news-trend-chip{
     flex-shrink:0;background:var(--card-soft);color:var(--ink-2);border:none;
-    padding:6px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;
+    padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;
     white-space:nowrap;font-family:inherit;
   }
   .news-trend-chip.is-active{background:var(--brand);color:#fff;}
