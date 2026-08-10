@@ -1505,6 +1505,18 @@ input.avg-inline-input-qty {
     margin-top: 0.4rem;
 }
 
+.app-footer-legal {
+    margin-top: 0.6rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+}
+
+.app-footer-legal a {
+    color: var(--text-muted);
+    text-decoration: underline;
+}
+
 /* ==================================================
    대출이자 계산기 — 알약형 토글탭 / 언더라인 인풋 / 슬라이더 / 상품 피드
    ================================================== */

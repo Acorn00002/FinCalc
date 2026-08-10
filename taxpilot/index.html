@@ -1105,6 +1105,17 @@
     .print-area, .print-area *{visibility:visible;}
     .print-area{position:absolute;left:0;top:0;width:100%;padding:0;box-shadow:none;}
   }
+
+  .app-footer-legal{
+    margin-top:2rem;
+    padding-top:1.2rem;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:center;
+    gap:0.9rem;
+    font-size:0.76rem;
+  }
+  .app-footer-legal a{color:var(--ink-3);text-decoration:underline;}
 </style>
 </head>
 <body>
@@ -1733,6 +1744,11 @@
       </div>
     </div>
   </div>
+  <footer class="app-footer-legal">
+    <a href="https://gofincalc.com/privacy/" target="_top">개인정보처리방침</a>
+    <a href="https://gofincalc.com/terms/" target="_top">이용약관</a>
+    <a href="https://gofincalc.com/account-deletion/" target="_top">계정·데이터 삭제</a>
+  </footer>
 </main>
 
 <div class="toast" id="toast">
