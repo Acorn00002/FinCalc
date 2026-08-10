@@ -1688,6 +1688,20 @@ try {
     <button type="button" class="news-category-chip" data-category="society">시사</button>
     <button type="button" class="news-category-chip" data-category="life">생활</button>
   </div>
+
+  <!-- 실시간 트렌드 — 현재 불러온 뉴스 제목들에서 자주 등장하는 키워드를 뽑아 보여준다(새 API 없이
+       기존 뉴스 데이터만으로 계산). 클릭하면 그 키워드가 포함된 기사만 아래 목록에 필터링된다. -->
+  <div class="news-trend-row" id="newsTrendRow" hidden>
+    <span class="news-trend-label"><i class="ph-duotone ph-chart-line-up"></i>실시간 트렌드</span>
+    <div class="news-trend-chips" id="newsTrendChips"></div>
+  </div>
+
+  <!-- 오늘 주요뉴스 — 현재 탭에서 불러온 목록의 상위 2건을 강조 카드로 보여준다. -->
+  <section class="news-top-section" id="newsTopSection" hidden>
+    <p class="news-top-title"><i class="ph-duotone ph-fire"></i>오늘 주요뉴스</p>
+    <div class="news-top-grid" id="newsTopGrid"></div>
+  </section>
+
   <div class="news-page-list" id="newsPageList">
     <div class="news-page-skel"></div>
     <div class="news-page-skel"></div>
@@ -4359,14 +4373,83 @@ try {
     });
   })();
 
+  // 실시간 트렌드 — 새 API 없이, 지금 불러온 뉴스 제목들에서 2번 이상 등장하는 단어를 뽑아 보여준다.
+  var NEWS_TREND_STOPWORDS = ["있다","한다","됐다","이번","지난","오늘","기자","위해","대한","것으로","라며","이라고","등을","등이","에서","으로","까지","부터","한편","전했다","밝혔다","최근","우리","했다","한다고","무단","전재","재배포","금지","단독"];
+  var newsActiveTrend = null;
+
+  function extractNewsTrends(items){
+    var freq = {};
+    items.forEach(function(item){
+      var words = (item.title || "").split(/[\s,.·"'“”‘’()\[\]:\-…]+/).filter(function(w){ return w.length >= 2; });
+      words.forEach(function(w){
+        if (NEWS_TREND_STOPWORDS.indexOf(w) > -1) return;
+        if (/^[0-9%.]+$/.test(w)) return;
+        freq[w] = (freq[w] || 0) + 1;
+      });
+    });
+    return Object.keys(freq)
+      .filter(function(w){ return freq[w] >= 2; })
+      .sort(function(a, b){ return freq[b] - freq[a]; })
+      .slice(0, 6);
+  }
+
+  // 오늘 주요뉴스 — 현재 탭에서 불러온 목록의 상위 2건을 강조 카드로 보여준다(별도 API 없음).
+  function renderNewsTop(items){
+    var section = document.getElementById("newsTopSection");
+    var grid = document.getElementById("newsTopGrid");
+    if (!section || !grid) return;
+    var top = items.slice(0, 2);
+    if (!top.length) { section.hidden = true; grid.innerHTML = ""; return; }
+    section.hidden = false;
+    grid.innerHTML = top.map(function(item){
+      var meta = '<span class="news-top-source">' + escapeMyPageHtml(item.source) + '</span>' +
+        (item.time ? '<span>' + escapeMyPageHtml(item.time) + '</span>' : '');
+      var inner = '<p class="news-top-title-text">' + escapeMyPageHtml(item.title) + '</p><div class="news-top-meta">' + meta + '</div>';
+      if (item.link) {
+        return '<a class="news-top-item" href="' + escapeMyPageHtml(item.link) + '" target="_blank" rel="noopener noreferrer">' + inner + '</a>';
+      }
+      return '<div class="news-top-item">' + inner + '</div>';
+    }).join("");
+  }
+
+  function renderNewsTrends(items){
+    var row = document.getElementById("newsTrendRow");
+    var chipsEl = document.getElementById("newsTrendChips");
+    if (!row || !chipsEl) return;
+    var trends = extractNewsTrends(items);
+    if (!trends.length) { row.hidden = true; chipsEl.innerHTML = ""; return; }
+    row.hidden = false;
+    chipsEl.innerHTML = trends.map(function(word, idx){
+      return '<button type="button" class="news-trend-chip' + (word === newsActiveTrend ? ' is-active' : '') + '" data-trend="' +
+        escapeMyPageHtml(word) + '">' + (idx + 1) + '&nbsp;' + escapeMyPageHtml(word) + '</button>';
+    }).join("");
+    chipsEl.querySelectorAll(".news-trend-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){
+        var word = chip.getAttribute("data-trend");
+        newsActiveTrend = (newsActiveTrend === word) ? null : word;
+        renderNewsPage(newsCache[newsActiveCategory] || []);
+      });
+    });
+  }
+
   function renderNewsPage(items){
     var listEl = document.getElementById("newsPageList");
     if (!listEl) return;
-    if (!items.length) {
-      listEl.innerHTML = '<p class="news-page-empty">실시간 뉴스를 불러올 수 없어요. 잠시 후 다시 시도해주세요.</p>';
+
+    renderNewsTop(items);
+    renderNewsTrends(items);
+
+    var filtered = newsActiveTrend
+      ? items.filter(function(item){ return (item.title || "").indexOf(newsActiveTrend) > -1; })
+      : items;
+
+    if (!filtered.length) {
+      listEl.innerHTML = '<p class="news-page-empty">' +
+        (newsActiveTrend ? "'" + escapeMyPageHtml(newsActiveTrend) + "' 관련 뉴스가 없어요." : "실시간 뉴스를 불러올 수 없어요. 잠시 후 다시 시도해주세요.") +
+        '</p>';
       return;
     }
-    listEl.innerHTML = items.map(function(item){
+    listEl.innerHTML = filtered.map(function(item){
       var meta = '<span class="news-page-source">' + escapeMyPageHtml(item.source) + '</span>' +
         (item.time ? '<span>' + escapeMyPageHtml(item.time) + '</span>' : '');
       var inner = '<p class="news-page-title">' + escapeMyPageHtml(item.title) + '</p><div class="news-page-meta">' + meta + '</div>';
@@ -4408,6 +4491,7 @@ try {
       var category = chip.getAttribute("data-category");
       if (category === newsActiveCategory) return;
       newsActiveCategory = category;
+      newsActiveTrend = null;
       document.querySelectorAll("#newsCategoryFilter .news-category-chip").forEach(function(c){
         c.classList.toggle("is-active", c === chip);
       });
