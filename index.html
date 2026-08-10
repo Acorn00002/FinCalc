@@ -1046,6 +1046,57 @@ try {
       </div>
     </section>
 
+    <!-- 자산 목표 트래커(SAVE 스타일) — 목표 금액/기한을 설정하면 위 "내 자산 현황" 총자산 대비
+         달성률을 프로그레스 바로 보여준다. home-score-card와 동일한 입력폼↔결과 카드 전환 패턴. -->
+    <section class="asset-goal-section">
+      <div class="asset-goal-card" id="assetGoalInputCard">
+        <p class="asset-goal-input-title">자산 목표를 설정해보세요</p>
+        <div class="asset-goal-input-row">
+          <label class="asset-goal-input-label" for="assetGoalAmountInput">목표 금액</label>
+          <input type="number" class="asset-goal-input" id="assetGoalAmountInput" placeholder="0" inputmode="numeric" min="0">
+          <span class="asset-goal-input-suffix">원</span>
+        </div>
+        <div class="asset-dash-quick-add-row" data-target="assetGoalAmountInput">
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="10000000">+1000만</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="100000000">+1억</button>
+          <button type="button" class="asset-dash-quick-add-btn" data-amount="1000000000">+10억</button>
+          <button type="button" class="asset-dash-quick-add-btn asset-dash-quick-add-btn--reset" data-reset="true">정정</button>
+        </div>
+        <div class="asset-goal-input-row">
+          <label class="asset-goal-input-label" for="assetGoalDateInput">목표 기한</label>
+          <input type="date" class="asset-goal-input asset-goal-date-input" id="assetGoalDateInput">
+        </div>
+        <button type="button" class="asset-dash-save-btn" id="assetGoalSaveBtn">목표 저장하기</button>
+      </div>
+
+      <div class="asset-goal-card" id="assetGoalResultCard" hidden>
+        <div class="asset-goal-result-head">
+          <p class="asset-goal-result-title">목표 달성률</p>
+          <button type="button" class="asset-goal-edit-btn" id="assetGoalEditBtn" aria-label="목표 수정">
+            <i class="ph-duotone ph-pencil-simple"></i>
+          </button>
+        </div>
+        <p class="asset-goal-pct" id="assetGoalPct">0%</p>
+        <div class="asset-goal-gauge-track"><div class="asset-goal-gauge-fill" id="assetGoalGaugeFill" style="width:0%;"></div></div>
+        <p class="asset-goal-caption" id="assetGoalCaption">현재 0원 / 목표 0원</p>
+        <p class="asset-goal-dday" id="assetGoalDday"></p>
+      </div>
+    </section>
+
+    <!-- 월별 자산 변화 기록 — 이번 달 자산(현재 총자산)을 한 번의 클릭으로 스냅샷 저장하고,
+         지난달 대비 증감을 리스트로 보여준다(Firestore userAssets/{uid}/history/{YYYY-MM}). -->
+    <section class="asset-history-section">
+      <div class="asset-history-card">
+        <div class="asset-history-head">
+          <p class="asset-history-title">월별 자산 기록</p>
+          <button type="button" class="asset-history-record-btn" id="assetHistoryRecordBtn">이번 달 기록하기</button>
+        </div>
+        <div class="asset-history-list" id="assetHistoryList">
+          <p class="asset-history-empty">아직 기록된 자산 히스토리가 없어요. 이번 달 자산을 기록해보세요!</p>
+        </div>
+      </div>
+    </section>
+
     <!-- 왼쪽: 보유 포인트+히스토리 카드 / 오른쪽: 5년 뒤 목돈·이자 절감 시뮬레이터 두 칸을 한 행에 배치.
          모바일 폭에서는 세로로 자연스럽게 쌓인다(.mypage-split-row 미디어쿼리). -->
     <div class="mypage-split-row">
@@ -4717,6 +4768,7 @@ try {
       subscribeToUserDoc(user.uid);
       if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(user.uid);
       if (typeof subscribeUserAssets === "function") subscribeUserAssets(user.uid);
+      if (typeof subscribeAssetHistory === "function") subscribeAssetHistory(user.uid);
     } else {
       authState.isLoggedIn = false;
       authState.userProfile = { name: DEFAULT_USER_PROFILE.name, avatar: DEFAULT_USER_PROFILE.avatar };
@@ -4726,6 +4778,7 @@ try {
       if (userDocUnsubscribe) { userDocUnsubscribe(); userDocUnsubscribe = null; }
       if (typeof subscribePersonalEvents === "function") subscribePersonalEvents(null);
       if (typeof subscribeUserAssets === "function") subscribeUserAssets(null);
+      if (typeof subscribeAssetHistory === "function") subscribeAssetHistory(null);
     }
     syncAuthUI();
   });
@@ -5059,6 +5112,10 @@ try {
     { key: "stock", inputId: "assetDashStockInput", barId: "assetDashBarStock", pctId: "assetDashPctStock" },
     { key: "realestate", inputId: "assetDashRealestateInput", barId: "assetDashBarRealestate", pctId: "assetDashPctRealestate" }
   ];
+  // "이번 달 기록하기"가 별도 조회 없이 바로 스냅샷을 뜰 수 있도록, 매 렌더마다 현재 총자산/구성을
+  // 캐시해둔다(renderAssetDashboard 맨 아래에서 갱신).
+  var assetDashLatestTotal = 0;
+  var assetDashLatestBreakdown = { cash: 0, stock: 0, realestate: 0 };
 
   function renderAssetDashboard(data){
     var totalEl = document.getElementById("assetDashTotalValue");
@@ -5094,6 +5151,53 @@ try {
     if (data && typeof window.applyAssetDashTotalToScoreCard === "function") {
       window.applyAssetDashTotalToScoreCard(total);
     }
+
+    assetDashLatestTotal = total;
+    assetDashLatestBreakdown = values;
+    renderAssetGoalCard(data, total);
+  }
+
+  // 자산 목표 트래커 — userAssets/{uid} 문서의 goalAmount/goalDate 필드(자산 입력과 같은 문서)를
+  // 그대로 재사용한다. home-score-card와 동일하게 목표가 없으면 입력 폼을, 있으면 진행률 카드를 보여준다.
+  function renderAssetGoalCard(data, currentTotal){
+    var inputCard = document.getElementById("assetGoalInputCard");
+    var resultCard = document.getElementById("assetGoalResultCard");
+    if (!inputCard || !resultCard) return;
+
+    var goalAmount = data && typeof data.goalAmount === "number" && isFinite(data.goalAmount) && data.goalAmount > 0
+      ? data.goalAmount : 0;
+    var goalDate = data && typeof data.goalDate === "string" ? data.goalDate : "";
+
+    if (!goalAmount) {
+      inputCard.hidden = false;
+      resultCard.hidden = true;
+      return;
+    }
+
+    inputCard.hidden = true;
+    resultCard.hidden = false;
+
+    var pct = Math.min(100, Math.round((currentTotal / goalAmount) * 100));
+    var pctEl = document.getElementById("assetGoalPct");
+    var fillEl = document.getElementById("assetGoalGaugeFill");
+    var captionEl = document.getElementById("assetGoalCaption");
+    var ddayEl = document.getElementById("assetGoalDday");
+    if (pctEl) pctEl.textContent = pct + "%";
+    if (fillEl) fillEl.style.width = pct + "%";
+    if (captionEl) {
+      captionEl.textContent = "현재 " + currentTotal.toLocaleString("ko-KR") + "원 / 목표 " + goalAmount.toLocaleString("ko-KR") + "원";
+    }
+    if (ddayEl) {
+      if (goalDate) {
+        var todayStr = formatDateYMD(new Date());
+        var diffDays = Math.round((new Date(goalDate + "T00:00:00") - new Date(todayStr + "T00:00:00")) / 86400000);
+        if (diffDays > 0) ddayEl.textContent = "목표일까지 D-" + diffDays;
+        else if (diffDays === 0) ddayEl.textContent = "목표일이 오늘이에요";
+        else ddayEl.textContent = "목표일이 " + Math.abs(diffDays) + "일 지났어요";
+      } else {
+        ddayEl.textContent = "";
+      }
+    }
   }
 
   function subscribeUserAssets(uid){
@@ -5107,6 +5211,77 @@ try {
     }, function(error){
       console.error("자산 현황 구독 실패:", error);
     });
+  }
+
+  // ---------- 월별 자산 변화 기록 (Firestore userAssets/{uid}/history/{YYYY-MM}) ----------
+  // "이번 달 기록하기"를 누르면 그 시점의 총자산(위 assetDashLatestTotal)을 그 달의 문서 하나로
+  // upsert한다 — 같은 달에 여러 번 눌러도 그 달 안에서는 최신 값으로 덮어써질 뿐, 기록이 여러 개
+  // 쌓이지 않는다. 문서 ID를 recordedAt 대신 정렬 기준으로 쓰는 이유는, 실제로 기록한 시각(=클릭
+  // 시각)이 아니라 "그 기록이 어느 달의 스냅샷인지"로 정렬해야 지난달 대비 증감 계산이 항상 맞기
+  // 때문이다(나중에 지난 달 걸 뒤늦게 기록해도 순서가 꼬이지 않음).
+  var assetHistoryUnsubscribe = null;
+  var assetHistoryEntries = [];
+
+  function assetHistoryMonthId(d){
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1);
+  }
+
+  function assetHistoryMonthLabel(monthId){
+    var parts = monthId.split("-");
+    return parts[0] + "년 " + parseInt(parts[1], 10) + "월";
+  }
+
+  function renderAssetHistory(){
+    var listEl = document.getElementById("assetHistoryList");
+    if (!listEl) return;
+    if (!assetHistoryEntries.length) {
+      listEl.innerHTML = '<p class="asset-history-empty">아직 기록된 자산 히스토리가 없어요. 이번 달 자산을 기록해보세요!</p>';
+      return;
+    }
+    // assetHistoryEntries는 최신월이 먼저 오도록(desc) 정렬돼 있다 — 각 항목의 증감은 바로 다음
+    // (=한 달 전) 항목과 비교한다.
+    listEl.innerHTML = assetHistoryEntries.map(function(entry, idx){
+      var prev = assetHistoryEntries[idx + 1];
+      var deltaHtml;
+      if (prev) {
+        var delta = entry.total - prev.total;
+        var pct = prev.total > 0 ? Math.round((delta / prev.total) * 1000) / 10 : null;
+        var cls = delta > 0 ? "positive" : (delta < 0 ? "negative" : "neutral");
+        var arrow = delta > 0 ? "▲" : (delta < 0 ? "▼" : "-");
+        deltaHtml = '<span class="asset-history-item-delta ' + cls + '">' + arrow + ' ' + Math.abs(delta).toLocaleString("ko-KR") + '원' +
+          (pct !== null ? ' (' + (delta >= 0 ? "+" : "-") + Math.abs(pct) + '%)' : '') + '</span>';
+      } else {
+        deltaHtml = '<span class="asset-history-item-delta neutral">첫 기록</span>';
+      }
+      return '<div class="asset-history-item">' +
+        '<div class="asset-history-item-left">' +
+          '<span class="asset-history-item-month">' + assetHistoryMonthLabel(entry.id) + '</span>' +
+          '<span class="asset-history-item-total">' + entry.total.toLocaleString("ko-KR") + '원</span>' +
+        '</div>' +
+        deltaHtml +
+      '</div>';
+    }).join("");
+  }
+
+  function subscribeAssetHistory(uid){
+    if (assetHistoryUnsubscribe) { assetHistoryUnsubscribe(); assetHistoryUnsubscribe = null; }
+    if (!uid) {
+      assetHistoryEntries = [];
+      renderAssetHistory();
+      return;
+    }
+    assetHistoryUnsubscribe = db.collection("userAssets").doc(uid).collection("history")
+      .orderBy(firebase.firestore.FieldPath.documentId(), "desc")
+      .limit(24)
+      .onSnapshot(function(snapshot){
+        assetHistoryEntries = snapshot.docs.map(function(doc){
+          var d = doc.data() || {};
+          return { id: doc.id, total: typeof d.total === "number" ? d.total : 0 };
+        });
+        renderAssetHistory();
+      }, function(error){
+        console.error("자산 히스토리 구독 실패:", error);
+      });
   }
 
   // 자산 입력값은 음수/소수/문자를 전부 걸러내고 0 이상의 정수로만 취급한다(방어적 파싱) —
@@ -5159,6 +5334,93 @@ try {
         saveBtn.disabled = false;
         console.error("자산 현황 저장 실패:", error);
         showToast("저장에 실패했어요. 다시 시도해주세요.", "ph-warning");
+      });
+    });
+  })();
+
+  // 자산 목표 저장/수정 — 금액 빠른 입력·정정 버튼은 initAssetDashboardForm()의
+  // ".asset-dash-quick-add-row" 위임 리스너가 클래스만으로 이미 잡아주므로 여기서 다시 안 붙인다.
+  (function initAssetGoalForm(){
+    var saveBtn = document.getElementById("assetGoalSaveBtn");
+    var editBtn = document.getElementById("assetGoalEditBtn");
+    if (!saveBtn) return;
+
+    saveBtn.addEventListener("click", function(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+        handleGoogleLogin();
+        return;
+      }
+      var amount = parseAssetDashInput(document.getElementById("assetGoalAmountInput"));
+      if (!amount) {
+        showToast("목표 금액을 입력해주세요", "ph-warning");
+        return;
+      }
+      var dateInput = document.getElementById("assetGoalDateInput");
+      var uid = firebaseAuth.currentUser.uid;
+      var payload = {
+        goalAmount: amount,
+        // 날짜를 지우고 다시 저장하면 이전에 저장해둔 goalDate가 남아있지 않도록 명시적으로 delete한다
+        // (merge:true는 payload에 없는 필드를 건드리지 않으므로, 빈 값을 그냥 생략하면 안 지워짐).
+        goalDate: dateInput.value ? dateInput.value : firebase.firestore.FieldValue.delete(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      saveBtn.disabled = true;
+      db.collection("userAssets").doc(uid).set(payload, { merge: true }).then(function(){
+        saveBtn.disabled = false;
+        showToast("자산 목표가 저장됐어요", "ph-check-circle");
+      }).catch(function(error){
+        saveBtn.disabled = false;
+        console.error("자산 목표 저장 실패:", error);
+        showToast("저장에 실패했어요. 다시 시도해주세요.", "ph-warning");
+      });
+    });
+
+    if (editBtn) {
+      editBtn.addEventListener("click", function(){
+        var inputCard = document.getElementById("assetGoalInputCard");
+        var resultCard = document.getElementById("assetGoalResultCard");
+        if (resultCard) resultCard.hidden = true;
+        if (inputCard) inputCard.hidden = false;
+      });
+    }
+  })();
+
+  // 이번 달 자산 기록하기 — assetDashLatestTotal(위 renderAssetDashboard가 매번 갱신)을 그대로
+  // 이번 달 문서로 upsert한다. 총자산을 다시 입력받지 않고 이미 저장된 "내 자산 현황" 값을 그대로 쓴다.
+  (function initAssetHistoryFeature(){
+    var recordBtn = document.getElementById("assetHistoryRecordBtn");
+    if (!recordBtn) return;
+
+    recordBtn.addEventListener("click", function(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+        handleGoogleLogin();
+        return;
+      }
+      if (!assetDashLatestTotal) {
+        showToast("먼저 위 '내 자산 현황'에 자산을 입력하고 저장해주세요", "ph-warning");
+        return;
+      }
+      var uid = firebaseAuth.currentUser.uid;
+      var monthId = assetHistoryMonthId(new Date());
+      var payload = {
+        total: assetDashLatestTotal,
+        cash: assetDashLatestBreakdown.cash || 0,
+        stock: assetDashLatestBreakdown.stock || 0,
+        realestate: assetDashLatestBreakdown.realestate || 0,
+        recordedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      recordBtn.disabled = true;
+      db.collection("userAssets").doc(uid).collection("history").doc(monthId).set(payload).then(function(){
+        recordBtn.disabled = false;
+        showToast(assetHistoryMonthLabel(monthId) + " 자산이 기록됐어요", "ph-check-circle");
+      }).catch(function(error){
+        recordBtn.disabled = false;
+        console.error("자산 히스토리 기록 실패:", error);
+        showToast("기록에 실패했어요. 다시 시도해주세요.", "ph-warning");
       });
     });
   })();

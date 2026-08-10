@@ -1338,7 +1338,62 @@
 
   @media (max-width:480px){
     .asset-dash-input-label{width:68px;font-size:12px;}
+    .asset-goal-input-label{width:68px;font-size:12px;}
   }
+
+  /* 자산 목표 트래커(SAVE 스타일) — home-score-card와 동일하게 입력 폼/결과 카드를 hidden으로 전환한다. */
+  .asset-goal-section{margin-bottom:24px;}
+  .asset-goal-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .asset-goal-input-title{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .asset-goal-input-row{display:flex;align-items:center;gap:8px;background:var(--card-soft);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .asset-goal-input-label{flex-shrink:0;font-size:13px;font-weight:700;color:var(--ink-2);width:84px;}
+  .asset-goal-input{flex:1;min-width:0;border:none;background:transparent;font-size:16px;font-weight:700;color:var(--ink-1);font-family:inherit;}
+  .asset-goal-input::placeholder{color:var(--ink-3);}
+  .asset-goal-input-suffix{font-size:13px;font-weight:700;color:var(--ink-3);}
+  .asset-goal-date-input{color-scheme:light;}
+
+  .asset-goal-result-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .asset-goal-result-title{margin:0;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .asset-goal-edit-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:32px;height:32px;border-radius:10px;border:none;
+    background:var(--card-soft);color:var(--ink-3);cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .asset-goal-edit-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .asset-goal-edit-btn i{font-size:15px;--ph-duotone-secondary-opacity:0;}
+  .asset-goal-pct{margin:0 0 10px;font-size:32px;font-weight:800;color:var(--brand);letter-spacing:-0.02em;}
+  .asset-goal-gauge-track{width:100%;height:10px;border-radius:999px;background:var(--card-soft);overflow:hidden;}
+  .asset-goal-gauge-fill{height:100%;border-radius:999px;background:var(--brand);transition:width .3s ease;}
+  .asset-goal-caption{margin:10px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .asset-goal-dday{margin:6px 0 0;font-size:12.5px;font-weight:700;color:var(--ink-2);}
+
+  /* 월별 자산 변화 기록 */
+  .asset-history-section{margin-bottom:24px;}
+  .asset-history-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .asset-history-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+  .asset-history-title{margin:0;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .asset-history-record-btn{
+    flex-shrink:0;background:var(--brand-soft);color:var(--brand);border:none;
+    padding:9px 14px;border-radius:999px;font-size:12.5px;font-weight:800;cursor:pointer;
+    transition:background .15s ease;
+  }
+  .asset-history-record-btn:hover{background:var(--brand-soft-2);}
+  .asset-history-record-btn:disabled{opacity:0.6;cursor:default;}
+  .asset-history-empty{margin:0;padding:24px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-3);}
+  .asset-history-list{display:flex;flex-direction:column;}
+  .asset-history-item{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 0;border-bottom:1px solid var(--line);
+  }
+  .asset-history-item:last-child{border-bottom:none;}
+  .asset-history-item-left{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .asset-history-item-month{font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .asset-history-item-total{font-size:14.5px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .asset-history-item-delta{flex-shrink:0;font-size:13px;font-weight:800;letter-spacing:-0.02em;white-space:nowrap;text-align:right;}
+  .asset-history-item-delta.positive{color:var(--profit, #059669);}
+  .asset-history-item-delta.negative{color:#dc2626;}
+  .asset-history-item-delta.neutral{color:var(--ink-3);}
 
   /* 오늘의 3초 자산 꿀팁 — 앱의 푸시 알림 리마인더에 대응하는 웹 전용 읽기 달성 카드 */
   .home-tip-section{margin-bottom:24px;}

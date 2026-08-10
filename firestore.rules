@@ -18,18 +18,35 @@ service cloud.firestore {
       }
     }
 
-    // 마이페이지 "내 자산 현황 및 동향" 대시보드 — 현금/주식/부동산 입력값을 본인 uid 문서(userAssets/{uid})에만
-    // 저장한다. read/write 모두 본인 인증을 요구하는 것과 별개로, create/update는 필드명(hasOnly)과
-    // 타입·음수 여부까지 서버에서 재검증해 클라이언트가 조작한 임의 필드나 음수 값이 저장되지 않게 방어한다.
-    // delete는 request.resource가 없어(문서 자체가 사라지는 연산) 별도 규칙으로 분리했다.
+    // 마이페이지 "내 자산 현황 및 동향" 대시보드 — 현금/주식/부동산 입력값과 자산 목표(goalAmount/goalDate)를
+    // 본인 uid 문서(userAssets/{uid})에만 저장한다. read/write 모두 본인 인증을 요구하는 것과 별개로,
+    // create/update는 필드명(hasOnly)과 타입·음수 여부까지 서버에서 재검증해 클라이언트가 조작한 임의
+    // 필드나 음수 값이 저장되지 않게 방어한다. goalAmount/goalDate는 목표를 아직 설정 안 한 사용자도
+    // 있어 선택 필드로 두되, 존재할 때는 타입을 검증한다. delete는 request.resource가 없어(문서 자체가
+    // 사라지는 연산) 별도 규칙으로 분리했다.
     match /userAssets/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create, update: if request.auth != null && request.auth.uid == userId
-        && request.resource.data.keys().hasOnly(['cash', 'stock', 'realestate', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['cash', 'stock', 'realestate', 'updatedAt', 'goalAmount', 'goalDate'])
         && request.resource.data.cash is number && request.resource.data.cash >= 0
         && request.resource.data.stock is number && request.resource.data.stock >= 0
-        && request.resource.data.realestate is number && request.resource.data.realestate >= 0;
+        && request.resource.data.realestate is number && request.resource.data.realestate >= 0
+        && (!('goalAmount' in request.resource.data) || (request.resource.data.goalAmount is number && request.resource.data.goalAmount >= 0))
+        && (!('goalDate' in request.resource.data) || request.resource.data.goalDate is string);
       allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // 월별 자산 변화 기록(SAVE 스타일) — 문서 ID를 반드시 "YYYY-MM" 형태로 강제해 임의 서브컬렉션
+      // 문서가 끼어들지 못하게 하고, total/cash/stock/realestate도 위 본문서와 동일하게 음수/타입을 검증한다.
+      match /history/{monthId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow create, update: if request.auth != null && request.auth.uid == userId
+          && monthId.matches('^[0-9]{4}-[0-9]{2}$')
+          && request.resource.data.keys().hasOnly(['total', 'cash', 'stock', 'realestate', 'recordedAt'])
+          && request.resource.data.total is number && request.resource.data.total >= 0
+          && request.resource.data.cash is number && request.resource.data.cash >= 0
+          && request.resource.data.stock is number && request.resource.data.stock >= 0
+          && request.resource.data.realestate is number && request.resource.data.realestate >= 0;
+      }
     }
 
     // 도배/매크로 방지 — users/{uid}.lastActivityAt을 기준으로 60초 이내 연속 작성을 막는다.
