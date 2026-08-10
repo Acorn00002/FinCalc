@@ -5,5 +5,8 @@
   "description": "자산 파일럿 — 정적 HTML/CSS/JS 사이트 + Vercel 서버리스 함수(api/). 빌드 스텝 없음.",
   "scripts": {
     "dev": "firebase emulators:start"
+  },
+  "dependencies": {
+    "jose": "^6.2.8"
   }
 }

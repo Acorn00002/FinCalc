@@ -6,6 +6,10 @@ functions/.env
 functions/.env.*
 !functions/.env.example
 
+# 루트 package.json 의존성(api/의 Vercel 서버리스 함수용, 예: jose) — Vercel이 배포 시 자체적으로
+# npm install 하므로 커밋 대상이 아님
+/node_modules/
+
 # Firebase Functions
 functions/node_modules/
 functions/lib/

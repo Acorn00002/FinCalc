@@ -8,9 +8,36 @@
 //
 // 응답 형식은 index.html의 requestAiAssist()가 그대로 기대하는 { reply, remainingPoints }를 따른다
 // (Vercel 예시 코드에 흔한 { answer } 형태가 아님 — 프론트가 reply 필드를 읽기 때문).
+//
+// 보안: 예전엔 이 엔드포인트에 로그인 검증이 전혀 없어서, 로그인하지 않은 누구나(브라우저 없이도)
+// 이 URL에 직접 요청을 보내 무제한으로 Gemini API를 호출할 수 있었다 — 실제 서비스 도메인
+// (gofincalc.com)이 이 함수로 서빙되기 때문에 봇이 이 엔드포인트를 긁어가면 그대로 과금으로
+// 이어진다. Firebase Functions 쪽(functions/index.js의 aiAsk)은 이미 Admin SDK로 ID 토큰을
+// 검증하고 있었는데, Vercel엔 서비스 계정 credential이 없어 Admin SDK를 못 썼던 게 원인이었다 —
+// 대신 verifyFirebaseIdToken.js가 구글 공개 JWKS로 서명만 검증해서 서비스 계정 없이도 동일한
+// 신뢰 수준(로그인된 진짜 Firebase 사용자)을 확인한다.
+import { verifyFirebaseIdToken } from "./_lib/verifyFirebaseIdToken.js";
 
 const GEMINI_MODEL = "gemini-3.1-flash-lite";
 const MAX_PROMPT_LENGTH = 4000;
+
+// 서버리스 인스턴스가 재사용되는 동안만 유지되는 최소한의 사용자별 속도 제한(콜드 스타트 시 초기화됨 —
+// 완벽한 방어는 아니지만, 로그인 요구와 합쳐 악성 스크립트가 한 계정으로 반복 호출하는 걸 늦춘다).
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_CALLS = 8;
+const recentCallsByUid = new Map();
+
+function isRateLimited(uid) {
+  const now = Date.now();
+  const calls = (recentCallsByUid.get(uid) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (calls.length >= RATE_LIMIT_MAX_CALLS) {
+    recentCallsByUid.set(uid, calls);
+    return true;
+  }
+  calls.push(now);
+  recentCallsByUid.set(uid, calls);
+  return false;
+}
 
 const GEMINI_SYSTEM_INSTRUCTION =
   "당신은 '자산파일럿'의 전문적이고 신뢰감 있는 AI 금융 서포터입니다. " +
@@ -58,7 +85,7 @@ async function callGemini(prompt) {
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
@@ -80,6 +107,27 @@ export default async function handler(req, res) {
   }
   if (prompt.length > MAX_PROMPT_LENGTH) {
     return res.status(400).json({ error: "요청이 너무 깁니다. " + MAX_PROMPT_LENGTH + "자 이내로 입력해주세요." });
+  }
+
+  // 로그인 검증 — index.html/모바일 앱 둘 다 이미 Authorization: Bearer <Firebase idToken>을
+  // 실어 보내고 있었는데(요청은 하면서) 서버가 그동안 확인을 안 하고 있었다. Firebase Functions
+  // 쪽(functions/index.js의 aiAsk)과 동일한 기준으로 여기서도 반드시 검증한다.
+  const authHeader = req.headers.authorization || req.headers.Authorization || "";
+  const idToken = authHeader.indexOf("Bearer ") === 0 ? authHeader.slice(7) : "";
+  if (!idToken) {
+    return res.status(401).json({ error: "로그인이 필요합니다." });
+  }
+
+  let uid;
+  try {
+    uid = await verifyFirebaseIdToken(idToken);
+  } catch (error) {
+    console.error("ID 토큰 검증 실패:", error.message);
+    return res.status(401).json({ error: "인증 정보가 유효하지 않습니다." });
+  }
+
+  if (isRateLimited(uid)) {
+    return res.status(429).json({ error: "요청이 너무 잦아요. 잠시 후 다시 시도해주세요." });
   }
 
   // TODO: 개발 완료 후 포인트 차감 로직 추가 — Firebase Functions 쪽(functions/index.js)의
