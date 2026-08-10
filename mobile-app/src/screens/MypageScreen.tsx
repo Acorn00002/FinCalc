@@ -6,6 +6,9 @@ import type { NavigationProp } from '@react-navigation/native';
 import AppScreen from '../components/AppScreen';
 import Card from '../components/ui/Card';
 import CheckInCard from '../components/home/CheckInCard';
+import AssetDashboardCard, { AssetBreakdown } from '../components/mypage/AssetDashboardCard';
+import AssetGoalCard from '../components/mypage/AssetGoalCard';
+import AssetHistoryCard from '../components/mypage/AssetHistoryCard';
 import { useAppTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { getFirestoreDocument, setFirestoreDocument } from '../lib/firestoreRest';
@@ -57,6 +60,15 @@ export default function MypageScreen() {
   const [nickname, setNickname] = useState<string | null>(null);
   const [loadingDoc, setLoadingDoc] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  // AssetDashboardCard가 저장/로드할 때 알려주는 총자산 — 목표 트래커·월별 기록 카드가 같은 값을 공유한다
+  // (index.html의 assetDashLatestTotal과 동일한 역할).
+  const [assetTotal, setAssetTotal] = useState(0);
+  const [assetBreakdown, setAssetBreakdown] = useState<AssetBreakdown>({ cash: 0, stock: 0, realestate: 0 });
+  const handleAssetsChange = useCallback((total: number, breakdown: AssetBreakdown) => {
+    setAssetTotal(total);
+    setAssetBreakdown(breakdown);
+  }, []);
 
   const loadUserDoc = useCallback(async () => {
     if (!user) return;
@@ -149,6 +161,10 @@ export default function MypageScreen() {
             <Text style={styles.logoutBtnText}>로그아웃</Text>
           </Pressable>
         </Card>
+
+        <AssetDashboardCard onAssetsChange={handleAssetsChange} />
+        <AssetGoalCard currentTotal={assetTotal} />
+        <AssetHistoryCard currentTotal={assetTotal} currentBreakdown={assetBreakdown} />
 
         <Card style={styles.pointsCard}>
           <Text style={styles.pointsLabel}>보유 포인트</Text>

@@ -31,9 +31,11 @@ function parseFields(fields: Record<string, FirestoreValue>): Record<string, unk
 }
 
 // 컬렉션의 모든 문서를 { id, ...fields } 형태로 반환한다 (supportPrograms는 문서 수가 적어 페이지네이션 불필요).
-export async function fetchFirestoreCollection(collection: string): Promise<Record<string, unknown>[]> {
+// idToken을 넘기면 인증이 필요한 서브컬렉션(예: userAssets/{uid}/history)도 읽을 수 있다 — 기존
+// 공개 컬렉션 호출부는 idToken을 안 넘기므로 동작이 그대로 유지된다.
+export async function fetchFirestoreCollection(collection: string, idToken?: string): Promise<Record<string, unknown>[]> {
   const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${collection}`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined });
   if (!res.ok) throw new Error(`firestore fetch failed: ${res.status}`);
   const json = await res.json();
   const documents: { name: string; fields?: Record<string, FirestoreValue> }[] = json.documents || [];

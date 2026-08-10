@@ -14,6 +14,8 @@ type Props = {
   quickAdds?: QuickAdd[];
   showKoreanHint?: boolean;
   allowDecimal?: boolean;
+  /** true면 빠른 추가 칩 옆에 값을 0으로 되돌리는 "정정" 칩을 함께 보여준다(index.html의 정정 버튼과 동일). */
+  showReset?: boolean;
 };
 
 function formatDisplay(n: number, allowDecimal?: boolean): string {
@@ -22,7 +24,7 @@ function formatDisplay(n: number, allowDecimal?: boolean): string {
 }
 
 // 웹의 금액/퍼센트/연수 인풋(빠른 추가 칩 + 한글 단위 힌트 포함) 공용 이식.
-export default function NumberField({ label, value, onChange, suffix, quickAdds, showKoreanHint, allowDecimal }: Props) {
+export default function NumberField({ label, value, onChange, suffix, quickAdds, showKoreanHint, allowDecimal, showReset }: Props) {
   const { colors, radius } = useAppTheme();
   const styles = useMemo(() => createStyles(colors, radius), [colors, radius]);
   const [text, setText] = useState(formatDisplay(value, allowDecimal));
@@ -54,13 +56,18 @@ export default function NumberField({ label, value, onChange, suffix, quickAdds,
         {suffix ? <Text style={styles.suffix}>{suffix}</Text> : null}
       </View>
       {showKoreanHint && value > 0 ? <Text style={styles.hint}>{formatKoreanUnit(value)}</Text> : null}
-      {quickAdds && quickAdds.length ? (
+      {(quickAdds && quickAdds.length) || showReset ? (
         <View style={styles.chipsRow}>
-          {quickAdds.map((qa) => (
+          {(quickAdds || []).map((qa) => (
             <Pressable key={qa.label} style={styles.chip} onPress={() => onChange(value + qa.amount)}>
               <Text style={styles.chipText}>{qa.label}</Text>
             </Pressable>
           ))}
+          {showReset ? (
+            <Pressable style={styles.resetChip} onPress={() => onChange(0)}>
+              <Text style={styles.resetChipText}>정정</Text>
+            </Pressable>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -92,5 +99,14 @@ function createStyles(colors: ThemeColors, radius: typeof RADIUS) {
       borderRadius: 999,
     },
     chipText: { fontSize: 12.5, fontWeight: '700', color: colors.brand },
+    resetChip: {
+      backgroundColor: 'transparent',
+      borderWidth: 1.5,
+      borderColor: colors.line,
+      paddingHorizontal: 12,
+      paddingVertical: 6.5,
+      borderRadius: 999,
+    },
+    resetChipText: { fontSize: 12.5, fontWeight: '700', color: colors.ink3 },
   });
 }
