@@ -19,7 +19,7 @@
   --radius-md:18px;
 }
 @media (prefers-color-scheme: dark){
-  :root{
+  :root:not([data-theme="light"]){
     --bg:#0b0f14;
     --card:#161b22;
     --card-soft:#1c222b;
@@ -32,6 +32,21 @@
     --brand-soft:rgba(115,119,239,0.16);
     --shadow-card:0 2px 10px rgba(0,0,0,0.3), 0 12px 32px -18px rgba(0,0,0,0.5);
   }
+}
+/* 앱/마이페이지에서 라이트·다크를 명시적으로 골랐다면(fincalc_theme_pref) 시스템 설정과
+   무관하게 그 선택을 그대로 따른다 — index.html이 매길 렌더 전에 data-theme을 심어준다. */
+:root[data-theme="dark"]{
+  --bg:#0b0f14;
+  --card:#161b22;
+  --card-soft:#1c222b;
+  --ink-1:#f0f2f5;
+  --ink-2:#a8b1bd;
+  --ink-3:#6b7480;
+  --line:#262c36;
+  --brand:#7377ef;
+  --brand-2:#5b9bf7;
+  --brand-soft:rgba(115,119,239,0.16);
+  --shadow-card:0 2px 10px rgba(0,0,0,0.3), 0 12px 32px -18px rgba(0,0,0,0.5);
 }
 
 *{box-sizing:border-box;}
