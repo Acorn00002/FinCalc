@@ -7322,7 +7322,7 @@ try {
       headings.forEach(function(h){
         var meta = AI_SECTION_META.filter(function(m){ return m.match.test(h.textContent); })[0];
         var section = document.createElement("div");
-        section.className = "home-ai-section" + (meta ? " home-ai-section--" + meta.cls : "");
+        section.className = "home-ai-answer-section" + (meta ? " home-ai-answer-section--" + meta.cls : "");
 
         h.parentNode.insertBefore(section, h);
         section.appendChild(h);

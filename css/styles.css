@@ -1634,23 +1634,23 @@
   /* 포트폴리오 분석 답변 섹션 카드 — 서버가 ## 진단 요약/리스크/개선 제안 3개 헤더로 답하면
      JS(wrapAiAnswerSections)가 각 헤더+본문을 이 카드로 감싼다. 헤더가 없는 일반 답변에는
      적용되지 않는다. */
-  .home-ai-section{
+  .home-ai-answer-section{
     background:var(--card-soft);
     border-radius:14px;
     padding:14px 16px;
     margin:0 0 10px;
   }
-  .home-ai-section:last-child{margin-bottom:0;}
-  .home-ai-section h2{
+  .home-ai-answer-section:last-child{margin-bottom:0;}
+  .home-ai-answer-section h2{
     margin:0 0 8px !important;
     font-size:13.5px !important;
     font-weight:800 !important;
     color:var(--ink-1);
   }
-  .home-ai-section > *:last-child{margin-bottom:0;}
-  .home-ai-section--summary{border-left:3px solid var(--brand);}
-  .home-ai-section--risk{border-left:3px solid #dc2626;background:rgba(220,38,38,0.05);}
-  .home-ai-section--action{border-left:3px solid var(--profit, #059669);background:rgba(5,150,105,0.06);}
+  .home-ai-answer-section > *:last-child{margin-bottom:0;}
+  .home-ai-answer-section--summary{border-left:3px solid var(--brand);}
+  .home-ai-answer-section--risk{border-left:3px solid #dc2626;background:rgba(220,38,38,0.05);}
+  .home-ai-answer-section--action{border-left:3px solid var(--profit, #059669);background:rgba(5,150,105,0.06);}
 
   /* ---------- Generic "coming soon" full page teaser ---------- */
   .view-teaser{
