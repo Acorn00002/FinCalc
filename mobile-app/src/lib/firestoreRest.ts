@@ -30,19 +30,31 @@ function parseFields(fields: Record<string, FirestoreValue>): Record<string, unk
   return out;
 }
 
-// 컬렉션의 모든 문서를 { id, ...fields } 형태로 반환한다 (supportPrograms는 문서 수가 적어 페이지네이션 불필요).
+// 컬렉션의 모든 문서를 { id, ...fields } 형태로 반환한다. Firestore REST의 documents.list는
+// pageSize를 안 주면 100개에서 끊기고 nextPageToken을 내려주므로(calendarEvents처럼 문서가
+// 100개를 넘으면 뒷부분이 통째로 누락돼 캘린더에서 특정 달이 안 보이는 버그가 났었다), 모든
+// 페이지를 다 받을 때까지 반복한다.
 // idToken을 넘기면 인증이 필요한 서브컬렉션(예: userAssets/{uid}/history)도 읽을 수 있다 — 기존
 // 공개 컬렉션 호출부는 idToken을 안 넘기므로 동작이 그대로 유지된다.
 export async function fetchFirestoreCollection(collection: string, idToken?: string): Promise<Record<string, unknown>[]> {
-  const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${collection}`;
-  const res = await fetch(url, { headers: idToken ? { Authorization: `Bearer ${idToken}` } : undefined });
-  if (!res.ok) throw new Error(`firestore fetch failed: ${res.status}`);
-  const json = await res.json();
-  const documents: { name: string; fields?: Record<string, FirestoreValue> }[] = json.documents || [];
-  return documents.map((doc) => ({
-    id: doc.name.split('/').pop() as string,
-    ...parseFields(doc.fields || {}),
-  }));
+  const [path, existingQuery] = collection.split('?');
+  const base = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${path}`;
+  const fixedParams = existingQuery ? `${existingQuery}&` : 'pageSize=300&';
+  const headers = idToken ? { Authorization: `Bearer ${idToken}` } : undefined;
+  const out: Record<string, unknown>[] = [];
+  let pageToken: string | undefined;
+  do {
+    const url = pageToken ? `${base}?${fixedParams}pageToken=${encodeURIComponent(pageToken)}` : `${base}?${fixedParams}`;
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(`firestore fetch failed: ${res.status}`);
+    const json = await res.json();
+    const documents: { name: string; fields?: Record<string, FirestoreValue> }[] = json.documents || [];
+    for (const doc of documents) {
+      out.push({ id: doc.name.split('/').pop() as string, ...parseFields(doc.fields || {}) });
+    }
+    pageToken = json.nextPageToken;
+  } while (pageToken);
+  return out;
 }
 
 function toFirestoreValue(v: unknown): Record<string, unknown> {
