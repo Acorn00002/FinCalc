@@ -687,6 +687,24 @@
   .home-footer-links a:hover{color:var(--brand);}
   @media (min-width:640px){ footer{padding:24px 32px 0;} }
 
+  /* ---------- Home SEO guide ---------- */
+  .home-seo-guide{
+    max-width:960px;
+    margin:40px auto 0;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:26px 28px;
+  }
+  @media (min-width:640px){ .home-seo-guide{padding:30px 32px;} }
+  .home-seo-guide h2{font-size:17px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .home-seo-guide h3{font-size:14.5px;font-weight:700;margin:20px 0 8px;color:var(--ink-1);}
+  .home-seo-guide p{margin:0 0 10px;font-size:13.5px;line-height:1.75;color:var(--ink-2);word-break:keep-all;}
+  .home-seo-guide .faq-item{margin-bottom:14px;}
+  .home-seo-guide .faq-item:last-child{margin-bottom:0;}
+  .home-seo-guide .faq-q{font-size:13.5px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .home-seo-guide .faq-a{font-size:13px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
   /* ---------- App shell / tab bar ---------- */
   /* Android 16(API 36)부터 edge-to-edge가 강제되면서 상태표시줄 뒤로 콘텐츠가 그려질 수 있어,
      고정 헤더가 노치/상태표시줄에 가려지지 않도록 안전 영역만큼 위쪽 여백을 미리 확보해둔다.

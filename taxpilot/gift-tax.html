@@ -14,6 +14,8 @@
 </script>
 <title>증여세 계산기 — 자산 파일럿</title>
 <meta name="description" content="2026년 증여재산공제 한도와 누진세율표를 반영한 증여세 계산기입니다. 배우자·직계존속·직계비속·기타친족 관계별 공제와 부담부증여, 10년 합산과세까지 계산해요.">
+<link rel="canonical" href="https://gofincalc.com/taxpilot/gift-tax.html">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -489,6 +491,47 @@
     font-weight:500;
   }
 
+  /* ---------- SEO guide & footer ---------- */
+  .seo-guide{
+    margin-top:32px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .seo-guide{padding:32px;} }
+  .seo-guide h2{font-size:18px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .seo-guide h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--ink-1);}
+  .seo-guide p{margin:0 0 10px;font-size:14px;line-height:1.7;color:var(--ink-2);word-break:keep-all;}
+  .seo-guide .formula-box{
+    background:var(--card-soft);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 14px;
+    word-break:keep-all;
+  }
+  .seo-guide .faq-item{margin-bottom:16px;}
+  .seo-guide .faq-item:last-child{margin-bottom:0;}
+  .seo-guide .faq-q{font-size:14px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .seo-guide .faq-a{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
+  .page-footer{
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .page-footer .copy{font-size:12px;color:var(--ink-3);font-weight:500;}
+  .page-footer .links{display:flex;gap:16px;flex-wrap:wrap;}
+  .page-footer .links a{font-size:12.5px;color:var(--ink-3);font-weight:600;text-decoration:underline;}
+
   /* ---------- Toast ---------- */
   .toast{
     position:fixed;
@@ -682,6 +725,38 @@
   <div class="disclaimer">
     <i class="ph-duotone ph-info"></i>
     <p>본 계산기는 2026년 기준 증여재산공제 한도와 누진세율표를 반영한 간편 시뮬레이션이에요. 부담부증여의 양도소득세, 대납 가산액의 정확한 재계산(gross-up), 10년 합산과세 등 실제 신고는 세부 사실관계에 따라 달라질 수 있으니 정확한 세액은 세무 전문가와 상담 후 신고해 주세요.</p>
+  </div>
+
+  <section class="seo-guide">
+    <h2>증여세 계산 방법 안내</h2>
+    <div class="formula-box">증여세 = (증여재산가액 − 증여재산공제) × 세율 − 누진공제액</div>
+    <p>증여세는 타인으로부터 재산을 무상으로 받았을 때 그 재산가액을 기준으로 부과되는 세금이에요. 먼저 증여받은 재산의 시가(증여재산가액)에서 채무 인수액(부담부증여), 비과세액, 감정평가수수료(500만 원 한도) 등을 차감해 증여과세가액을 구하고, 여기서 증여자와의 관계에 따른 증여재산공제를 뺀 금액이 과세표준이 됩니다. 증여재산공제는 배우자 6억 원, 직계존속·직계비속 간 5,000만 원(수증자가 미성년자인 경우 2,000만 원), 기타친족 1,000만 원이며 모두 10년간 합산 한도예요. 과세표준에 1억 원 이하 10%, 5억 원 이하 20%, 10억 원 이하 30%, 30억 원 이하 40%, 30억 원 초과 50%의 5단계 누진세율을 적용하고 누진공제액을 차감하면 산출세액이 나옵니다. 신고기한(증여일이 속한 달의 말일부터 3개월) 내에 자진신고하면 산출세액의 3%를 신고세액공제로 돌려받을 수 있어요.</p>
+
+    <h3>이용 가이드</h3>
+    <p>증여관계, 증여금액, 채무·비과세액 등 입력값을 채운 뒤 '증여세 계산하기' 버튼을 누르면 증여과세가액부터 최종 납부세액까지 단계별 산출 내역을 영수증 형태로 확인할 수 있어요. 과거 10년 이내 같은 사람에게 증여받은 이력이 있다면 '10년 합산과세' 항목을 켜서 합산 신고 시 세액을 정확히 계산해보세요.</p>
+
+    <h3>자주 묻는 질문</h3>
+    <div class="faq-item">
+      <p class="faq-q">Q. 증여재산공제는 매번 새로 받을 수 있나요?</p>
+      <p class="faq-a">A. 아니요, 동일인(배우자·직계존속은 그 배우자 포함)으로부터 10년간 받은 증여재산을 합산해 공제 한도가 한 번만 적용돼요. 10년이 지나면 공제 한도가 다시 초기화됩니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 부담부증여를 하면 세금이 줄어드나요?</p>
+      <p class="faq-a">A. 채무를 함께 인수하는 부담부증여는 채무액만큼 증여세 과세가액이 줄지만, 그 채무액에 대해서는 증여자에게 양도소득세가 별도로 부과될 수 있어 전체 세부담을 함께 비교해야 해요.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 미성년 자녀에게 증여할 때 유의할 점은?</p>
+      <p class="faq-a">A. 미성년 자녀의 증여재산공제 한도는 2,000만 원으로 성인 자녀(5,000만 원)보다 낮아요. 여러 차례 나눠 증여하는 계획이라면 10년 주기를 활용해 공제 한도를 최대한 활용하는 것이 유리합니다.</p>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <span class="copy">© 2026 자산 파일럿(gofincalc.com)</span>
+    <div class="links">
+      <a href="https://gofincalc.com/privacy/">개인정보처리방침</a>
+      <a href="https://gofincalc.com/terms/">이용약관</a>
+      <a href="https://gofincalc.com/contact/">문의하기</a>
+    </div>
   </div>
 
 </main>

@@ -1517,6 +1517,53 @@ input.avg-inline-input-qty {
     text-decoration: underline;
 }
 
+/* --- SEO guide --- */
+.seo-guide {
+    margin-top: 2rem;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 24px;
+}
+
+.seo-guide h2 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 0 0 12px;
+    color: var(--text-primary);
+}
+
+.seo-guide h3 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: var(--text-primary);
+}
+
+.seo-guide p {
+    margin: 0 0 10px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    word-break: keep-all;
+}
+
+.seo-guide .formula-box {
+    background: var(--accent-light);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin: 0 0 12px;
+    word-break: keep-all;
+}
+
+.seo-guide .faq-item { margin-bottom: 14px; }
+.seo-guide .faq-item:last-child { margin-bottom: 0; }
+.seo-guide .faq-q { font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
+.seo-guide .faq-a { font-size: 0.82rem; color: var(--text-secondary); margin: 0; line-height: 1.65; word-break: keep-all; }
+
 /* ==================================================
    대출이자 계산기 — 알약형 토글탭 / 언더라인 인풋 / 슬라이더 / 상품 피드
    ================================================== */

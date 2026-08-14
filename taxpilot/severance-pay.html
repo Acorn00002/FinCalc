@@ -14,6 +14,8 @@
 </script>
 <title>퇴직금 계산기 — 자산 파일럿</title>
 <meta name="description" content="근로기준법 기준 1일 평균임금과 근속연수공제를 반영한 퇴직금 및 퇴직소득세 계산기입니다.">
+<link rel="canonical" href="https://gofincalc.com/taxpilot/severance-pay.html">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -527,6 +529,47 @@
     font-weight:500;
   }
 
+  /* ---------- SEO guide & footer ---------- */
+  .seo-guide{
+    margin-top:32px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .seo-guide{padding:32px;} }
+  .seo-guide h2{font-size:18px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .seo-guide h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--ink-1);}
+  .seo-guide p{margin:0 0 10px;font-size:14px;line-height:1.7;color:var(--ink-2);word-break:keep-all;}
+  .seo-guide .formula-box{
+    background:var(--card-soft);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 14px;
+    word-break:keep-all;
+  }
+  .seo-guide .faq-item{margin-bottom:16px;}
+  .seo-guide .faq-item:last-child{margin-bottom:0;}
+  .seo-guide .faq-q{font-size:14px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .seo-guide .faq-a{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
+  .page-footer{
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .page-footer .copy{font-size:12px;color:var(--ink-3);font-weight:500;}
+  .page-footer .links{display:flex;gap:16px;flex-wrap:wrap;}
+  .page-footer .links a{font-size:12.5px;color:var(--ink-3);font-weight:600;text-decoration:underline;}
+
   /* ---------- Toast ---------- */
   .toast{
     position:fixed;
@@ -677,6 +720,38 @@
   <div class="disclaimer">
     <i class="ph-duotone ph-info"></i>
     <p>본 계산기는 근로기준법 기준 1일 평균임금과 근속연수공제·환산급여공제를 반영한 간편 시뮬레이션이에요. DB형/DC형 퇴직연금, 통상임금과의 비교(최저한도) 등 실제 지급액은 회사 규정과 세부 사실관계에 따라 달라질 수 있으니 정확한 금액은 인사팀 또는 세무 전문가와 확인해 주세요.</p>
+  </div>
+
+  <section class="seo-guide">
+    <h2>퇴직금 계산 방법 안내</h2>
+    <div class="formula-box">퇴직금 = 1일 평균임금 × 30일 × (재직일수 ÷ 365)</div>
+    <p>퇴직금은 근로기준법에 따라 계속 근로기간 1년에 대해 30일분 이상의 평균임금을 지급하도록 정해져 있어요. 평균임금은 퇴직 직전 3개월간 지급된 임금총액(기본급, 상여금 일부, 연차수당 등 포함)을 그 기간의 총일수로 나눈 1일 평균 임금을 의미합니다. 여기에 30일과 총 재직일수를 365로 나눈 값을 곱하면 법정 퇴직금이 산출돼요. 퇴직소득세는 퇴직금에서 근속연수공제(근속연수에 비례해 증가)를 차감해 환산급여를 구하고, 여기에 다시 환산급여공제를 적용한 뒤 기본세율 구간(연분연승법)을 적용해 계산합니다. 퇴직금을 일시금으로 받지 않고 IRP(개인형퇴직연금) 계좌로 이체받으면 퇴직소득세 납부를 연금 수령 시점까지 이연할 수 있고, 연금으로 수령하면 세율이 30~40% 추가 감면돼요.</p>
+
+    <h3>이용 가이드</h3>
+    <p>재직기간과 퇴직 전 3개월 임금총액(또는 평균임금)을 입력하면 법정 퇴직금과 예상 퇴직소득세, 실수령액을 함께 확인할 수 있어요. IRP 계좌로 수령할지 일시금으로 받을지 고민 중이라면 두 방식의 세부담 차이를 미리 비교해보는 것을 추천합니다. 이직을 준비 중이라면 현재 재직기간 기준 예상 퇴직금을 미리 계산해두면 향후 자금 계획을 세우는 데 도움이 됩니다.</p>
+
+    <h3>자주 묻는 질문</h3>
+    <div class="faq-item">
+      <p class="faq-q">Q. 재직기간이 1년 미만이어도 퇴직금을 받을 수 있나요?</p>
+      <p class="faq-a">A. 아니요, 근로기준법상 퇴직금은 계속 근로기간이 1년 이상이고 4주 평균 1주 소정근로시간이 15시간 이상인 근로자에게만 지급 의무가 발생해요.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 퇴직금을 IRP로 받으면 세금을 아예 안 내나요?</p>
+      <p class="faq-a">A. 아니요, 세금이 면제되는 것이 아니라 연금을 실제로 수령하는 시점까지 퇴직소득세 납부가 이연되는 것이며, 연금 형태로 나눠 받으면 세율 자체도 낮아지는 효과가 있어요.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 상여금이나 연차수당도 평균임금에 포함되나요?</p>
+      <p class="faq-a">A. 정기적·일률적으로 지급된 상여금과 미사용 연차수당의 일부는 평균임금 산정에 포함될 수 있어요. 정확한 반영 여부는 회사의 임금 규정을 함께 확인해야 합니다.</p>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <span class="copy">© 2026 자산 파일럿(gofincalc.com)</span>
+    <div class="links">
+      <a href="https://gofincalc.com/privacy/">개인정보처리방침</a>
+      <a href="https://gofincalc.com/terms/">이용약관</a>
+      <a href="https://gofincalc.com/contact/">문의하기</a>
+    </div>
   </div>
 
 </main>

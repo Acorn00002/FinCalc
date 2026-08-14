@@ -14,6 +14,8 @@
 </script>
 <title>양도소득세 계산기 — 자산 파일럿</title>
 <meta name="description" content="1세대 1주택 비과세, 장기보유특별공제, 8단계 누진세율표를 반영한 부동산 양도소득세 계산기입니다.">
+<link rel="canonical" href="https://gofincalc.com/taxpilot/real-estate-tax.html">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -558,6 +560,47 @@
     font-weight:500;
   }
 
+  /* ---------- SEO guide & footer ---------- */
+  .seo-guide{
+    margin-top:32px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .seo-guide{padding:32px;} }
+  .seo-guide h2{font-size:18px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .seo-guide h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--ink-1);}
+  .seo-guide p{margin:0 0 10px;font-size:14px;line-height:1.7;color:var(--ink-2);word-break:keep-all;}
+  .seo-guide .formula-box{
+    background:var(--card-soft);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 14px;
+    word-break:keep-all;
+  }
+  .seo-guide .faq-item{margin-bottom:16px;}
+  .seo-guide .faq-item:last-child{margin-bottom:0;}
+  .seo-guide .faq-q{font-size:14px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .seo-guide .faq-a{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
+  .page-footer{
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .page-footer .copy{font-size:12px;color:var(--ink-3);font-weight:500;}
+  .page-footer .links{display:flex;gap:16px;flex-wrap:wrap;}
+  .page-footer .links a{font-size:12.5px;color:var(--ink-3);font-weight:600;text-decoration:underline;}
+
   /* ---------- Toast ---------- */
   .toast{
     position:fixed;
@@ -732,6 +775,38 @@
   <div class="disclaimer">
     <i class="ph-duotone ph-info"></i>
     <p>본 계산기는 일반 자산 기준 장기보유특별공제(3년 이상 연 2%, 최대 30%)와 8단계 누진세율표를 반영한 간편 시뮬레이션이에요. 1세대 1주택자의 실제 장기보유특별공제(최대 80%)나 다주택 중과세율 등 세부 사실관계에 따라 실제 세액은 크게 달라질 수 있으니 정확한 금액은 세무 전문가와 상담 후 신고해 주세요.</p>
+  </div>
+
+  <section class="seo-guide">
+    <h2>양도소득세 계산 방법 안내</h2>
+    <div class="formula-box">양도소득세 = (양도차익 − 장기보유특별공제 − 기본공제 250만 원) × 세율 − 누진공제액</div>
+    <p>양도소득세는 부동산 등을 팔아 이익(양도차익)이 생겼을 때 그 이익에 부과되는 세금이에요. 양도가액에서 취득가액과 필요경비(중개수수료, 취득세 등)를 뺀 금액이 양도차익이며, 여기서 보유기간에 따른 장기보유특별공제(일반 자산은 3년 이상 보유 시 연 2%씩 최대 30%, 1세대 1주택 비과세 초과분은 보유·거주기간에 따라 최대 80%)를 차감합니다. 이후 연 250만 원의 기본공제를 빼면 과세표준이 되고, 여기에 보유기간별 세율(1년 미만 단기 세율 최대 70%, 1년 이상 6~45% 8단계 누진세율)을 적용해요. 1세대 1주택자가 보유 2년·거주 2년 요건을 충족하면 양도가액 12억 원까지는 비과세되고, 초과분에 대해서만 과세됩니다. 신고기한은 양도일이 속한 달의 말일부터 2개월 이내예요.</p>
+
+    <h3>이용 가이드</h3>
+    <p>취득가액과 양도가액, 보유기간, 1세대 1주택 여부를 입력하면 장기보유특별공제와 세율 구간이 자동으로 적용된 예상 세액을 확인할 수 있어요. 다주택자라면 중과세율이 별도로 적용될 수 있으니 참고용으로만 활용하고 실제 신고 전 반드시 전문가 상담을 받으세요.</p>
+
+    <h3>자주 묻는 질문</h3>
+    <div class="faq-item">
+      <p class="faq-q">Q. 1세대 1주택이면 무조건 비과세인가요?</p>
+      <p class="faq-a">A. 보유기간 2년(취득 당시 조정대상지역이었다면 거주기간 2년도 추가) 요건을 충족해야 하고, 양도가액이 12억 원을 넘으면 초과하는 부분에 대해서는 과세됩니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 장기보유특별공제는 누구나 최대 80%까지 받을 수 있나요?</p>
+      <p class="faq-a">A. 아니요, 80% 한도는 1세대 1주택 비과세 초과분에만 적용되고 보유·거주 기간을 각각 채워야 해요. 일반 자산(다주택, 상가 등)은 보유기간 기준 최대 30%까지만 공제됩니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 1년 미만 보유하고 팔면 세금이 얼마나 늘어나나요?</p>
+      <p class="faq-a">A. 보유기간이 1년 미만이면 단기 세율이 적용돼 주택·조합원입주권은 최대 70%, 그 외 자산도 일반 누진세율보다 훨씬 높은 세율이 적용되니 매도 시점을 신중히 결정하세요.</p>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <span class="copy">© 2026 자산 파일럿(gofincalc.com)</span>
+    <div class="links">
+      <a href="https://gofincalc.com/privacy/">개인정보처리방침</a>
+      <a href="https://gofincalc.com/terms/">이용약관</a>
+      <a href="https://gofincalc.com/contact/">문의하기</a>
+    </div>
   </div>
 
 </main>

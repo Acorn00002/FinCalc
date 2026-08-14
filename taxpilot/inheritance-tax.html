@@ -14,6 +14,8 @@
 </script>
 <title>상속세 계산기 — 자산 파일럿</title>
 <meta name="description" content="기초공제·일괄공제·배우자상속공제·금융재산상속공제 자동 비교 로직을 반영한 대한민국 상속세 계산기입니다.">
+<link rel="canonical" href="https://gofincalc.com/taxpilot/inheritance-tax.html">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236366f1'/%3E%3Cpath d='M16 5 L20.5 16 L16 27 L11.5 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 5 L20.5 16 L16 16 Z' fill='%23ffffff'/%3E%3Cpath d='M16 16 L20.5 16 L16 27 Z' fill='%23c7d2fe'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -563,6 +565,47 @@
     font-weight:500;
   }
 
+  /* ---------- SEO guide & footer ---------- */
+  .seo-guide{
+    margin-top:32px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:28px;
+  }
+  @media (min-width:640px){ .seo-guide{padding:32px;} }
+  .seo-guide h2{font-size:18px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .seo-guide h3{font-size:15px;font-weight:700;margin:22px 0 8px;color:var(--ink-1);}
+  .seo-guide p{margin:0 0 10px;font-size:14px;line-height:1.7;color:var(--ink-2);word-break:keep-all;}
+  .seo-guide .formula-box{
+    background:var(--card-soft);
+    border-radius:12px;
+    padding:14px 16px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 14px;
+    word-break:keep-all;
+  }
+  .seo-guide .faq-item{margin-bottom:16px;}
+  .seo-guide .faq-item:last-child{margin-bottom:0;}
+  .seo-guide .faq-q{font-size:14px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .seo-guide .faq-a{font-size:13.5px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
+  .page-footer{
+    margin-top:36px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px 18px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .page-footer .copy{font-size:12px;color:var(--ink-3);font-weight:500;}
+  .page-footer .links{display:flex;gap:16px;flex-wrap:wrap;}
+  .page-footer .links a{font-size:12.5px;color:var(--ink-3);font-weight:600;text-decoration:underline;}
+
   /* ---------- Toast ---------- */
   .toast{
     position:fixed;
@@ -783,6 +826,38 @@
   <div class="disclaimer">
     <i class="ph-duotone ph-info"></i>
     <p>본 계산기는 기초공제·일괄공제·배우자상속공제·금융재산상속공제 등 주요 공제 항목을 반영한 간편 시뮬레이션이에요. 배우자의 실제 법정상속분, 재해손실공제 등 세부 사실관계에 따라 실제 세액은 달라질 수 있으니 정확한 금액은 세무 전문가와 상담 후 신고해 주세요.</p>
+  </div>
+
+  <section class="seo-guide">
+    <h2>상속세 계산 방법 안내</h2>
+    <div class="formula-box">상속세 = (상속재산가액 − 상속공제) × 세율 − 누진공제액</div>
+    <p>상속세는 사망으로 재산이 무상 이전될 때 그 재산가액을 기준으로 부과되는 세금이에요. 상속재산가액에서 채무·장례비용을 차감해 과세가액을 구한 뒤, 상속공제를 빼면 과세표준이 됩니다. 상속공제는 기초공제 2억 원에 자녀공제·미성년자공제 등 인적공제를 더한 금액과, 이를 대신할 수 있는 일괄공제 5억 원 중 유리한 쪽을 선택할 수 있어요. 배우자가 있다면 실제 상속받은 금액(최소 5억 원, 최대 30억 원 한도)만큼 배우자상속공제도 별도로 적용됩니다. 여기에 금융재산상속공제(순금융재산의 20%, 최대 2억 원)까지 더해지면 공제 규모가 크게 늘어날 수 있어요. 과세표준에는 증여세와 동일하게 1억 원 이하 10%부터 30억 원 초과 50%까지 5단계 누진세율이 적용되고, 신고기한(상속개시일이 속한 달의 말일부터 6개월) 내 자진신고 시 3% 세액공제를 받을 수 있습니다.</p>
+
+    <h3>이용 가이드</h3>
+    <p>상속재산가액과 배우자 유무, 상속인 수를 입력하면 기초공제+인적공제와 일괄공제 중 더 유리한 금액이 자동으로 비교 적용돼요. 금융재산 비중이 크다면 금융재산상속공제 입력란도 함께 채워 실제에 가까운 세액을 확인해보세요. 상속재산 규모가 클수록 공제 조합에 따른 세액 차이가 커질 수 있으니 여러 시나리오로 미리 계산해보는 것을 권장합니다.</p>
+
+    <h3>자주 묻는 질문</h3>
+    <div class="faq-item">
+      <p class="faq-q">Q. 일괄공제와 기초공제+인적공제 중 무엇을 선택해야 하나요?</p>
+      <p class="faq-a">A. 두 금액을 비교해 더 큰 쪽을 선택하면 돼요. 상속인 수가 적어 인적공제 합계가 5억 원에 못 미치면 일괄공제(5억 원)를 선택하는 것이 일반적으로 유리합니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 배우자상속공제는 자동으로 5억 원이 적용되나요?</p>
+      <p class="faq-a">A. 배우자가 실제 상속받은 금액이 없거나 5억 원 미만이어도 최소 5억 원까지는 공제받을 수 있고, 실제 상속받은 금액이 그보다 크면 최대 30억 원까지 한도 내에서 공제됩니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 상속세 신고는 언제까지 해야 하나요?</p>
+      <p class="faq-a">A. 상속개시일(사망일)이 속한 달의 말일부터 6개월 이내에 신고·납부해야 하며, 기한 내 자진신고하면 산출세액의 3%를 신고세액공제로 돌려받을 수 있어요.</p>
+    </div>
+  </section>
+
+  <div class="page-footer">
+    <span class="copy">© 2026 자산 파일럿(gofincalc.com)</span>
+    <div class="links">
+      <a href="https://gofincalc.com/privacy/">개인정보처리방침</a>
+      <a href="https://gofincalc.com/terms/">이용약관</a>
+      <a href="https://gofincalc.com/contact/">문의하기</a>
+    </div>
   </div>
 
 </main>

@@ -14,14 +14,14 @@
 </script>
 <title>양도소득세 계산기 — 1세대1주택 비과세·장기보유특별공제 자동 계산 | 택스 파일럿</title>
 <meta name="description" content="2026년 최신 세법 기준 양도소득세 계산기. 1세대1주택 비과세, 장기보유특별공제, 다주택 중과세를 자동 반영해 예상 세액을 실시간으로 확인하세요. 증여세·상속세·연말정산·퇴직소득세 계산기도 함께 제공합니다.">
-<!-- TODO: 실제 배포 도메인으로 교체하세요 -->
-<link rel="canonical" href="https://YOUR_DOMAIN_HERE/taxpilot/">
+<link rel="canonical" href="https://gofincalc.com/taxpilot/">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="자산 파일럿">
 <meta property="og:title" content="양도소득세 계산기 — 택스 파일럿">
 <meta property="og:description" content="1세대1주택 비과세·장기보유특별공제·다주택 중과세까지 반영한 2026년 최신 양도소득세·증여세·상속세 무료 계산기.">
-<meta property="og:url" content="https://YOUR_DOMAIN_HERE/taxpilot/">
-<meta property="og:image" content="https://YOUR_DOMAIN_HERE/taxpilot/og-image.png">
+<meta property="og:url" content="https://gofincalc.com/taxpilot/">
+<meta property="og:image" content="https://gofincalc.com/taxpilot/og-image.png">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="양도소득세 계산기 — 택스 파일럿">
@@ -34,7 +34,7 @@
   "alternateName": "TaxPilot",
   "applicationCategory": "FinanceApplication",
   "operatingSystem": "Web",
-  "url": "https://YOUR_DOMAIN_HERE/taxpilot/",
+  "url": "https://gofincalc.com/taxpilot/",
   "description": "1세대1주택 비과세, 장기보유특별공제, 다주택 중과세를 반영한 2026년 최신 양도소득세 계산기. 증여세·상속세·연말정산·퇴직소득세 계산기도 함께 제공합니다.",
   "inLanguage": "ko-KR",
   "isAccessibleForFree": true,
@@ -1116,6 +1116,31 @@
     font-size:0.76rem;
   }
   .app-footer-legal a{color:var(--ink-3);text-decoration:underline;}
+
+  /* ---------- SEO guide ---------- */
+  .seo-guide{
+    margin-top:28px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    padding:24px;
+  }
+  .seo-guide h2{font-size:17px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .seo-guide h3{font-size:14px;font-weight:700;margin:20px 0 8px;color:var(--ink-1);}
+  .seo-guide p{margin:0 0 10px;font-size:13.5px;line-height:1.7;color:var(--ink-2);word-break:keep-all;}
+  .seo-guide .formula-box{
+    background:var(--card-soft);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:13px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 12px;
+    word-break:keep-all;
+  }
+  .seo-guide .faq-item{margin-bottom:14px;}
+  .seo-guide .faq-item:last-child{margin-bottom:0;}
+  .seo-guide .faq-q{font-size:13.5px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .seo-guide .faq-a{font-size:13px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
 </style>
 </head>
 <body>
@@ -1744,10 +1769,41 @@
       </div>
     </div>
   </div>
+  <section class="seo-guide">
+    <h2>택스 파일럿 계산기 이용 가이드</h2>
+    <p>택스 파일럿은 양도소득세, 증여세, 연말정산 환급액, 퇴직소득세까지 한 화면에서 계산할 수 있는 세금 계산기 모음이에요. 각 탭의 계산 로직은 2026년 최신 세법 기준으로 업데이트되어 있습니다.</p>
+
+    <h3>양도소득세</h3>
+    <div class="formula-box">양도소득세 = (양도차익 − 장기보유특별공제 − 기본공제 250만 원) × 세율 − 누진공제액</div>
+    <p>취득가액과 양도가액, 보유·거주기간을 입력하면 1세대 1주택 비과세(12억 원 한도)와 장기보유특별공제, 8단계 누진세율을 반영한 예상 세액을 확인할 수 있어요.</p>
+
+    <h3>증여세</h3>
+    <div class="formula-box">증여세 = (증여재산가액 − 증여재산공제) × 세율 − 누진공제액</div>
+    <p>배우자 6억 원, 직계존속·직계비속 5,000만 원(미성년 2,000만 원) 등 관계별 공제 한도와 10년 합산과세를 반영해 총 납부세액을 계산해요.</p>
+
+    <h3>연말정산 · 퇴직소득세</h3>
+    <p>신용카드 사용액, 연금저축·IRP 납입액, 보험료·의료비·교육비 등을 입력하면 예상 환급액을 실시간으로 확인할 수 있고, 입사일·퇴직일과 퇴직급여를 입력하면 근속연수공제를 반영한 퇴직소득세와 실수령액을 계산해드려요. 연금저축·IRP 납입액을 늘릴수록 세액공제 한도 내에서 환급액이 커지는 구조이니, 아직 한도를 채우지 못했다면 연말 전에 추가 납입을 고려해보는 것도 좋은 절세 전략이에요.</p>
+
+    <h3>자주 묻는 질문</h3>
+    <div class="faq-item">
+      <p class="faq-q">Q. 계산 결과를 그대로 세무서에 신고해도 되나요?</p>
+      <p class="faq-a">A. 아니요, 본 계산기는 참고용 시뮬레이션이에요. 부담부증여, 다주택 중과세, 배우자상속공제 등 세부 사실관계에 따라 실제 세액이 달라질 수 있으니 신고 전 반드시 세무 전문가와 상담하세요.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 세율표는 매년 바뀌나요?</p>
+      <p class="faq-a">A. 네, 소득세율 구간과 각종 공제 한도는 세법 개정에 따라 매년 조정될 수 있어요. 택스 파일럿은 2026년 기준 최신 세율표와 공제 한도를 반영하고 있습니다.</p>
+    </div>
+    <div class="faq-item">
+      <p class="faq-q">Q. 증여세와 상속세, 어느 쪽이 더 유리한가요?</p>
+      <p class="faq-a">A. 재산 규모, 수증자·상속인 수, 사전증여 여부에 따라 유불리가 달라져요. 각각의 계산기(증여세·상속세)로 시뮬레이션해 비교해보고, 큰 금액이라면 사전 세무 상담을 받는 것을 추천합니다.</p>
+    </div>
+  </section>
+
   <footer class="app-footer-legal">
     <a href="https://gofincalc.com/privacy/" target="_top">개인정보처리방침</a>
     <a href="https://gofincalc.com/terms/" target="_top">이용약관</a>
     <a href="https://gofincalc.com/account-deletion/" target="_top">계정·데이터 삭제</a>
+    <a href="https://gofincalc.com/contact/" target="_top">문의하기</a>
   </footer>
 </main>
 
