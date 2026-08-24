@@ -8,7 +8,7 @@
 (function () {
   "use strict";
 
-  var BLOG_BASE = "https://gofincalc.com/blog/";
+  var BLOG_BASE = "https://www.gofincalc.com/blog/";
 
   // id가 있는 result-panel: id -> 가이드 콘텐츠
   var GUIDES_BY_ID = {

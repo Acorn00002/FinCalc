@@ -5,4 +5,4 @@ Disallow: /admin/
 User-agent: Mediapartners-Google
 Allow: /
 
-Sitemap: https://gofincalc.com/sitemap.xml
+Sitemap: https://www.gofincalc.com/sitemap.xml
