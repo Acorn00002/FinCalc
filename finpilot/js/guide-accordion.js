@@ -125,7 +125,7 @@
     "subscription-result-panel": {
       formula: "청약가점 = 무주택기간 점수 + 부양가족수 점수 + 청약통장 가입기간 점수",
       guide: "무주택 기간과 청약통장 가입 기간이 길수록, 부양가족 수가 많을수록 가점이 높아져요. 특별공급 등 청년·신혼부부 대상 지원 조건도 함께 확인해보세요.",
-      blogSlug: "youth-subsidy-conditions",
+      blogSlug: "housing-subscription-score-guide",
     },
     "home-budget-result-panel": {
       formula: "저축률(%) = (월 소득 − 월 지출) ÷ 월 소득 × 100",
