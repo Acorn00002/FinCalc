@@ -285,10 +285,10 @@ try {
         <a class="sidebar-item" href="#calendar" data-view="calendar">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-calendar-blank"></i></span>금융 캘린더
         </a>
-        <a class="sidebar-item" href="#lounge" data-view="lounge">
+        <a class="sidebar-item review-hide" href="#lounge" data-view="lounge">
           <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-chats-circle"></i></span>자산 라운지
         </a>
-        <button type="button" class="sidebar-item sidebar-item-highlight" id="sidebarTaxConsultBtn">
+        <button type="button" class="sidebar-item sidebar-item-highlight review-hide" id="sidebarTaxConsultBtn">
           <span class="sidebar-item-icon-plate sidebar-item-icon-plate-highlight"><i class="ph-duotone ph-scales"></i></span>
           세무사 1:1 절세 상담
           <span class="badge new sidebar-item-badge">BETA</span>
@@ -307,7 +307,7 @@ try {
         </a>
       </div>
 
-      <div class="sidebar-group" data-group="info">
+      <div class="sidebar-group review-hide" data-group="info">
         <button class="sidebar-group-header" type="button">
           <span class="sidebar-group-title"><span class="sidebar-item-icon-plate"><i class="ph-duotone ph-file-text"></i></span>정보</span>
           <i class="ph-duotone ph-caret-down sidebar-caret"></i>
@@ -402,14 +402,14 @@ try {
       <a class="tab-btn" href="#dictionary" data-view="dictionary">
         <i class="ph-duotone ph-lightbulb"></i>경제사전
       </a>
-      <a class="tab-btn" href="#lounge" data-view="lounge">
+      <a class="tab-btn review-hide" href="#lounge" data-view="lounge">
         <i class="ph-duotone ph-chats-circle"></i>자산 라운지
       </a>
       <a class="tab-btn" href="#calendar" data-view="calendar">
         <i class="ph-duotone ph-calendar-blank"></i>금융 캘린더
       </a>
 
-      <div class="navbar-dropdown" data-dropdown="info">
+      <div class="navbar-dropdown review-hide" data-dropdown="info">
         <button type="button" class="tab-btn dropdown-trigger">
           <i class="ph-duotone ph-file-text"></i>정보
           <i class="ph-duotone ph-caret-down navbar-dropdown-caret"></i>
@@ -524,7 +524,7 @@ try {
   </section>
 
   <!-- 3. 실시간 경제 뉴스 (구글 뉴스 RSS) -->
-  <section class="home-news-section">
+  <section class="home-news-section review-hide">
     <div class="home-news-head">
       <h3 class="home-news-heading">실시간 경제 뉴스</h3>
       <a class="home-news-more" href="#news">더보기<i class="ph-duotone ph-caret-right"></i></a>
@@ -1872,7 +1872,7 @@ try {
     <i class="ph-duotone ph-calendar-blank"></i>
     <span>캘린더</span>
   </a>
-  <a class="bottom-nav-item" href="#lounge" data-view="lounge">
+  <a class="bottom-nav-item review-hide" href="#lounge" data-view="lounge">
     <i class="ph-duotone ph-chats-circle"></i>
     <span>자산 라운지</span>
   </a>
@@ -2685,7 +2685,218 @@ try {
     { date: "2026-08-31", category: "stock", type: "배당", title: "에이피알 배당지급일", meta: "코스피", status: null, flag: "kr", company: "에이피알" },
     { date: "2026-08-31", category: "stock", type: "배당", title: "우리금융지주 배당지급일", meta: "코스피", status: null, flag: "kr", company: "우리금융지주", logo: "https://www.google.com/s2/favicons?domain=woorifg.com&sz=64" },
     { date: "2026-08-31", category: "stock", type: "배당", title: "코람코라이프인프라리츠 배당지급일", meta: "코스피", status: null, flag: "kr", company: "코람코라이프인프라리츠" },
-    { date: "2026-08-31", category: "stock", type: "배당", title: "현대모비스 배당지급일", meta: "코스피", status: null, flag: "kr", company: "현대모비스", logo: "https://www.google.com/s2/favicons?domain=mobis.co.kr&sz=64" }
+    { date: "2026-08-31", category: "stock", type: "배당", title: "현대모비스 배당지급일", meta: "코스피", status: null, flag: "kr", company: "현대모비스", logo: "https://www.google.com/s2/favicons?domain=mobis.co.kr&sz=64" },
+
+    // ---- 2026년 9월 ----
+    { date: "2026-09-01", category: "economy", type: "경제지표", title: "2026년 8월 수출입 동향", meta: "11:00", status: null, flag: "kr" },
+    { date: "2026-09-01", category: "stock", type: "공시", title: "LG생활건강 [기재정정]유상증자결정(종속회사의주요경영사항)", meta: "051900", status: null, flag: "kr", company: "LG생활건강" },
+    { date: "2026-09-01", category: "stock", type: "공시", title: "기아 영업(잠정)실적(공정공시)", meta: "000270", status: null, flag: "kr", company: "기아", logo: "https://www.google.com/s2/favicons?domain=kia.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "공시", title: "두산에너빌리티 [기재정정]단일판매ㆍ공급계약체결", meta: "034020", status: null, flag: "kr", company: "두산에너빌리티" },
+    { date: "2026-09-01", category: "stock", type: "공시", title: "현대자동차 영업(잠정)실적(공정공시)", meta: "005380", status: null, flag: "kr", company: "현대자동차", logo: "https://www.google.com/s2/favicons?domain=hyundai.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "슐럼버거 배당락일", meta: "SLB · 13:00", status: null, flag: "us", company: "슐럼버거", logo: "https://www.google.com/s2/favicons?domain=slb.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "인스페리티 배당락일", meta: "NSP · 13:00", status: null, flag: "us", company: "인스페리티", logo: "https://www.google.com/s2/favicons?domain=insperity.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "HD한국조선해양 배당지급일", meta: "009540", status: null, flag: "kr", company: "HD한국조선해양" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "비자 배당지급일", meta: "V · 13:00", status: null, flag: "us", company: "비자", logo: "https://www.google.com/s2/favicons?domain=visa.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "코노코필립스 배당지급일", meta: "COP · 13:00", status: null, flag: "us", company: "코노코필립스", logo: "https://www.google.com/s2/favicons?domain=conocophillips.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "WW 그레인저 배당지급일", meta: "GWW · 13:00", status: null, flag: "us", company: "WW 그레인저", logo: "https://www.google.com/s2/favicons?domain=grainger.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "포드 모터 배당지급일", meta: "F · 13:00", status: null, flag: "us", company: "포드 모터", logo: "https://www.google.com/s2/favicons?domain=ford.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "애플랙 배당지급일", meta: "AFL · 13:00", status: null, flag: "us", company: "애플랙", logo: "https://www.google.com/s2/favicons?domain=aflac.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "처치 앤드 드와이트 배당지급일", meta: "CHD · 13:00", status: null, flag: "us", company: "처치 앤드 드와이트", logo: "https://www.google.com/s2/favicons?domain=churchdwight.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "스머커 배당지급일", meta: "SJM · 13:00", status: null, flag: "us", company: "스머커", logo: "https://www.google.com/s2/favicons?domain=jmsmucker.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "펜스케 오토모티브 그룹 배당지급일", meta: "PAG · 13:00", status: null, flag: "us", company: "펜스케 오토모티브", logo: "https://www.google.com/s2/favicons?domain=penskeautomotive.com&sz=64" },
+    { date: "2026-09-01", category: "stock", type: "배당", title: "머피 오일 배당지급일", meta: "MUR · 13:00", status: null, flag: "us", company: "머피 오일", logo: "https://www.google.com/s2/favicons?domain=murphyoilcorp.com&sz=64" },
+    { date: "2026-09-01", category: "tax", type: "세무", title: "주민세 개인분 정기분 납부 마감일", meta: "", status: null, flag: "kr" },
+    { date: "2026-09-01", category: "tax", type: "세무", title: "주민세 사업소분 신고 마감일", meta: "", status: null, flag: "kr" },
+
+    { date: "2026-09-02", category: "stock", type: "실적", title: "델 테크놀로지스 2026년 9월 실적발표", meta: "DELL · 05:00", status: "예정", flag: "us", company: "델 테크놀로지스", logo: "https://www.google.com/s2/favicons?domain=dell.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "공시", title: "SNT홀딩스 주식소각결정(자회사의 주요경영사항)", meta: "036530", status: null, flag: "kr", company: "SNT홀딩스" },
+    { date: "2026-09-02", category: "stock", type: "공시", title: "카프로 기타시장안내 (상장폐지결정 효력정지 가처분 신청 기각결정에 따른 정리매매절차 재개)", meta: "006380", status: null, flag: "kr", company: "카프로" },
+    { date: "2026-09-02", category: "stock", type: "공시", title: "파라다이스 연결재무제표기준영업(잠정)실적(공정공시)", meta: "034230", status: null, flag: "kr", company: "파라다이스" },
+    { date: "2026-09-02", category: "stock", type: "공시", title: "한화 [기재정정]중대재해발생", meta: "000880", status: null, flag: "kr", company: "한화" },
+    { date: "2026-09-02", category: "stock", type: "공시", title: "현대자동차 생산재개(자율공시)", meta: "005380", status: null, flag: "kr", company: "현대자동차", logo: "https://www.google.com/s2/favicons?domain=hyundai.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "홈디포 배당락일", meta: "HD · 13:00", status: null, flag: "us", company: "홈디포", logo: "https://www.google.com/s2/favicons?domain=homedepot.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "린드 배당락일", meta: "LIN · 13:00", status: null, flag: "us", company: "린드", logo: "https://www.google.com/s2/favicons?domain=linde.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "퀄컴 배당락일", meta: "QCOM · 13:00", status: null, flag: "us", company: "퀄컴", logo: "https://www.google.com/s2/favicons?domain=qualcomm.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "프린서플 파이낸셜 그룹 배당락일", meta: "PFG · 13:00", status: null, flag: "us", company: "프린서플 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=principal.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "브로드리지 파이낸셜 솔루션 배당락일", meta: "BR · 13:00", status: null, flag: "us", company: "브로드리지", logo: "https://www.google.com/s2/favicons?domain=broadridge.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "이선 알렌 인테리어스 배당락일", meta: "ETD · 13:00", status: null, flag: "us", company: "이선 알렌", logo: "https://www.google.com/s2/favicons?domain=ethanallen.com&sz=64" },
+    { date: "2026-09-02", category: "stock", type: "배당", title: "HF 싱클레어 배당지급일", meta: "DINO · 13:00", status: null, flag: "us", company: "HF 싱클레어", logo: "https://www.google.com/s2/favicons?domain=hfsinclair.com&sz=64" },
+
+    { date: "2026-09-03", category: "stock", type: "실적", title: "브로드컴 2026년 9월 실적발표...매출 $296억 서프라이즈", meta: "AVGO · 05:00", status: "예정", flag: "us", company: "브로드컴", logo: "https://www.google.com/s2/favicons?domain=broadcom.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "공시", title: "BNK금융지주 기업가치제고계획(자율공시)", meta: "138930", status: null, flag: "kr", company: "BNK금융지주" },
+    { date: "2026-09-03", category: "stock", type: "공시", title: "덴티움 소송등의제기ㆍ신청(경영권분쟁소송)", meta: "145720", status: null, flag: "kr", company: "덴티움" },
+    { date: "2026-09-03", category: "stock", type: "공시", title: "에넥스 [기재정정]주요사항보고서(유상증자결정)", meta: "011090", status: null, flag: "kr", company: "에넥스" },
+    { date: "2026-09-03", category: "stock", type: "공시", title: "토니모리 최대주주변경", meta: "214420", status: null, flag: "kr", company: "토니모리" },
+    { date: "2026-09-03", category: "stock", type: "공시", title: "한화오션 단일판매ㆍ공급계약체결", meta: "042660", status: null, flag: "kr", company: "한화오션" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "펩시코 배당락일", meta: "PEP · 13:00", status: null, flag: "us", company: "펩시코", logo: "https://www.google.com/s2/favicons?domain=pepsico.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "킴벌리클라크 배당락일", meta: "KMB · 13:00", status: null, flag: "us", company: "킴벌리클라크", logo: "https://www.google.com/s2/favicons?domain=kimberly-clark.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "CH 로빈슨 월드와이드 배당락일", meta: "CHRW · 13:00", status: null, flag: "us", company: "CH 로빈슨", logo: "https://www.google.com/s2/favicons?domain=chrobinson.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "앰코 배당락일", meta: "AMCR · 13:00", status: null, flag: "us", company: "앰코", logo: "https://www.google.com/s2/favicons?domain=amcor.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "제뉴인 파츠 배당락일", meta: "GPC · 13:00", status: null, flag: "us", company: "제뉴인 파츠", logo: "https://www.google.com/s2/favicons?domain=genpt.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "올드 리퍼블릭 인터내셔널 배당락일", meta: "ORI · 13:00", status: null, flag: "us", company: "올드 리퍼블릭", logo: "https://www.google.com/s2/favicons?domain=oldrepublic.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "포스코인터내셔널 배당지급일", meta: "047050", status: null, flag: "kr", company: "포스코인터내셔널" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "UPS 배당지급일", meta: "UPS · 13:00", status: null, flag: "us", company: "UPS", logo: "https://www.google.com/s2/favicons?domain=ups.com&sz=64" },
+    { date: "2026-09-03", category: "stock", type: "배당", title: "CNA 파이낸셜 배당지급일", meta: "CNA · 13:00", status: null, flag: "us", company: "CNA 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=cna.com&sz=64" },
+
+    { date: "2026-09-04", category: "ipo", type: "신규상장", title: "스카이랩스 코스닥 상장...시초가 수익률 -15%, 아쉬운 시초가", meta: "09:00", status: null, flag: "kr", company: "스카이랩스" },
+    { date: "2026-09-04", category: "stock", type: "실적", title: "룰루레몬 애슬레티카 2026년 9월 실적발표", meta: "LULU · 05:00", status: "예정", flag: "us", company: "룰루레몬", logo: "https://www.google.com/s2/favicons?domain=lululemon.com&sz=64" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "SKC 타법인주식및출자증권취득결정", meta: "011790", status: null, flag: "kr", company: "SKC" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "SK하이닉스 풍문또는보도에대한해명(미확정)", meta: "000660", status: null, flag: "kr", company: "SK하이닉스", logo: "https://www.google.com/s2/favicons?domain=skhynix.com&sz=64" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "고려아연 [기재정정]소송등의제기ㆍ신청(경영권분쟁소송)", meta: "010130", status: null, flag: "kr", company: "고려아연" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "에넥스 [기재정정]주요사항보고서(유상증자결정)", meta: "011090", status: null, flag: "kr", company: "에넥스" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "윌비스 주요사항보고서(회생절차개시신청)", meta: "008600", status: null, flag: "kr", company: "윌비스" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "진원생명과학 불성실공시법인지정", meta: "011000", status: null, flag: "kr", company: "진원생명과학" },
+    { date: "2026-09-04", category: "stock", type: "공시", title: "현대건설 중대재해발생", meta: "000720", status: null, flag: "kr", company: "현대건설" },
+    { date: "2026-09-04", category: "stock", type: "배당", title: "알파벳 A 배당락일", meta: "GOOGL · 13:00", status: null, flag: "us", company: "알파벳", logo: "https://www.google.com/s2/favicons?domain=abc.xyz&sz=64" },
+    { date: "2026-09-04", category: "stock", type: "배당", title: "알파벳 C 배당락일", meta: "GOOG · 13:00", status: null, flag: "us", company: "알파벳", logo: "https://www.google.com/s2/favicons?domain=abc.xyz&sz=64" },
+    { date: "2026-09-04", category: "stock", type: "배당", title: "스탠리 블랙 앤 데커 배당락일", meta: "SWK · 13:00", status: null, flag: "us", company: "스탠리 블랙 앤 데커", logo: "https://www.google.com/s2/favicons?domain=stanleyblackanddecker.com&sz=64" },
+    { date: "2026-09-04", category: "stock", type: "배당", title: "마제티 배당락일", meta: "MZTI · 13:00", status: null, flag: "us", company: "마제티" },
+    { date: "2026-09-04", category: "stock", type: "배당", title: "HD현대 배당지급일", meta: "267250", status: null, flag: "kr", company: "HD현대" },
+
+    { date: "2026-09-07", category: "stock", type: "배당", title: "미래에셋맵스리츠 배당지급일", meta: "357250", status: null, flag: "kr", company: "미래에셋맵스리츠" },
+    { date: "2026-09-07", category: "stock", type: "배당", title: "케이티앤지 배당지급일", meta: "033780", status: null, flag: "kr", company: "케이티앤지", logo: "https://www.google.com/s2/favicons?domain=ktng.com&sz=64" },
+    { date: "2026-09-07", category: "economy", type: "증시일정", title: "미국 증시 휴장 - 노동절(Labor Day)", meta: "", status: null, flag: "us" },
+    { date: "2026-09-07", category: "realestate", type: "청약", title: "경기 의정부우정 A2블록 공공분양주택(본청약)", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-07", category: "realestate", type: "청약", title: "서울 브라운스톤 월곡 센트럴", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-07", category: "realestate", type: "청약", title: "울산 문수데시앙2단지 공가세대 일반공급", meta: "09:00", status: null, flag: "kr" },
+
+    { date: "2026-09-08", category: "stock", type: "배당", title: "벡턴 디킨슨 배당락일", meta: "BDX · 13:00", status: null, flag: "us", company: "벡턴 디킨슨", logo: "https://www.google.com/s2/favicons?domain=bd.com&sz=64" },
+    { date: "2026-09-08", category: "stock", type: "배당", title: "존슨앤드존슨 배당지급일", meta: "JNJ · 13:00", status: null, flag: "us", company: "존슨앤드존슨", logo: "https://www.google.com/s2/favicons?domain=jnj.com&sz=64" },
+    { date: "2026-09-08", category: "stock", type: "배당", title: "애트모스 에너지 배당지급일", meta: "ATO · 13:00", status: null, flag: "us", company: "애트모스 에너지", logo: "https://www.google.com/s2/favicons?domain=atmosenergy.com&sz=64" },
+    { date: "2026-09-08", category: "realestate", type: "청약", title: "경기 남양주진접2지구 A-4블록 신혼희망타운(공공분양) 잔여세대 추가입주자모집공고", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-08", category: "realestate", type: "청약", title: "대전 경남아너스빌 센텀스카이", meta: "09:00", status: null, flag: "kr" },
+
+    { date: "2026-09-09", category: "stock", type: "배당", title: "엔비디아 배당락일", meta: "NVDA · 13:00", status: null, flag: "us", company: "엔비디아", logo: "https://www.google.com/s2/favicons?domain=nvidia.com&sz=64" },
+    { date: "2026-09-09", category: "stock", type: "배당", title: "노드슨 배당락일", meta: "NDSN · 13:00", status: null, flag: "us", company: "노드슨", logo: "https://www.google.com/s2/favicons?domain=nordson.com&sz=64" },
+    { date: "2026-09-09", category: "stock", type: "배당", title: "동원시스템즈 배당지급일", meta: "014820", status: null, flag: "kr", company: "동원시스템즈" },
+    { date: "2026-09-09", category: "stock", type: "배당", title: "아처 대니얼스 미들랜드 배당지급일", meta: "ADM · 13:00", status: null, flag: "us", company: "아처 대니얼스 미들랜드", logo: "https://www.google.com/s2/favicons?domain=adm.com&sz=64" },
+
+    { date: "2026-09-10", category: "ipo", type: "공모청약", title: "네오사피엔스 청약 (대신증권)", meta: "10:00", status: null, flag: "kr", company: "네오사피엔스" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "LG 배당락일", meta: "003550", status: null, flag: "kr", company: "LG" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "처브 배당락일", meta: "CB · 13:00", status: null, flag: "us", company: "처브", logo: "https://www.google.com/s2/favicons?domain=chubb.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "오토매틱 데이터 프로세싱 배당락일", meta: "ADP · 13:00", status: null, flag: "us", company: "ADP", logo: "https://www.google.com/s2/favicons?domain=adp.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "알버말 배당락일", meta: "ALB · 13:00", status: null, flag: "us", company: "알버말", logo: "https://www.google.com/s2/favicons?domain=albemarle.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "플라워스 푸즈 배당락일", meta: "FLO · 13:00", status: null, flag: "us", company: "플라워스 푸즈", logo: "https://www.google.com/s2/favicons?domain=flowersfoods.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "아메리세이프 배당락일", meta: "AMSF · 13:00", status: null, flag: "us", company: "아메리세이프" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "일라이 릴리 배당지급일", meta: "LLY · 13:00", status: null, flag: "us", company: "일라이 릴리", logo: "https://www.google.com/s2/favicons?domain=lilly.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "엑슨 모빌 배당지급일", meta: "XOM · 13:00", status: null, flag: "us", company: "엑슨 모빌", logo: "https://www.google.com/s2/favicons?domain=exxonmobil.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "셰브론 배당지급일", meta: "CVX · 13:00", status: null, flag: "us", company: "셰브론", logo: "https://www.google.com/s2/favicons?domain=chevron.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "IBM 배당지급일", meta: "IBM · 13:00", status: null, flag: "us", company: "IBM", logo: "https://www.google.com/s2/favicons?domain=ibm.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "에머슨 일렉트릭 배당지급일", meta: "EMR · 13:00", status: null, flag: "us", company: "에머슨 일렉트릭", logo: "https://www.google.com/s2/favicons?domain=emerson.com&sz=64" },
+    { date: "2026-09-10", category: "stock", type: "배당", title: "스냅 온 배당지급일", meta: "SNA · 13:00", status: null, flag: "us", company: "스냅 온", logo: "https://www.google.com/s2/favicons?domain=snapon.com&sz=64" },
+
+    { date: "2026-09-11", category: "stock", type: "실적", title: "미국 오라클 2026년 3분기 실적 발표", meta: "ORCL · 05:00", status: "예정", flag: "us", company: "오라클", logo: "https://www.google.com/s2/favicons?domain=oracle.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "실적", title: "어도비 2026년 9월 실적발표", meta: "ADBE · 05:00", status: "예정", flag: "us", company: "어도비", logo: "https://www.google.com/s2/favicons?domain=adobe.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "실적", title: "크로거 2026년 9월 실적발표", meta: "KR · 21:00", status: "예정", flag: "us", company: "크로거", logo: "https://www.google.com/s2/favicons?domain=kroger.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "배당", title: "유나이티드헬스 그룹 배당락일", meta: "UNH · 13:00", status: null, flag: "us", company: "유나이티드헬스", logo: "https://www.google.com/s2/favicons?domain=unitedhealthgroup.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "배당", title: "암젠 배당지급일", meta: "AMGN · 13:00", status: null, flag: "us", company: "암젠", logo: "https://www.google.com/s2/favicons?domain=amgen.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "배당", title: "셔윈-윌리엄즈 배당지급일", meta: "SHW · 13:00", status: null, flag: "us", company: "셔윈-윌리엄즈", logo: "https://www.google.com/s2/favicons?domain=sherwin-williams.com&sz=64" },
+    { date: "2026-09-11", category: "stock", type: "배당", title: "PPG 인더스트리스 배당지급일", meta: "PPG · 13:00", status: null, flag: "us", company: "PPG", logo: "https://www.google.com/s2/favicons?domain=ppg.com&sz=64" },
+
+    { date: "2026-09-14", category: "ipo", type: "공모청약", title: "와이즈플래닛컴퍼니 청약 (대신증권)", meta: "10:00", status: null, flag: "kr", company: "와이즈플래닛컴퍼니" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "코카콜라 배당락일", meta: "KO · 13:00", status: null, flag: "us", company: "코카콜라", logo: "https://www.google.com/s2/favicons?domain=coca-colacompany.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "머크 배당락일", meta: "MRK · 13:00", status: null, flag: "us", company: "머크", logo: "https://www.google.com/s2/favicons?domain=merck.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "알트리아 그룹 배당락일", meta: "MO · 13:00", status: null, flag: "us", company: "알트리아", logo: "https://www.google.com/s2/favicons?domain=altria.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "이콜랩 배당락일", meta: "ECL · 13:00", status: null, flag: "us", company: "이콜랩", logo: "https://www.google.com/s2/favicons?domain=ecolab.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "데번 에너지 배당락일", meta: "DVN · 13:00", status: null, flag: "us", company: "데번 에너지", logo: "https://www.google.com/s2/favicons?domain=devonenergy.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "티 로 프라이스 그룹 배당락일", meta: "TROW · 13:00", status: null, flag: "us", company: "티 로 프라이스", logo: "https://www.google.com/s2/favicons?domain=troweprice.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "메이시스 배당락일", meta: "M · 13:00", status: null, flag: "us", company: "메이시스", logo: "https://www.google.com/s2/favicons?domain=macys.com&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "인터파퓸스 배당락일", meta: "IPAR · 13:00", status: null, flag: "us", company: "인터파퓸스" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "페더럴 애그리컬처럴 모기지 배당락일", meta: "AGM · 13:00", status: null, flag: "us", company: "페더럴 애그리컬처럴 모기지" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "ESR켄달스퀘어리츠 배당지급일", meta: "365550", status: null, flag: "kr", company: "ESR켄달스퀘어리츠" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "알파벳 A 배당지급일", meta: "GOOGL · 13:00", status: null, flag: "us", company: "알파벳", logo: "https://www.google.com/s2/favicons?domain=abc.xyz&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "알파벳 C 배당지급일", meta: "GOOG · 13:00", status: null, flag: "us", company: "알파벳", logo: "https://www.google.com/s2/favicons?domain=abc.xyz&sz=64" },
+    { date: "2026-09-14", category: "stock", type: "배당", title: "컬럼비아 뱅킹 시스템스 배당지급일", meta: "COLB · 13:00", status: null, flag: "us", company: "컬럼비아 뱅킹" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "경기 더샵 여주역더퍼스트", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "경기 양주회천지구 A-26블록 공공분양주택", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "광주 올 뉴 챔피언스시티 1차", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "울산 그랑라크 에일린의 뜰", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "울산 남울산 노르웨이숲(조합원 취소분)(2회차)", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "충남 두정역 푸르지오 그랑피크", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "충남 천안 아이파크 시티 3단지", meta: "09:00", status: null, flag: "kr" },
+    { date: "2026-09-14", category: "realestate", type: "청약", title: "충남 천안 아이파크 시티 4단지", meta: "09:00", status: null, flag: "kr" },
+
+    { date: "2026-09-15", category: "ipo", type: "공모청약", title: "빅웨이브로보틱스 청약 (유진투자증권)", meta: "10:00", status: null, flag: "kr", company: "빅웨이브로보틱스" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "아레스 매니지먼트 배당락일", meta: "ARES · 13:00", status: null, flag: "us", company: "아레스 매니지먼트", logo: "https://www.google.com/s2/favicons?domain=aresmgmt.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "피델리티 내셔널 파이낸셜 배당락일", meta: "FNF · 13:00", status: null, flag: "us", company: "피델리티 내셔널 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=fnf.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "웨스턴 유니언 배당락일", meta: "WU · 13:00", status: null, flag: "us", company: "웨스턴 유니언", logo: "https://www.google.com/s2/favicons?domain=westernunion.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "넥스트에라 에너지 배당지급일", meta: "NEE · 13:00", status: null, flag: "us", company: "넥스트에라 에너지", logo: "https://www.google.com/s2/favicons?domain=nexteraenergy.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "신타스 배당지급일", meta: "CTAS · 13:00", status: null, flag: "us", company: "신타스", logo: "https://www.google.com/s2/favicons?domain=cintas.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "리얼티 인컴 배당지급일", meta: "O · 13:00", status: null, flag: "us", company: "리얼티 인컴", logo: "https://www.google.com/s2/favicons?domain=realtyincome.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "콘솔리데이티드 에디슨 배당지급일", meta: "ED · 13:00", status: null, flag: "us", company: "콘솔리데이티드 에디슨", logo: "https://www.google.com/s2/favicons?domain=coned.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "허쉬 배당지급일", meta: "HSY · 13:00", status: null, flag: "us", company: "허쉬", logo: "https://www.google.com/s2/favicons?domain=thehersheycompany.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "도버 배당지급일", meta: "DOV · 13:00", status: null, flag: "us", company: "도버", logo: "https://www.google.com/s2/favicons?domain=dovercorporation.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "오토리브 배당지급일", meta: "ALV · 13:00", status: null, flag: "us", company: "오토리브", logo: "https://www.google.com/s2/favicons?domain=autoliv.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "올드 리퍼블릭 인터내셔널 배당지급일", meta: "ORI · 13:00", status: null, flag: "us", company: "올드 리퍼블릭", logo: "https://www.google.com/s2/favicons?domain=oldrepublic.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "클리어웨이 에너지 C 배당지급일", meta: "CWEN · 13:00", status: null, flag: "us", company: "클리어웨이 에너지" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "로버트 하프 배당지급일", meta: "RHI · 13:00", status: null, flag: "us", company: "로버트 하프", logo: "https://www.google.com/s2/favicons?domain=roberthalf.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "내셔널 뱅크 홀딩스 배당지급일", meta: "NBHC · 13:00", status: null, flag: "us", company: "내셔널 뱅크 홀딩스" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "웬디스 컴퍼니 배당지급일", meta: "WEN · 13:00", status: null, flag: "us", company: "웬디스", logo: "https://www.google.com/s2/favicons?domain=wendys.com&sz=64" },
+    { date: "2026-09-15", category: "stock", type: "배당", title: "센트럴 퍼시픽 파이낸셜 배당지급일", meta: "CPF · 13:00", status: null, flag: "us", company: "센트럴 퍼시픽 파이낸셜" },
+    { date: "2026-09-15", category: "realestate", type: "청약", title: "경기 시흥 은계 에피트(조합원 취소분)", meta: "09:00", status: null, flag: "kr" },
+
+    { date: "2026-09-16", category: "ipo", type: "공모청약", title: "글로벌테크놀로지 청약 (한국투자증권)", meta: "10:00", status: null, flag: "kr", company: "글로벌테크놀로지" },
+    { date: "2026-09-16", category: "ipo", type: "공모청약", title: "덕산넵코어스 청약 (대신증권)", meta: "10:00", status: null, flag: "kr", company: "덕산넵코어스" },
+    { date: "2026-09-16", category: "stock", type: "배당", title: "베스트 바이 배당락일", meta: "BBY · 13:00", status: null, flag: "us", company: "베스트 바이", logo: "https://www.google.com/s2/favicons?domain=bestbuy.com&sz=64" },
+    { date: "2026-09-16", category: "stock", type: "배당", title: "맥도날드 배당지급일", meta: "MCD · 13:00", status: null, flag: "us", company: "맥도날드", logo: "https://www.google.com/s2/favicons?domain=mcdonalds.com&sz=64" },
+    { date: "2026-09-16", category: "tax", type: "세무", title: "자동차 연세액 납부 시작일", meta: "", status: null, flag: "kr" },
+    { date: "2026-09-16", category: "tax", type: "세무", title: "재산세 주택분의 2/2 정기분 납부, 재산세 토지분 정기분 납부 시작일", meta: "", status: null, flag: "kr" },
+
+    { date: "2026-09-17", category: "ipo", type: "공모청약", title: "브릴스 청약 (아이비케이투자증권)", meta: "10:00", status: null, flag: "kr", company: "브릴스" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "SK텔레콤 배당지급일", meta: "017670", status: null, flag: "kr", company: "SK텔레콤", logo: "https://www.google.com/s2/favicons?domain=sktelecom.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "홈디포 배당지급일", meta: "HD · 13:00", status: null, flag: "us", company: "홈디포", logo: "https://www.google.com/s2/favicons?domain=homedepot.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "린드 배당지급일", meta: "LIN · 13:00", status: null, flag: "us", company: "린드", logo: "https://www.google.com/s2/favicons?domain=linde.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "팩트셋 리서치 시스템스 배당지급일", meta: "FDS · 13:00", status: null, flag: "us", company: "팩트셋", logo: "https://www.google.com/s2/favicons?domain=factset.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "모엘리스 배당지급일", meta: "MC · 13:00", status: null, flag: "us", company: "모엘리스", logo: "https://www.google.com/s2/favicons?domain=moelis.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "인스페리티 배당지급일", meta: "NSP · 13:00", status: null, flag: "us", company: "인스페리티", logo: "https://www.google.com/s2/favicons?domain=insperity.com&sz=64" },
+    { date: "2026-09-17", category: "stock", type: "배당", title: "이선 알렌 인테리어스 배당지급일", meta: "ETD · 13:00", status: null, flag: "us", company: "이선 알렌", logo: "https://www.google.com/s2/favicons?domain=ethanallen.com&sz=64" },
+    { date: "2026-09-17", category: "realestate", type: "청약", title: "인천 인천계양지구 A6블록 공공분양주택(본청약)", meta: "09:00", status: null, flag: "kr" },
+
+    { date: "2026-09-18", category: "ipo", type: "공모청약", title: "엘리스그룹 청약 (미래에셋증권)", meta: "10:00", status: null, flag: "kr", company: "엘리스그룹" },
+    { date: "2026-09-18", category: "stock", type: "실적", title: "페덱스 2026년 9월 실적발표", meta: "FDX · 05:00", status: "예정", flag: "us", company: "페덱스", logo: "https://www.google.com/s2/favicons?domain=fedex.com&sz=64" },
+    { date: "2026-09-18", category: "stock", type: "배당", title: "브로드컴 배당락일", meta: "AVGO · 13:00", status: null, flag: "us", company: "브로드컴", logo: "https://www.google.com/s2/favicons?domain=broadcom.com&sz=64" },
+    { date: "2026-09-18", category: "stock", type: "배당", title: "동서 배당지급일", meta: "026960", status: null, flag: "kr", company: "동서" },
+    { date: "2026-09-18", category: "stock", type: "배당", title: "현대엘리베이터 배당지급일", meta: "017800", status: null, flag: "kr", company: "현대엘리베이터", logo: "https://www.google.com/s2/favicons?domain=hyundaielevator.co.kr&sz=64" },
+
+    { date: "2026-09-22", category: "stock", type: "배당", title: "신시내티 파이낸셜 배당락일", meta: "CINF · 13:00", status: null, flag: "us", company: "신시내티 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=cinfin.com&sz=64" },
+    { date: "2026-09-22", category: "stock", type: "배당", title: "유나이티드헬스 그룹 배당지급일", meta: "UNH · 13:00", status: null, flag: "us", company: "유나이티드헬스", logo: "https://www.google.com/s2/favicons?domain=unitedhealthgroup.com&sz=64" },
+    { date: "2026-09-22", category: "stock", type: "배당", title: "스탠리 블랙 앤 데커 배당지급일", meta: "SWK · 13:00", status: null, flag: "us", company: "스탠리 블랙 앤 데커", logo: "https://www.google.com/s2/favicons?domain=stanleyblackanddecker.com&sz=64" },
+    { date: "2026-09-22", category: "stock", type: "배당", title: "캐피털 시티 뱅크 그룹 배당지급일", meta: "CCBG · 13:00", status: null, flag: "us", company: "캐피털 시티 뱅크" },
+
+    { date: "2026-09-23", category: "stock", type: "배당", title: "LG 배당지급일", meta: "003550", status: null, flag: "kr", company: "LG" },
+
+    { date: "2026-09-24", category: "stock", type: "실적", title: "다든 레스토랑 2026년 9월 실적발표", meta: "DRI · 21:00", status: "예정", flag: "us", company: "다든 레스토랑", logo: "https://www.google.com/s2/favicons?domain=darden.com&sz=64" },
+    { date: "2026-09-24", category: "stock", type: "배당", title: "메드트로닉 배당락일", meta: "MDT · 13:00", status: null, flag: "us", company: "메드트로닉", logo: "https://www.google.com/s2/favicons?domain=medtronic.com&sz=64" },
+    { date: "2026-09-24", category: "stock", type: "배당", title: "퀄컴 배당지급일", meta: "QCOM · 13:00", status: null, flag: "us", company: "퀄컴", logo: "https://www.google.com/s2/favicons?domain=qualcomm.com&sz=64" },
+    { date: "2026-09-24", category: "stock", type: "배당", title: "앰코 배당지급일", meta: "AMCR · 13:00", status: null, flag: "us", company: "앰코", logo: "https://www.google.com/s2/favicons?domain=amcor.com&sz=64" },
+
+    { date: "2026-09-25", category: "stock", type: "실적", title: "코스트코 홀세일 2026년 9월 실적발표", meta: "COST · 05:00", status: "예정", flag: "us", company: "코스트코", logo: "https://www.google.com/s2/favicons?domain=costco.com&sz=64" },
+    { date: "2026-09-25", category: "stock", type: "배당", title: "록히드 마틴 배당지급일", meta: "LMT · 13:00", status: null, flag: "us", company: "록히드 마틴", logo: "https://www.google.com/s2/favicons?domain=lockheedmartin.com&sz=64" },
+    { date: "2026-09-25", category: "stock", type: "배당", title: "프린서플 파이낸셜 그룹 배당지급일", meta: "PFG · 13:00", status: null, flag: "us", company: "프린서플 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=principal.com&sz=64" },
+    { date: "2026-09-25", category: "stock", type: "배당", title: "플라워스 푸즈 배당지급일", meta: "FLO · 13:00", status: null, flag: "us", company: "플라워스 푸즈", logo: "https://www.google.com/s2/favicons?domain=flowersfoods.com&sz=64" },
+    { date: "2026-09-25", category: "stock", type: "배당", title: "아메리세이프 배당지급일", meta: "AMSF · 13:00", status: null, flag: "us", company: "아메리세이프" },
+
+    { date: "2026-09-29", category: "stock", type: "배당", title: "일리노이 툴 웍스 배당락일", meta: "ITW · 13:00", status: null, flag: "us", company: "일리노이 툴 웍스", logo: "https://www.google.com/s2/favicons?domain=itw.com&sz=64" },
+    { date: "2026-09-29", category: "stock", type: "배당", title: "프랭클린 리소시스 배당락일", meta: "BEN · 13:00", status: null, flag: "us", company: "프랭클린 리소시스", logo: "https://www.google.com/s2/favicons?domain=franklinresources.com&sz=64" },
+    { date: "2026-09-29", category: "stock", type: "배당", title: "OFG 뱅코프 배당락일", meta: "OFG · 13:00", status: null, flag: "us", company: "OFG 뱅코프" },
+    { date: "2026-09-29", category: "stock", type: "배당", title: "티 로 프라이스 그룹 배당지급일", meta: "TROW · 13:00", status: null, flag: "us", company: "티 로 프라이스", logo: "https://www.google.com/s2/favicons?domain=troweprice.com&sz=64" },
+
+    { date: "2026-09-30", category: "stock", type: "배당", title: "에어 프로덕츠 앤 케미컬스 배당락일", meta: "APD · 13:00", status: null, flag: "us", company: "에어 프로덕츠", logo: "https://www.google.com/s2/favicons?domain=airproducts.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "카디널 헬스 배당락일", meta: "CAH · 13:00", status: null, flag: "us", company: "카디널 헬스", logo: "https://www.google.com/s2/favicons?domain=cardinalhealth.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "페더럴 리얼티 인베스트먼트 배당락일", meta: "FRT · 13:00", status: null, flag: "us", company: "페더럴 리얼티" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "현대차 배당지급일", meta: "005380", status: null, flag: "kr", company: "현대차", logo: "https://www.google.com/s2/favicons?domain=hyundai.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "브로드컴 배당지급일", meta: "AVGO · 13:00", status: null, flag: "us", company: "브로드컴", logo: "https://www.google.com/s2/favicons?domain=broadcom.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "펩시코 배당지급일", meta: "PEP · 13:00", status: null, flag: "us", company: "펩시코", logo: "https://www.google.com/s2/favicons?domain=pepsico.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "벡턴 디킨슨 배당지급일", meta: "BDX · 13:00", status: null, flag: "us", company: "벡턴 디킨슨", logo: "https://www.google.com/s2/favicons?domain=bd.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "아레스 매니지먼트 배당지급일", meta: "ARES · 13:00", status: null, flag: "us", company: "아레스 매니지먼트", logo: "https://www.google.com/s2/favicons?domain=aresmgmt.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "데번 에너지 배당지급일", meta: "DVN · 13:00", status: null, flag: "us", company: "데번 에너지", logo: "https://www.google.com/s2/favicons?domain=devonenergy.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "피델리티 내셔널 파이낸셜 배당지급일", meta: "FNF · 13:00", status: null, flag: "us", company: "피델리티 내셔널 파이낸셜", logo: "https://www.google.com/s2/favicons?domain=fnf.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "인터파퓸스 배당지급일", meta: "IPAR · 13:00", status: null, flag: "us", company: "인터파퓸스" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "마제티 배당지급일", meta: "MZTI · 13:00", status: null, flag: "us", company: "마제티" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "웨스턴 유니언 배당지급일", meta: "WU · 13:00", status: null, flag: "us", company: "웨스턴 유니언", logo: "https://www.google.com/s2/favicons?domain=westernunion.com&sz=64" },
+    { date: "2026-09-30", category: "stock", type: "배당", title: "페더럴 애그리컬처럴 모기지 배당지급일", meta: "AGM · 13:00", status: null, flag: "us", company: "페더럴 애그리컬처럴 모기지" },
+    { date: "2026-09-30", category: "tax", type: "세무", title: "자동차 연세액 납부 마감일", meta: "", status: null, flag: "kr" },
+    { date: "2026-09-30", category: "tax", type: "세무", title: "재산세 주택분의 2/2 정기분 납부, 재산세 토지분 정기분 납부 마감일", meta: "", status: null, flag: "kr" }
   ];
 
   var CALENDAR_EVENTS = MANUAL_CALENDAR_EVENTS.slice();

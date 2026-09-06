@@ -119,6 +119,32 @@ img{max-width:100%;}
 
 .cp-disclaimer{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);}
 
+.cp-table-wrap{overflow-x:auto;margin:0 0 18px;border-radius:14px;border:1px solid var(--line);}
+.cp-table{width:100%;border-collapse:collapse;font-size:13.5px;white-space:nowrap;}
+.cp-table th,.cp-table td{padding:11px 14px;text-align:right;border-bottom:1px solid var(--line);}
+.cp-table th:first-child,.cp-table td:first-child{text-align:left;}
+.cp-table thead th{background:var(--card-soft);color:var(--ink-1);font-weight:800;}
+.cp-table tbody td{color:var(--ink-2);}
+.cp-table tbody tr:last-child td{border-bottom:none;}
+.cp-table tbody tr:last-child td{color:var(--ink-1);font-weight:700;}
+
+.cp-callout{border-radius:14px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;line-height:1.75;border-left:3px solid var(--brand-2);background:var(--card-soft);}
+.cp-callout-label{display:block;font-weight:800;color:var(--brand-2);font-size:12.5px;margin:0 0 4px;}
+.cp-callout p{margin:0;color:var(--ink-2);font-size:13.5px;line-height:1.75;}
+.cp-callout--warn{border-left-color:#e8590c;}
+.cp-callout--warn .cp-callout-label{color:#e8590c;}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .cp-callout--warn{border-left-color:#ff922b;}
+  :root:not([data-theme="light"]) .cp-callout--warn .cp-callout-label{color:#ff922b;}
+}
+:root[data-theme="dark"] .cp-callout--warn{border-left-color:#ff922b;}
+:root[data-theme="dark"] .cp-callout--warn .cp-callout-label{color:#ff922b;}
+
+.cp-checklist{list-style:none;margin:0 0 16px;padding:0;}
+.cp-checklist li{position:relative;padding:9px 0 9px 26px;font-size:14.5px;line-height:1.7;color:var(--ink-2);border-bottom:1px solid var(--line);}
+.cp-checklist li:last-child{border-bottom:none;}
+.cp-checklist li::before{content:"✓";position:absolute;left:2px;top:9px;color:var(--brand);font-weight:800;}
+
 .cp-grid{display:grid;grid-template-columns:1fr;gap:14px;}
 @media (min-width:640px){ .cp-grid{grid-template-columns:1fr 1fr;} }
 

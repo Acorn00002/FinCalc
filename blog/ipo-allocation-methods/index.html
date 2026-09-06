@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>균등배정 vs 비례배정, 공모주 배정 방식 완벽 이해 | 자산 파일럿</title>
-<meta name="description" content="공모주 청약의 균등배정과 비례배정 방식이 어떻게 다른지, 최소 청약 단위와 배정 수량 계산 원리를 예시로 설명합니다.">
+<title>공모주 경쟁률 1000:1인데 왜 한 주도 못 받았을까 — 배정 방식 완벽 이해</title>
+<meta name="description" content="비례배정은 경쟁률이 높으면 소수점 배정으로 0주가 되기도 합니다. 균등·비례배정 계산 예시와 중복청약 금지 등 실무 함정을 정리했습니다.">
 <link rel="canonical" href="https://www.gofincalc.com/blog/ipo-allocation-methods/">
 <meta property="og:type" content="article">
-<meta property="og:title" content="균등배정 vs 비례배정, 공모주 배정 방식 완벽 이해">
-<meta property="og:description" content="공모주 청약의 균등배정과 비례배정 방식이 어떻게 다른지, 최소 청약 단위와 배정 수량 계산 원리를 예시로 설명합니다.">
+<meta property="og:title" content="공모주 경쟁률 1000:1인데 왜 한 주도 못 받았을까">
+<meta property="og:description" content="균등·비례배정 계산 예시와 중복청약 금지 등 실무 함정을 정리했습니다.">
 <meta property="og:url" content="https://www.gofincalc.com/blog/ipo-allocation-methods/">
 <meta property="og:site_name" content="자산 파일럿">
 <link rel="icon" href="/icons/icon-192.png" type="image/png">
@@ -34,10 +34,12 @@ try {
 <main class="cp-wrap">
   <a class="cp-back" href="/blog/">← 블로그 목록</a>
   <p class="cp-eyebrow">공모주</p>
-  <h1 class="cp-title">균등배정 vs 비례배정, 공모주 배정 방식 완벽 이해</h1>
-  <p class="cp-meta"><span>2026.05.05</span><span>자산 파일럿 편집팀</span></p>
+  <h1 class="cp-title">공모주 경쟁률 1000:1인데 왜 한 주도 못 받았을까</h1>
+  <p class="cp-meta"><span>2026.09.03</span><span>자산 파일럿 편집팀</span></p>
 
   <article class="cp-card cp-article">
+    <p>증거금을 넉넉히 넣고 비례배정으로 100주를 신청했는데, 정작 배정 결과를 보니 0주였다는 경험을 해본 분들이 있을 겁니다. 경쟁률이 너무 높으면 비례배정은 소수점 단위로 계산되고, 그 소수점이 1주 미만이면 배정 수량이 0주로 처리되기 때문입니다. 균등배정과 비례배정의 계산 원리를 정확히 알아야 같은 증거금으로도 더 유리한 청약 전략을 세울 수 있습니다.</p>
+
     <h2>왜 배정 방식을 알아야 할까</h2>
     <p>공모주는 청약 신청자가 많으면 신청한 수량을 전부 받지 못하고, 정해진 규칙에 따라 일부만 배정받게 돼요. 일반 청약자에게 배정되는 물량은 보통 절반은 <strong>균등배정</strong>, 나머지 절반은 <strong>비례배정</strong> 방식으로 나뉘어 진행됩니다. 두 방식의 원리를 이해하면 같은 증거금으로도 더 유리하게 청약 전략을 세울 수 있어요.</p>
 
@@ -47,11 +49,37 @@ try {
     <h2>비례배정: 증거금을 많이 넣을수록 유리</h2>
     <p>비례배정은 청약 증거금(또는 신청 수량)에 비례해서 물량을 나눠주는 방식이에요. 계산식은 대략 <strong>배정 수량 = (내 청약 수량 × 비례배정 물량) ÷ 전체 비례 청약 수량(경쟁률)</strong>으로 볼 수 있습니다. 즉 경쟁률이 100:1이라면 신청한 수량의 1%만 배정받는 셈이에요. 자금 여력이 있는 투자자라면 증거금을 최대한 활용해 비례배정 수량을 늘리는 전략을 쓰기도 하지만, 경쟁률이 예상보다 높아지면 배정 수량이 크게 줄어들 수 있다는 점도 함께 고려해야 합니다.</p>
 
-    <h2>실전 팁: 증권사 분산 청약</h2>
-    <p>여러 증권사가 공동 주관하는 공모주라면, 증권사별로 배정 물량과 경쟁률이 다르기 때문에 한 곳에 집중하기보다 여러 계좌로 나눠 청약하면 균등배정 기회를 늘릴 수 있어요. 다만 계좌를 여러 개 운용하려면 각 증권사의 청약 수수료와 최소 증거금 조건도 함께 비교해보는 것이 좋습니다.</p>
+    <h2>경쟁률에 따라 비례배정이 얼마나 달라지는지 비교해보겠습니다</h2>
+    <p>비례배정 100주를 신청했다고 가정하고, 경쟁률별 예상 배정 수량은 다음과 같습니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead><tr><th>경쟁률</th><th>100주 신청 시 예상 배정</th></tr></thead>
+        <tbody>
+          <tr><td>50:1</td><td>2주</td></tr>
+          <tr><td>100:1</td><td>1주</td></tr>
+          <tr><td>500:1</td><td>0.2주 → 0주(소수점 미만 절사)</td></tr>
+          <tr><td>1,000:1</td><td>0.1주 → 0주(소수점 미만 절사)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>경쟁률이 수백 대 1을 넘어가면 웬만한 증거금으로도 비례배정에서는 1주도 받지 못하는 경우가 흔합니다. 인기가 높은 공모주일수록 균등배정 비중이 상대적으로 더 중요해지는 이유입니다.</p>
 
-    <h2>정리하면</h2>
-    <p>소액으로 여러 공모주에 참여하고 싶다면 균등배정 중심으로, 특정 종목에 확신이 있고 자금 여력이 충분하다면 비례배정 비중을 높이는 전략이 유리할 수 있어요. 배정 방식과 경쟁률을 함께 살펴보고 나에게 맞는 청약 전략을 세워보세요.</p>
+    <h2>실무에서 자주 놓치는 함정 2가지</h2>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">함정 1 — 여러 증권사에 중복 청약</span>
+      <p>2021년부터 동일한 공모주를 여러 증권사 계좌로 중복 청약하는 것이 금지됐습니다. 균등배정 기회를 늘리려고 여러 증권사에 나눠 청약했다가 중복이 확인되면 배정 자체가 취소될 수 있으니, 공동 주관 증권사 중 한 곳에만 청약해야 합니다. 다만 서로 다른 공모주라면 여러 증권사 계좌를 활용하는 것은 문제없습니다.</p>
+    </div>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">함정 2 — 균등배정도 100% 받는 건 아닙니다</span>
+      <p>최소 단위(통상 10주)만 청약하면 균등배정 물량 내에서 무조건 받을 수 있다고 오해하는 경우가 있습니다. 실제로는 균등배정 대상 청약자 수가 균등배정 물량보다 많으면 추첨으로 당첨자를 가리므로, 인기 공모주는 균등배정도 못 받을 수 있습니다.</p>
+    </div>
+
+    <h2>지금 바로 해볼 3단계</h2>
+    <ol>
+      <li><strong>청약하려는 공모주의 예상 경쟁률을 기관 수요예측 결과 등으로 미리 가늠해봅니다.</strong></li>
+      <li><strong>경쟁률이 높을 것으로 예상된다면 비례배정보다 균등배정 최소 단위 청약에 집중합니다.</strong></li>
+      <li><strong>공동 주관 증권사가 여러 곳이라면 중복 청약이 되지 않도록 한 곳만 골라 청약합니다.</strong></li>
+    </ol>
 
     <h2>자주 묻는 질문</h2>
     <div class="cp-faq-item">

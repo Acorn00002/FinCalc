@@ -1077,6 +1077,10 @@
   .app-view{display:none;}
   .app-view.active{display:block;}
 
+  /* 애드센스 심사 기간 임시 숨김 — 준비중 메뉴, 빈 커뮤니티, 베타 상담, 뉴스 RSS 피드.
+     심사 통과 후 이 규칙만 지우면 원상 복구됨. */
+  .review-hide{display:none!important;}
+
   .embed-view{
     height:calc(100vh - var(--chrome-h, 76px));
     min-height:420px;
