@@ -1,20 +1,9 @@
 // Vercel 서버리스 함수 — /api/news
-// Firebase Functions(functions/index.js)의 newsProxy와 동일한 RSS 소스를 그대로 프록시한다.
-// index.html의 fetchNewsXml()이 순수 XML 텍스트를 그대로 기대하므로 응답 형식을 맞춘다.
-
-// category 매핑은 functions/index.js의 NEWS_CATEGORY_URLS와 반드시 같게 유지할 것.
-const NEWS_CATEGORY_URLS = {
-  headline: "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNRFp4WkRNU0FtdHZLQUFQAQ?hl=ko&gl=KR&ceid=KR:ko",
-  economy: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx6TVdZU0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko",
-  society: "https://news.google.com/rss/search?q=" + encodeURIComponent("사회") + "&hl=ko&gl=KR&ceid=KR:ko",
-  life: "https://news.google.com/rss/search?q=" + encodeURIComponent("생활") + "&hl=ko&gl=KR&ceid=KR:ko",
-  world: "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtdHZHZ0pMVWlnQVAB?hl=ko&gl=KR&ceid=KR:ko"
-};
-const DEFAULT_NEWS_CATEGORY = "economy";
-
-function resolveNewsUrl(category) {
-  return NEWS_CATEGORY_URLS[category] || NEWS_CATEGORY_URLS[DEFAULT_NEWS_CATEGORY];
-}
+// 원래는 이 함수가 구글 뉴스 RSS를 직접 호출했으나, 구글이 Vercel 서버리스 IP 대역을 차단/제한하는지
+// 상시 503을 반환해 뉴스 피드가 죽어 있었다(2026-09-06 확인). 반면 같은 로직을 쓰는 Firebase
+// Cloud Functions(functions/index.js의 newsProxy, asia-northeast3)는 정상 응답하므로, 구글을
+// 직접 부르지 않고 이미 동작 확인된 그 엔드포인트를 그대로 프록시한다 — 응답 형식(XML 그대로)은 동일하게 유지.
+const FIREBASE_NEWS_PROXY_URL = "https://asset-filot.web.app/api/news";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -25,9 +14,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const upstream = await fetch(resolveNewsUrl(req.query.category), {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; AssetPilotNewsProxy/1.0)" }
-    });
+    const category = typeof req.query.category === "string" ? req.query.category : "";
+    const url = FIREBASE_NEWS_PROXY_URL + (category ? "?category=" + encodeURIComponent(category) : "");
+    const upstream = await fetch(url);
 
     if (!upstream.ok) {
       return res.status(502).send("뉴스 응답 오류: " + upstream.status);
