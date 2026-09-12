@@ -3561,6 +3561,7 @@
     animation:appSplashIconIn .4s cubic-bezier(.34,1.56,.64,1) both;
   }
   .app-splash-icon-shell,
+  .app-splash-icon-trail,
   .app-splash-icon-arrow{
     position:absolute;inset:0;
     width:100%;height:100%;
@@ -3569,7 +3570,10 @@
   .app-splash-icon-shell{
     border-radius:22px;
     overflow:hidden;
-    box-shadow:0 10px 28px rgba(88,92,229,0.28);
+    box-shadow:0 10px 28px rgba(75,94,234,0.32);
+    animation:appSplashShellFade 2s cubic-bezier(.45,0,.2,1) forwards;
+  }
+  .app-splash-icon-trail{
     animation:appSplashShellFade 2s cubic-bezier(.45,0,.2,1) forwards;
   }
   .app-splash-icon-arrow{
