@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>켈리 공식으로 본 "몰빵 투자"가 위험한 이유</title>
+<meta name="description" content="승률과 손익비를 넣어 계산하는 켈리 공식으로 적정 투자 비중을 확인하는 방법과 계산 예시를 정리했습니다.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/kelly-criterion-investing-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="켈리 공식으로 본 &quot;몰빵 투자&quot;가 위험한 이유">
+<meta property="og:description" content="승률·손익비 기준 켈리 공식 계산 예시를 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/kelly-criterion-investing-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "켈리 공식으로 본 \"몰빵 투자\"가 위험한 이유", "item": "https://www.gofincalc.com/blog/kelly-criterion-investing-guide/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "켈리 공식대로 투자하면 손실이 안 나나요?", "acceptedAnswer": {"@type": "Answer", "text": "아닙니다. 켈리 공식은 장기적으로 자산 증식 속도를 최적화하는 비중을 계산할 뿐, 개별 거래의 손실 가능성 자체를 없애주지는 않습니다. 승률이 100%가 아닌 이상 손실이 나는 거래는 계속 발생합니다."}}, {"@type": "Question", "name": "여러 종목에 분산 투자할 때도 켈리 공식을 쓸 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "기본 켈리 공식은 단일 베팅(거래) 기준으로 설계됐습니다. 여러 종목에 동시에 분산 투자할 때는 종목 간 상관관계까지 고려한 확장된 모델이 필요하므로, 단순 켈리 비중을 그대로 합산해 적용하기보다 참고 지표로만 활용하는 것이 안전합니다."}}]}</script></head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><span class="cp-logo-mark">자</span>자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">투자전략</p>
+  <h1 class="cp-title">켈리 공식으로 본 "몰빵 투자"가 위험한 이유</h1>
+  <p class="cp-meta"><span>2026.09.13</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+    <p>"이 종목 승률 좋으니까 크게 들어가자"는 판단은 감으로 하는 경우가 많습니다. 켈리 공식은 승률과 손익비(이익·손실 비율)를 숫자로 넣어, 장기적으로 자산을 가장 빠르게 불릴 수 있는 이론적 투자 비중을 계산해줍니다. 계산해보면 "감"으로 정한 비중과 실제 최적 비중이 크게 다른 경우가 많습니다.</p>
+
+    <h2>켈리 공식이란</h2>
+    <p>켈리 공식은 <strong>승률 − (1 − 승률) ÷ 손익비</strong>로 계산합니다. 여기서 손익비는 "이익을 봤을 때 얻는 비율"을 "손실을 봤을 때 잃는 비율"로 나눈 값입니다.</p>
+    <div class="cp-formula">최적 투자 비중 = 승률 − (1 − 승률) ÷ 손익비</div>
+
+    <h2>승률·손익비에 따른 계산 예시</h2>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead><tr><th>승률</th><th>손익비</th><th>켈리 비중</th><th>하프 켈리(권장)</th></tr></thead>
+        <tbody>
+          <tr><td>55%</td><td>1.5</td><td>25%</td><td>12.5%</td></tr>
+          <tr><td>40%</td><td>2.0</td><td>10%</td><td>5%</td></tr>
+          <tr><td>50%</td><td>1.0</td><td>0%</td><td>0%(투자 비추천)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>승률 50%에 손익비 1.0(익절·손절 폭이 같은 경우)이라면 켈리 비중은 0%로 계산됩니다. 승률이 절반이어도 손익비가 1대1이라면 장기적으로 기대수익이 0에 수렴해, 이 조건으로는 투자 자체가 큰 의미가 없다는 뜻입니다.</p>
+
+    <h2>왜 계산된 비중의 절반(하프 켈리)만 쓰라고 할까</h2>
+    <p>켈리 공식이 계산해주는 비중은 승률과 손익비 추정이 정확하다는 전제하에 이론적으로 자산 증식 속도를 최대화하는 값입니다. 하지만 실전에서는 승률·손익비 추정이 항상 정확하지 않고, 추정이 조금만 틀려도 풀 켈리 비중은 변동성이 지나치게 커질 수 있습니다. 그래서 실무에서는 계산된 비중의 절반(하프 켈리)만 사용해 안정성을 높이는 방법이 널리 쓰입니다.</p>
+
+    <h2>실무에서 자주 놓치는 함정</h2>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">함정 — 과거 승률을 미래에도 그대로 적용한다</span>
+      <p>켈리 공식에 넣는 승률과 손익비는 결국 과거 데이터를 기반으로 한 추정치일 뿐입니다. 시장 상황이 바뀌면 실제 승률과 손익비도 달라질 수 있어, 한 번 계산한 비중을 계속 고정해서 쓰기보다 주기적으로 다시 점검해야 합니다.</p>
+    </div>
+
+    <h2>확인할 점</h2>
+    <ul class="cp-checklist">
+      <li>승률과 손익비를 감이 아니라 과거 거래 기록 기반으로 추정했나요?</li>
+      <li>계산된 켈리 비중을 그대로 쓰지 않고 하프 켈리로 낮춰서 적용하고 있나요?</li>
+      <li>승률이나 손익비가 바뀌면 비중을 다시 계산하고 있나요?</li>
+      <li>켈리 비중이 0% 이하로 나온다면 그 전략 자체를 재검토하고 있나요?</li>
+    </ul>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 켈리 공식대로 투자하면 손실이 안 나나요?</p>
+      <p class="cp-faq-a">아닙니다. 켈리 공식은 장기적으로 자산 증식 속도를 최적화하는 비중을 계산할 뿐, 개별 거래의 손실 가능성 자체를 없애주지는 않습니다. 승률이 100%가 아닌 이상 손실이 나는 거래는 계속 발생합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 여러 종목에 분산 투자할 때도 켈리 공식을 쓸 수 있나요?</p>
+      <p class="cp-faq-a">기본 켈리 공식은 단일 베팅(거래) 기준으로 설계됐습니다. 여러 종목에 동시에 분산 투자할 때는 종목 간 상관관계까지 고려한 확장된 모델이 필요하므로, 단순 켈리 비중을 그대로 합산해 적용하기보다 참고 지표로만 활용하는 것이 안전합니다.</p>
+    </div>
+
+    <h2>지금 바로 해볼 3단계</h2>
+    <ol>
+      <li><strong>최근 거래 기록을 바탕으로 내 전략의 실제 승률과 손익비를 계산합니다.</strong></li>
+      <li><strong>켈리 공식으로 이론적 최적 투자 비중을 계산합니다. <a href="/calculators/kelly/">켈리 공식 계산기로 바로 계산해보기 →</a></strong></li>
+      <li><strong>계산된 비중의 절반(하프 켈리) 수준으로 낮춰 실제 투자에 적용합니다.</strong></li>
+    </ol>
+
+    <div class="cp-cta">
+      <p>내 승률·손익비 기준 최적 투자 비중이 궁금하다면?</p>
+      <a href="/calculators/kelly/">켈리 공식 계산기 바로가기</a>
+    </div>
+
+    <p class="cp-disclaimer">본 콘텐츠는 일반적인 투자 정보 제공을 목적으로 하며, 투자 자문을 대체하지 않습니다. 표의 수치는 이해를 돕기 위한 예시이며, 실제 투자 결과는 시장 상황과 개인의 승률·손익비 추정 정확도에 따라 크게 달라질 수 있습니다. 투자의 최종 책임은 투자자 본인에게 있습니다.</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="/calculators/">← 계산기 모음으로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  </div>
+</footer>
+
+</body>
+</html>
