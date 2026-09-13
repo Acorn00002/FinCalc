@@ -8,8 +8,8 @@
   "use strict";
 
   var DEST = {
-    DEPOSIT: { label: "예금·적금 우대금리 비교하기", href: "https://portal.kfb.or.kr/compare/receiving_disclosure10.php" },
-    LOAN: { label: "대출 금리 비교하고 신청하기", href: "https://portal.kfb.or.kr/compare/loan_household.php" },
+    DEPOSIT: { label: "예금·적금 우대금리 비교하기", href: "https://portal.kfb.or.kr/compare/receiving_deposit_3.php" },
+    LOAN: { label: "대출 금리 비교하고 신청하기", href: "https://portal.kfb.or.kr/compare/loan_household_new.php" },
     TAX: { label: "국세청 홈택스에서 신고하기", href: "https://www.hometax.go.kr" },
     PROPERTY_TAX: { label: "위택스에서 재산세 확인하기", href: "https://www.wetax.go.kr" },
     SUBSCRIPTION: { label: "청약홈에서 청약 신청하기", href: "https://www.applyhome.co.kr" },
