@@ -13,6 +13,18 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.gofincalc.com/blog/global-stock-tax-guide/</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/exchange-rate-preferential-guide/</loc>
+    <lastmod>2026-09-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://www.gofincalc.com/blog/compound-vs-simple-savings/</loc>
     <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
