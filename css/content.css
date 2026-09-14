@@ -118,11 +118,19 @@ img{max-width:100%;}
 .cp-cta a:hover{text-decoration:none;opacity:0.92;}
 
 /* 검색 유입용 독립 계산기 페이지: 본문 설명은 서버가 바로 전달하고, 실제 계산 도구는
-   동일한 FinPilot 계산 엔진을 불러온다. */
-.cp-tool-frame{width:100%;height:760px;border:0;border-radius:var(--radius-md);background:var(--card-soft);margin:18px 0 4px;}
+   동일한 FinPilot 계산 엔진을 불러온다. 도구 자체는 "앱을 그대로 열었다"는 느낌이 들도록
+   설명 아티클과 분리된 별도 카드(.cp-tool-card)에 담고, 실제 앱 아이콘을 헤더에 써서
+   브랜드가 이어지게 한다. */
+.cp-tool-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:18px 18px 6px;margin-bottom:20px;}
+.cp-tool-card-head{display:flex;align-items:center;gap:12px;margin-bottom:2px;}
+.cp-tool-card-icon{width:42px;height:42px;border-radius:12px;flex:none;overflow:hidden;box-shadow:0 4px 12px -4px rgba(88,92,229,0.35);}
+.cp-tool-card-icon img{width:100%;height:100%;display:block;}
+.cp-tool-card-title{font-size:18px;font-weight:800;color:var(--ink-1);margin:0 0 2px;line-height:1.3;}
+.cp-tool-card-desc{font-size:12.5px;color:var(--ink-3);margin:0;}
+.cp-tool-frame{width:100%;height:860px;border:0;border-radius:var(--radius-md);background:var(--card-soft);margin:14px 0 4px;}
 .cp-related-links{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;}
 .cp-related-links a{background:var(--card-soft);border-radius:999px;padding:8px 12px;font-size:13px;font-weight:700;}
-@media (max-width:640px){.cp-tool-frame{height:680px;margin-left:-4px;width:calc(100% + 8px);}}
+@media (max-width:640px){.cp-tool-frame{height:760px;margin-left:-4px;width:calc(100% + 8px);}}
 
 .cp-disclaimer{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin-top:24px;padding-top:16px;border-top:1px solid var(--line);}
 
