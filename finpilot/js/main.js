@@ -374,9 +374,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const params = new URLSearchParams(window.location.search);
         const tab = params.get('tab');
+        console.log('[FinPilot debug] location.search=', window.location.search, 'tab=', tab);
         if (tab) {
             const btn = document.querySelector(`.nav-btn[data-target="${tab}"]`);
-            if (btn) btn.click();
+            console.log('[FinPilot debug] matched button:', btn, 'label:', btn && btn.textContent.trim());
+            if (btn) switchTab(tab);
+            console.log('[FinPilot debug] active section after switch:', document.querySelector('.calc-section.active') && document.querySelector('.calc-section.active').id);
         }
         
         let hasParams = false;
