@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko">
 <head>
+<script>
+try {
+  if (window.self !== window.top) document.documentElement.classList.add("fp-embedded");
+  var __fpTheme = localStorage.getItem("fincalc_theme") || localStorage.getItem("fincalc_theme_pref");
+  document.documentElement.setAttribute("data-theme", __fpTheme === "dark" ? "dark" : "light");
+} catch (e) {
+  document.documentElement.setAttribute("data-theme", "light");
+}
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Google tag (gtag.js) -->
@@ -84,7 +93,7 @@
         <!-- Sidebar / Navigation -->
         <aside class="sidebar">
             <div class="logo">
-                <h2>핀 파일럿<span>.</span></h2>
+                <h2>자산 파일럿<span>.</span></h2>
             </div>
             <nav class="nav-menu">
                 <button class="nav-btn active" data-target="home-dashboard"><i class="ph-duotone ph-house"></i><span data-i18n="nav-home">홈 (대시보드)</span></button>
@@ -164,7 +173,7 @@
                 </button>
             </div>
             <header class="mobile-header">
-                <h2>핀 파일럿<span>.</span></h2>
+                <h2>자산 파일럿<span>.</span></h2>
                 <div class="mobile-header-actions" style="display: flex; gap: 0.8rem; align-items: center;">
                     <select id="mobile-lang-select" class="premium-select" style="padding: 0.2rem 0.5rem; font-size: 0.8rem;">
                         <option value="ko">KR</option>
@@ -183,7 +192,7 @@
             <!-- 홈 대시보드 -->
             <article id="home-dashboard" class="calc-section active">
                 <div class="dashboard-header mb-4">
-                    <h1 data-i18n="home-title">핀 파일럿</h1>
+                    <h1 data-i18n="home-title">자산 파일럿</h1>
                     <p data-i18n="home-desc">주식 물타기 계산기, 평단가 계산기부터 복리 계산, 켈리 공식까지 — 필요한 계산기를 선택해 스마트한 금융 계획을 세워보세요.</p>
                 </div>
                 
@@ -4174,7 +4183,7 @@
 
             <section class="seo-guide">
                 <h2>FinCalc Pro 계산기 이용 가이드</h2>
-                <p>FinCalc Pro(자산 파일럿 · 핀 파일럿)는 주식 물타기·평단가부터 복리, 켈리 공식, 환율, 재무함수까지 투자와 자산관리에 필요한 계산을 한 곳에서 처리할 수 있는 금융 계산기 모음이에요.</p>
+                <p>자산 파일럿의 금융 계산기 모음(FinCalc Pro)은 주식 물타기·평단가부터 복리, 켈리 공식, 환율, 재무함수까지 투자와 자산관리에 필요한 계산을 한 곳에서 처리할 수 있어요.</p>
 
                 <h3>주식 물타기(평단가) 계산기</h3>
                 <div class="formula-box">평단가 = 총 매수 금액 ÷ 총 보유 수량</div>

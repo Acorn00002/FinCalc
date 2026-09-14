@@ -2519,3 +2519,9 @@ input.avg-inline-input-qty {
     color: var(--text-muted);
     line-height: 1.6;
 }
+
+/* 자산 파일럿 메인 앱/외부 SEO 계산기 페이지의 iframe에 임베드된 상태(fp-embedded)에서는
+   언어 선택 UI를 숨긴다 — 어차피 한국어 단일 서비스이고, 감싸는 페이지가 이미 자체
+   헤더/내비게이션을 갖고 있어 중복 UI를 노출하지 않기 위함. */
+.fp-embedded .setting-item:has(#lang-select){display:none;}
+.fp-embedded #mobile-lang-select{display:none;}

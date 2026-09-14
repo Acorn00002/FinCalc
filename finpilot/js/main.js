@@ -8,13 +8,16 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
         if (themeToggle) themeToggle.checked = isDark;
         if (mobileThemeToggle) mobileThemeToggle.checked = isDark;
-        if (save) localStorage.setItem('fincalc_theme', isDark ? 'dark' : 'light');
+        if (save) {
+            localStorage.setItem('fincalc_theme', isDark ? 'dark' : 'light');
+            localStorage.setItem('fincalc_theme_pref', isDark ? 'dark' : 'light');
+        }
         if (typeof refreshCharts === 'function') {
             refreshCharts();
         }
     }
 
-    const savedTheme = localStorage.getItem('fincalc_theme');
+    const savedTheme = localStorage.getItem('fincalc_theme') || localStorage.getItem('fincalc_theme_pref');
     if (savedTheme) {
         updateTheme(savedTheme === 'dark', false);
     }
