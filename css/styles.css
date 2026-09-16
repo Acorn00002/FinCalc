@@ -2723,6 +2723,11 @@
     border-radius:999px;
     white-space:nowrap;
   }
+  .calendar-event-status--cancel{ color:#dc2626; background:rgba(220,38,38,0.12); }
+  .calendar-event-status--delay{ color:#d97706; background:rgba(217,119,6,0.12); }
+  .calendar-event-status--change{ color:#d97706; background:rgba(217,119,6,0.12); }
+  .calendar-event-status--closed{ color:var(--ink-3); background:var(--card-soft); text-decoration:line-through; }
+  .calendar-event-status--review{ color:#7c3aed; background:rgba(124,58,237,0.12); }
   .calendar-event-dday{
     flex-shrink:0;
     font-size:10.5px;

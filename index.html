@@ -1637,6 +1637,11 @@ try {
     <select class="admin-push-input" id="adminCalStatus">
       <option value="">없음</option>
       <option value="예정">예정</option>
+      <option value="확정">확정</option>
+      <option value="변경">변경</option>
+      <option value="연기">연기</option>
+      <option value="취소">취소</option>
+      <option value="종료">종료</option>
     </select>
 
     <label class="admin-push-label">국가</label>
@@ -1672,19 +1677,34 @@ try {
   </div>
 
   <div class="mypage-section">
+    <h3 class="mypage-section-title">수동 동기화 실행</h3>
+    <p>위에 입력한 비밀값으로 지금 바로 자동 수집을 실행해요(새벽 스케줄까지 기다리지 않아도 됨).</p>
+    <button type="button" class="admin-push-submit-btn" id="adminSyncCalendarBtn">캘린더(DART·청약홈) 동기화</button>
+    <button type="button" class="admin-push-submit-btn" id="adminSyncIpoBtn">공모주 동기화</button>
+    <button type="button" class="admin-push-submit-btn" id="adminSyncEconBtn">경제지표 동기화</button>
+    <p class="admin-push-result" id="adminSyncTriggerResult"></p>
+  </div>
+
+  <div class="mypage-section">
     <h3 class="mypage-section-title">최근 일정 (최신순 30건)</h3>
     <div id="adminCalList"></div>
   </div>
 
   <div class="mypage-section">
+    <h3 class="mypage-section-title">검수 필요 일정</h3>
+    <p>필드 매핑이 아직 실제 응답으로 검증되지 않았거나, 자동으로 확신할 수 없는 일정이에요.</p>
+    <div id="adminNeedsReviewList"></div>
+  </div>
+
+  <div class="mypage-section">
     <h3 class="mypage-section-title">동기화 로그 (최신순 20건)</h3>
-    <p>캘린더/경제지표 자동 수집이 언제 실행됐고 성공했는지 확인해요.</p>
+    <p>캘린더/공모주/경제지표 자동 수집이 언제 실행됐고, 얼마나 추가·갱신됐는지 확인해요.</p>
     <div id="adminSyncLogList"></div>
   </div>
 
   <div class="mypage-section">
     <h3 class="mypage-section-title">경제지표 스냅샷</h3>
-    <p>한국은행 ECOS에서 수집한 최신 관측치예요 (기준금리 · 소비자물가지수 · 원/달러 환율).</p>
+    <p>한국은행 ECOS에서 수집한 최신 관측치예요 (기준금리 · 소비자물가지수(2020=100) · 원/미국달러 매매기준율).</p>
     <div id="adminEconIndicatorList"></div>
   </div>
 </main>
@@ -2285,6 +2305,7 @@ try {
     if (view === "news" && typeof initNewsView === "function") initNewsView();
     if (view === "dictionary" && typeof initDictionaryView === "function") initDictionaryView();
     if (view === "settings" && typeof initSettingsView === "function") initSettingsView();
+    if (view === "calendar" && typeof gtag === "function") gtag("event", "financial_calendar_viewed");
 
     setChromeHeight();
     appMain.scrollTop = 0;
@@ -3155,6 +3176,7 @@ try {
         renderCalendarFilters();
         renderCalendarSelectedDayPanel();
         renderCalendarTimeline();
+        if (typeof gtag === "function") gtag("event", "calendar_filter_selected", { filter: calendarActiveFilter });
       });
     });
   }
@@ -3174,8 +3196,19 @@ try {
           (ev.meta ? '<p class="calendar-event-meta">' + ev.meta + '</p>' : '') +
         '</div>' +
         (dDayLabel ? '<span class="calendar-event-dday' + (dDayLabel === "D-DAY" ? " is-today" : "") + '">' + dDayLabel + '</span>' : '') +
-        (ev.status ? '<span class="calendar-event-status">' + ev.status + '</span>' : '') +
+        (ev.status ? '<span class="calendar-event-status ' + calendarStatusClass(ev.status) + '">' + ev.status + '</span>' : '') +
+        (ev.needsReview ? '<span class="calendar-event-status calendar-event-status--review">검수 필요</span>' : '') +
       '</div>';
+  }
+
+  // 취소/연기는 부정적 톤(빨강 계열), 변경은 주의 톤(주황), 확정/종료는 중립 톤으로 구분한다 —
+  // 예정은 기존 기본 배지 스타일을 그대로 쓴다(하위 호환).
+  function calendarStatusClass(status){
+    if (status === "취소") return "calendar-event-status--cancel";
+    if (status === "연기") return "calendar-event-status--delay";
+    if (status === "변경") return "calendar-event-status--change";
+    if (status === "종료") return "calendar-event-status--closed";
+    return "";
   }
 
   // 날짜를 탭했을 때 캘린더 바로 밑에 그 날짜의 일정을 펼쳐 보여준다 — 예전엔 저 아래 타임라인의
@@ -3225,7 +3258,7 @@ try {
     panel.querySelectorAll(".calendar-event-row[data-event-idx]").forEach(function(row){
       row.addEventListener("click", function(){
         var ev = CALENDAR_EVENTS[Number(row.getAttribute("data-event-idx"))];
-        if (ev) openCalendarDetail(ev);
+        if (ev) { trackCalendarEventViewed(ev); openCalendarDetail(ev); }
       });
     });
   }
@@ -3313,12 +3346,19 @@ try {
     wrap.querySelectorAll(".calendar-event-row[data-event-idx]").forEach(function(row){
       row.addEventListener("click", function(){
         var ev = CALENDAR_EVENTS[Number(row.getAttribute("data-event-idx"))];
-        if (ev) openCalendarDetail(ev);
+        if (ev) { trackCalendarEventViewed(ev); openCalendarDetail(ev); }
       });
     });
   }
 
   // ---------- 캘린더 일정 상세 모달 (신청/원문 링크, 상세 필드, 개별 알림 켜기/끄기) ----------
+  // 개인정보 보호: 개인 일정의 제목은 사용자가 직접 쓴 메모일 수 있어 GA4로 보내지 않는다(카테고리만 전송).
+  function trackCalendarEventViewed(ev){
+    if (typeof gtag !== "function") return;
+    gtag("event", "calendar_event_viewed", { category: ev.category || "", is_personal: !!ev.isPersonal });
+    if (ev.category === "ipo") gtag("event", "ipo_detail_viewed", { category: ev.category });
+    if (ev.category === "realestate") gtag("event", "housing_subscription_viewed", { category: ev.category });
+  }
   function openCalendarDetail(ev){
     var catMeta = CALENDAR_CATEGORY_META[ev.category] || { label: ev.category || "", color: "#585CE5", bg: "rgba(88,92,229,0.10)" };
     var catEl = document.getElementById("calDetailCat");
@@ -3342,7 +3382,15 @@ try {
 
     var linkEl = document.getElementById("calDetailLink");
     var linkUrl = ev.link || ev.sourceUrl || "";
-    if (linkUrl) { linkEl.href = linkUrl; linkEl.hidden = false; } else { linkEl.hidden = true; }
+    if (linkUrl) {
+      linkEl.href = linkUrl;
+      linkEl.hidden = false;
+      linkEl.onclick = function(){
+        if (typeof gtag === "function") gtag("event", "official_source_clicked", { category: ev.category || "" });
+      };
+    } else {
+      linkEl.hidden = true;
+    }
 
     var deleteBtn = document.getElementById("calDetailDeleteBtn");
     var currentUser = firebaseAuth.currentUser;
@@ -3384,6 +3432,7 @@ try {
             }).then(function(){
               openCalendarDetail(ev);
               showToast("이 일정에 알림을 켰어요 (D-1, D-Day 오전에 발송)", "ph-bell-ringing");
+              if (typeof gtag === "function") gtag("event", "notification_enabled", { category: ev.category || "" });
             });
           }
         };
@@ -3445,6 +3494,8 @@ try {
       }).then(function(){
         closeAdd();
         showToast("개인 일정을 추가했어요", "ph-check-circle");
+        // 개인정보 보호: 날짜/제목/메모 등 사용자가 입력한 내용은 보내지 않고 이벤트 발생 사실만 기록한다.
+        if (typeof gtag === "function") gtag("event", "personal_calendar_saved");
       }).catch(function(error){
         resultEl.textContent = "추가 실패: " + error.message;
       }).then(function(){
@@ -8361,9 +8412,67 @@ try {
 
     loadAdminCalList();
 
+    // 수동 동기화 실행 버튼 — 위 비밀값 입력칸(adminCalSecret)을 그대로 재사용한다.
+    // 경제지표만 firebase.json에는 rewrite를 추가했지만 실제 서비스 도메인의 /api/* 라우팅은
+    // Vercel 프로젝트 설정(대시보드, 저장소에 vercel.json이 없음)에서 관리돼서 코드만으로는 새
+    // 경로를 열 수 없다 — 대신 CORS가 열려 있는 Cloud Functions URL을 직접 호출해 우회한다.
+    var syncTriggerResultEl = document.getElementById("adminSyncTriggerResult");
+    function bindSyncTrigger(btnId, url){
+      var btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener("click", function(){
+        var secret = document.getElementById("adminCalSecret").value.trim();
+        if (!secret) { syncTriggerResultEl.textContent = "먼저 비밀값을 입력하세요."; return; }
+        btn.disabled = true;
+        syncTriggerResultEl.textContent = "실행 중...";
+        fetch(url + "?secret=" + encodeURIComponent(secret))
+          .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
+          .then(function(result){
+            syncTriggerResultEl.textContent = result.ok
+              ? "완료: " + JSON.stringify(result.data)
+              : "실패: " + (result.data.error || "");
+            if (result.ok) { loadAdminCalList(); loadSyncLogList(); loadNeedsReviewList(); }
+          })
+          .catch(function(error){ syncTriggerResultEl.textContent = "요청 실패: " + error.message; })
+          .then(function(){ btn.disabled = false; });
+      });
+    }
+    bindSyncTrigger("adminSyncCalendarBtn", "/api/sync-calendar");
+    bindSyncTrigger("adminSyncIpoBtn", "/api/ipo-schedules");
+    bindSyncTrigger("adminSyncEconBtn", "https://asia-northeast3-asset-filot.cloudfunctions.net/syncEconomicIndicatorsManual");
+
+    // 검수 필요 일정 — needsReview:true인 자동 수집 일정(예: 청약홈처럼 필드 매핑이 실제 응답으로
+    // 검증된 적 없는 소스)을 관리자가 원문과 대조할 수 있도록 모아 보여준다.
+    var needsReviewListEl = document.getElementById("adminNeedsReviewList");
+    function loadNeedsReviewList(){
+      if (!needsReviewListEl) return;
+      db.collection("calendarEvents").where("needsReview", "==", true).limit(30).get()
+        .then(function(snapshot){
+          if (snapshot.empty) {
+            needsReviewListEl.innerHTML = '<p class="admin-push-result">검수가 필요한 일정이 없어요.</p>';
+            return;
+          }
+          needsReviewListEl.innerHTML = snapshot.docs.map(function(doc){
+            var ev = doc.data();
+            return '' +
+              '<div class="admin-cal-item">' +
+                '<div class="admin-cal-item-body">' +
+                  '<p class="admin-cal-item-title">[' + (ev.category || "") + '] ' + (ev.title || "") + '</p>' +
+                  '<p class="admin-cal-item-meta">' + (ev.date || "") + (ev.sourceUrl ? ' · <a href="' + ev.sourceUrl + '" target="_blank" rel="noopener noreferrer">원문 확인</a>' : "") + '</p>' +
+                '</div>' +
+              '</div>';
+          }).join("");
+        })
+        .catch(function(error){
+          needsReviewListEl.innerHTML = '<p class="admin-push-result">불러오지 못했어요: ' + error.message + '</p>';
+        });
+    }
+    loadNeedsReviewList();
+
     // 동기화 로그 — syncLogs는 공개 읽기라 비밀값 없이 바로 조회한다(관리자 화면 진입 자체는 URL로만 접근).
     var syncLogListEl = document.getElementById("adminSyncLogList");
-    if (syncLogListEl) {
+    function loadSyncLogList(){
+      if (!syncLogListEl) return;
       db.collection("syncLogs").orderBy("ranAt", "desc").limit(20).get()
         .then(function(snapshot){
           if (snapshot.empty) {
@@ -8374,7 +8483,13 @@ try {
             var log = doc.data();
             var ranAt = log.ranAt && log.ranAt.toDate ? log.ranAt.toDate().toLocaleString("ko-KR") : "";
             var ok = log.error ? false : true;
-            var summary = log.result ? JSON.stringify(log.result) : "";
+            var r = log.result || {};
+            var parts = [];
+            if (r.added != null) parts.push("신규 " + r.added);
+            if (r.updated != null) parts.push("갱신 " + r.updated);
+            if (r.changed != null) parts.push("변경감지 " + r.changed);
+            if (r.skipped) parts.push("건너뜀(키 없음)");
+            var summary = parts.length ? parts.join(" · ") : (log.result ? JSON.stringify(log.result) : "");
             return '' +
               '<div class="admin-cal-item">' +
                 '<div class="admin-cal-item-body">' +
@@ -8388,6 +8503,7 @@ try {
           syncLogListEl.innerHTML = '<p class="admin-push-result">로그를 불러오지 못했어요: ' + error.message + '</p>';
         });
     }
+    loadSyncLogList();
 
     // 경제지표 스냅샷 — economicIndicators도 공개 읽기.
     var econListEl = document.getElementById("adminEconIndicatorList");
@@ -8400,11 +8516,12 @@ try {
           }
           econListEl.innerHTML = snapshot.docs.map(function(doc){
             var ind = doc.data();
+            var collectedAt = ind.collectedAt && ind.collectedAt.toDate ? ind.collectedAt.toDate().toLocaleString("ko-KR") : "";
             return '' +
               '<div class="admin-cal-item">' +
                 '<div class="admin-cal-item-body">' +
                   '<p class="admin-cal-item-title">' + (ind.label || doc.id) + ': ' + ind.value + (ind.unit ? " " + ind.unit : "") + '</p>' +
-                  '<p class="admin-cal-item-meta">기준시점 ' + (ind.period || "") + '</p>' +
+                  '<p class="admin-cal-item-meta">기준시점 ' + (ind.period || "") + ' · 수집시각 ' + collectedAt + '</p>' +
                 '</div>' +
               '</div>';
           }).join("");

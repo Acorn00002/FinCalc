@@ -1,6 +1,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
+const crypto = require("crypto");
 const { computeEcosPeriod, parseEcosResponse } = require("./helpers/ecosParser");
 
 admin.initializeApp();
@@ -358,7 +359,9 @@ async function fetchDartDisclosuresForMarket(corpCls) {
 
       events.push({
         sourceId: item.rcept_no,
+        externalId: item.rcept_no,
         date: dashedDate,
+        eventDate: dashedDate,
         category: "stock",
         type: type,
         title: item.corp_name + " " + reportName.replace(/\s*\([^)]*\)\s*$/, "").trim(),
@@ -366,9 +369,13 @@ async function fetchDartDisclosuresForMarket(corpCls) {
         status: null,
         flag: "kr",
         company: item.corp_name,
+        companyName: item.corp_name,
         logo: null,
         source: "dart",
-        sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + item.rcept_no
+        sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + item.rcept_no,
+        summary: null,
+        isAutomatic: true,
+        needsReview: false
       });
     });
 
@@ -547,7 +554,12 @@ async function fetchDartIpoDetail(filing) {
       subStart: subRange.start.toISOString(),
       subEnd: subRange.end.toISOString(),
       refundDate: paymentDates.length ? paymentDates[paymentDates.length - 1].toISOString() : null,
-      sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + filing.rcept_no
+      sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + filing.rcept_no,
+      // 공시 접수번호와 정정 여부 — 금융캘린더 통합 문서(financialEvents 스펙)의 externalId/정정공시 표시에 사용.
+      // 상장예정일(listingDate)은 이 API로 확인할 수 없어 추정하지 않는다(null로 남김).
+      rcpNo: filing.rcept_no,
+      isCorrection: (filing.report_nm || "").indexOf("정정") > -1,
+      listingDate: null
     };
   } catch (error) {
     console.error("DART IPO 상세 조회 실패(" + filing.corp_name + "):", error.message);
@@ -575,6 +587,46 @@ async function refreshIpoScheduleCache() {
     schedules: schedules,
     updatedAt: admin.firestore.FieldValue.serverTimestamp()
   });
+
+  // 공모주 청약 일정을 "공모주" 탭 전용 캐시뿐 아니라 통합 금융캘린더(calendarEvents)에도 반영한다 —
+  // 프론트엔드(index.html)의 CALENDAR_FILTER_OPTIONS/resolveEventIconHtml은 category:"ipo"를 이미
+  // 지원하고 있었지만(공모주/증시 필터), 지금까지 calendarEvents에 실제로 이 카테고리 이벤트를 쓰는
+  // 코드가 없어서 통합 캘린더에는 한 번도 표시된 적이 없었다. date는 청약 시작일(subStart)을 쓴다
+  // (사용자가 "오늘부터 청약 가능"을 캘린더에서 바로 확인하는 게 가장 실용적).
+  const calendarEvents = schedules.map(function (s) {
+    return {
+      sourceId: s.id, // corp_code — 정정공시가 나와도 같은 회사면 같은 문서를 갱신(정정 이력은 eventChangeLogs에 남음)
+      externalId: s.rcpNo || null,
+      date: s.subStart ? s.subStart.slice(0, 10) : null,
+      startDate: s.subStart || null,
+      endDate: s.subEnd || null,
+      eventDate: s.subStart ? s.subStart.slice(0, 10) : null,
+      category: "ipo",
+      type: "공모주",
+      title: s.name + " 공모주 청약",
+      meta: s.market + (s.underwriter ? " · " + s.underwriter : ""),
+      status: s.isCorrection ? "변경" : null,
+      flag: "kr",
+      company: s.name,
+      companyName: s.name,
+      logo: null,
+      source: "dart-ipo",
+      sourceUrl: s.sourceUrl,
+      summary: null,
+      region: null,
+      leadManager: s.underwriter || null,
+      offeringPrice: s.priceMin,
+      refundDate: s.refundDate,
+      listingDate: s.listingDate,
+      announcementDate: null,
+      isAutomatic: true,
+      needsReview: false
+    };
+  }).filter(function (ev) { return ev.date; });
+
+  const upsertResult = await upsertCalendarEvents(calendarEvents);
+  await recordSyncLog("ipo", Object.assign({ fetched: schedules.length }, upsertResult), null);
+
   return schedules;
 }
 
@@ -614,20 +666,35 @@ async function fetchCheongyakhomeSubscriptions() {
       : String(receptionDateRaw);
     if (!dashedDate) return;
 
+    const region = item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || null;
+
     events.push({
       sourceId: String(noticeId || (houseName + receptionDateRaw)),
       date: dashedDate,
+      eventDate: dashedDate,
       category: "realestate",
       type: "청약",
       title: houseName + " 청약",
-      meta: item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || "",
+      meta: region || "",
       status: null,
       flag: "kr",
       company: null,
+      companyName: houseName,
       logo: null,
       source: "cheongyakhome",
       sourceUrl: "https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=" +
-        (item.houseManageNo || item.HOUSE_MANAGE_NO || "")
+        (item.houseManageNo || item.HOUSE_MANAGE_NO || ""),
+      summary: null,
+      region: region,
+      leadManager: null,
+      offeringPrice: null,
+      refundDate: null,
+      listingDate: null,
+      announcementDate: null,
+      isAutomatic: true,
+      // 활용신청이 아직 응답을 한 번도 준 적이 없어(현재 401) 위 필드 매핑이 실제 응답으로 검증된 적이
+      // 없다 — 키가 정상화된 뒤 첫 실제 데이터가 들어오면 관리자가 한 번 대조 확인하라는 의미로 true.
+      needsReview: true
     });
   });
 
@@ -644,13 +711,30 @@ async function fetchCheongyakhomeSubscriptions() {
 // 이건 FINANCIAL_CALENDAR_AUTOMATION.md에 알려진 한계로 남겨둔다.
 const CHANGE_TRACKED_FIELDS = ["date", "title", "meta", "status"];
 
+// source+sourceId가 기본 중복방지 키지만, 앞으로 안정적인 sourceId가 없는 소스가 추가될 경우를 대비해
+// title+date+meta 기반 해시를 sourceId 대체값으로 쓸 수 있게 해둔다. 지금 쓰는 dart/dart-ipo/cheongyakhome는
+// 전부 자체 sourceId가 있어 실제로는 이 fallback이 아직 쓰이지 않는다.
+function computeContentHash(ev) {
+  return crypto.createHash("sha1").update([ev.source, ev.title, ev.date, ev.meta].join("|")).digest("hex").slice(0, 16);
+}
+
 async function upsertCalendarEvents(events) {
   if (!events.length) return { written: 0, added: 0, updated: 0, changed: 0 };
   const batchSize = 400; // Firestore 배치 최대 500건 제한에 여유를 둠
   let written = 0, added = 0, updated = 0, changed = 0;
 
-  for (let i = 0; i < events.length; i += batchSize) {
-    const chunk = events.filter((ev) => ev.date && ev.sourceId).slice(i, i + batchSize);
+  const normalized = events.map((ev) => {
+    const contentHash = computeContentHash(ev);
+    return Object.assign({}, ev, {
+      sourceId: ev.sourceId || contentHash,
+      contentHash,
+      isAutomatic: ev.isAutomatic != null ? ev.isAutomatic : ev.source !== "admin",
+      needsReview: ev.needsReview != null ? ev.needsReview : false
+    });
+  });
+
+  for (let i = 0; i < normalized.length; i += batchSize) {
+    const chunk = normalized.filter((ev) => ev.date && ev.sourceId).slice(i, i + batchSize);
     if (!chunk.length) continue;
 
     const refs = chunk.map((ev) => db.collection("calendarEvents").doc(ev.source + "_" + ev.sourceId));
@@ -674,7 +758,9 @@ async function upsertCalendarEvents(events) {
       const docData = Object.assign({}, ev, {
         updatedAt: now,
         lastSeenAt: now,
-        firstSeenAt: prev && prev.firstSeenAt ? prev.firstSeenAt : now
+        lastSyncedAt: now,
+        firstSeenAt: prev && prev.firstSeenAt ? prev.firstSeenAt : now,
+        createdAt: prev && prev.createdAt ? prev.createdAt : now
       });
       // 소스가 이미 구체적인 상태(예: 관리자가 수동으로 "취소"를 입력)를 주지 않았고, 실제로 뭔가
       // 바뀐 게 있으면 "변경"으로 표시한다. 신규 이벤트는 건드리지 않고 소스가 준 status(대개 null)를 둔다.
@@ -900,6 +986,8 @@ exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
     link: link || "",
     details: details && typeof details === "object" ? details : null,
     source: "admin",
+    isAutomatic: false,
+    needsReview: false,
     updatedAt: new Date()
   };
 

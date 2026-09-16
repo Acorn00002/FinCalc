@@ -22,7 +22,8 @@
       { "source": "/api/finance-products", "function": "financeProductsLive" },
       { "source": "/api/ipo-schedules", "function": "ipoSchedulesLive" },
       { "source": "/api/apartment-subscriptions", "function": "apartmentSubscriptionsLive" },
-      { "source": "/api/tax-consult-leads", "function": "getTaxConsultLeads" }
+      { "source": "/api/tax-consult-leads", "function": "getTaxConsultLeads" },
+      { "source": "/api/sync-economic-indicators", "function": "syncEconomicIndicatorsManual" }
     ]
   },
   "functions": [
