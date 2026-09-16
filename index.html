@@ -1030,7 +1030,12 @@ try {
          보여준다. 프로필(구글 로그인/닉네임) 바로 아래로 옮겨서 로그인하자마자 총자산이 먼저 보이게 했다. -->
     <section class="asset-dash-section">
       <div class="asset-dash-card">
-        <p class="asset-dash-total-label">내 총자산</p>
+        <div class="asset-dash-total-head">
+          <p class="asset-dash-total-label">내 총자산</p>
+          <button type="button" class="asset-dash-edit-btn" id="assetDashEditBtn" aria-label="자산 현황 편집">
+            <i class="ph-duotone ph-pencil-simple"></i>편집
+          </button>
+        </div>
         <p class="asset-dash-total-value" id="assetDashTotalValue">0원</p>
         <div class="asset-dash-bar-track">
           <div class="asset-dash-bar-seg asset-dash-bar-seg--cash" id="assetDashBarCash" style="width:0%;"></div>
@@ -1056,8 +1061,17 @@ try {
         </div>
       </div>
 
-      <div class="asset-dash-card">
-        <p class="asset-dash-form-title">자산 항목 입력</p>
+      <!-- 자산 입력 패널 — 평소엔 숨겨두고(hidden), "내 총자산" 카드의 편집 버튼을 눌렀을 때만 연다.
+           기존 입력 폼을 그대로 이 안으로 옮겼을 뿐이라 id들은 전혀 바뀌지 않았고, 저장 로직
+           (initAssetDashboardForm, saveUserAssetFields)도 손대지 않았다. -->
+      <div class="asset-edit-overlay" id="assetEditOverlay" hidden>
+        <div class="asset-edit-modal" role="dialog" aria-modal="true" aria-labelledby="assetEditTitle">
+          <div class="asset-edit-top">
+            <p class="asset-edit-title" id="assetEditTitle">자산 항목 입력</p>
+            <button type="button" class="asset-edit-close-btn" id="assetEditCloseBtn" aria-label="닫기">
+              <i class="ph-duotone ph-x"></i>
+            </button>
+          </div>
 
         <div class="asset-dash-input-row">
           <label class="asset-dash-input-label" for="assetDashCashInput">현금/예적금</label>
@@ -1099,6 +1113,7 @@ try {
         </div>
 
         <button type="button" class="asset-dash-save-btn" id="assetDashSaveBtn">저장하기</button>
+        </div>
       </div>
     </section>
 
@@ -6329,7 +6344,46 @@ try {
         realestate: parseAssetDashInput(document.getElementById("assetDashRealestateInput"))
       };
       saveBtn.disabled = true;
-      saveUserAssetFields(fields, function(){ saveBtn.disabled = false; }, function(){ saveBtn.disabled = false; });
+      saveUserAssetFields(fields, function(){
+        saveBtn.disabled = false;
+        closeAssetEditPanel();
+      }, function(){ saveBtn.disabled = false; });
+    });
+  })();
+
+  // 자산 입력 패널 열기/닫기 — "편집" 버튼을 누르면 기존 입력 폼을 모달로 띄운다.
+  // 입력값 자체는 손대지 않는다: renderAssetDashboard()가 매 스냅샷마다 이미 인풋에 최신 저장값을
+  // 채워주고 있어서(포커스 중이 아닐 때만), 패널을 열 때 이미 마지막 저장값이 들어있는 상태다.
+  function closeAssetEditPanel(){
+    var overlay = document.getElementById("assetEditOverlay");
+    if (!overlay || overlay.hidden) return;
+    overlay.hidden = true;
+    // 저장하지 않고 닫으면(취소/배경 클릭) 입력칸에 남아있을 수 있는 미저장 값을 버리고
+    // 마지막으로 저장된 값으로 되돌린다.
+    var ids = { cash: "assetDashCashInput", stock: "assetDashStockInput", realestate: "assetDashRealestateInput" };
+    Object.keys(ids).forEach(function(key){
+      var el = document.getElementById(ids[key]);
+      var val = assetDashLatestBreakdown[key];
+      if (el) el.value = val > 0 ? String(val) : "";
+    });
+  }
+  (function initAssetEditPanel(){
+    var editBtn = document.getElementById("assetDashEditBtn");
+    var overlay = document.getElementById("assetEditOverlay");
+    var closeBtn = document.getElementById("assetEditCloseBtn");
+    if (!editBtn || !overlay || !closeBtn) return;
+
+    editBtn.addEventListener("click", function(){
+      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+        handleGoogleLogin();
+        return;
+      }
+      overlay.hidden = false;
+    });
+    closeBtn.addEventListener("click", closeAssetEditPanel);
+    overlay.addEventListener("click", function(e){
+      if (e.target === overlay) closeAssetEditPanel();
     });
   })();
 
