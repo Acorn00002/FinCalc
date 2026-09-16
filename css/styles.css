@@ -267,6 +267,106 @@
   }
   .calendar-detail-delete-btn-v2[hidden]{display:none;}
 
+  /* 상세 모달 확장 — 상태/중요도/설명/영향/행동버튼/알림그룹/최종갱신/면책문구 */
+  .calendar-detail-status-v2{ font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px; margin-left:6px; }
+  .calendar-detail-importance-v2{
+    display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:800;
+    padding:4px 10px; border-radius:999px; margin-bottom:10px;
+  }
+  .calendar-detail-importance-v2.importance-매우중요{ color:#dc2626; background:rgba(220,38,38,0.10); }
+  .calendar-detail-importance-v2.importance-중요{ color:#d97706; background:rgba(217,119,6,0.10); }
+  .calendar-detail-desc-v2{ margin:0 0 12px; font-size:13px; font-weight:600; color:var(--ink-2); line-height:1.55; }
+  .calendar-detail-desc-v2[hidden]{display:none;}
+  .calendar-detail-impact-v2{ background:var(--card-soft); border-radius:14px; padding:13px 14px; margin-bottom:16px; }
+  .calendar-detail-impact-v2[hidden]{display:none;}
+  .calendar-detail-block-label{ margin:0 0 4px; font-size:11px; font-weight:800; color:var(--ink-3); }
+  .calendar-detail-impact-v2 p:last-child{ margin:0; font-size:12.5px; font-weight:600; color:var(--ink-2); line-height:1.5; }
+  .calendar-detail-actions-v2{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .calendar-detail-actions-v2[hidden]{display:none;}
+  .calendar-detail-action-btn{
+    display:inline-flex; align-items:center; gap:6px; padding:9px 13px; border-radius:11px;
+    border:1px solid var(--line); background:var(--card); color:var(--ink-1);
+    font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .calendar-detail-action-btn:hover{ background:var(--card-soft); }
+  .calendar-detail-action-ext{ font-size:11px !important; color:var(--ink-3); }
+  .calendar-detail-remind-group-v2{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+  .calendar-detail-remind-group-v2:empty{ display:none; margin:0; }
+  .calendar-detail-updated-v2{ margin:0 0 10px; font-size:11px; font-weight:600; color:var(--ink-3); }
+  .calendar-detail-updated-v2[hidden]{display:none;}
+  .calendar-detail-disclaimer-v2{
+    margin:0; font-size:10.5px; font-weight:500; color:var(--ink-3); line-height:1.5;
+    padding-top:10px; border-top:1px solid var(--line);
+  }
+
+  /* ---------- 중요도 배지(카드/필터 공통) ---------- */
+  .importance-매우중요{ color:#dc2626; }
+  .importance-중요{ color:#d97706; }
+  .importance-일반{ color:var(--ink-3); }
+
+  /* ---------- 이번 주 / 내 일정 모드 카드 ---------- */
+  .calendar-week-section-title{
+    display:flex; align-items:center; gap:8px; margin:18px 0 10px; font-size:14px; font-weight:800; color:var(--ink-1);
+  }
+  .calendar-week-section-title:first-child{ margin-top:0; }
+  .calendar-week-section-count{
+    font-size:11px; font-weight:800; color:var(--ink-3); background:var(--card-soft);
+    padding:2px 8px; border-radius:999px;
+  }
+  .calendar-week-section-cards{ display:flex; flex-direction:column; gap:10px; }
+  .calendar-week-card{
+    display:block; width:100%; text-align:left; box-sizing:border-box;
+    background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px;
+    cursor:pointer; font-family:inherit;
+  }
+  .calendar-week-card:hover{ box-shadow:0 4px 14px rgba(15,23,42,0.07); }
+  .calendar-week-card-top{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .calendar-week-card-cat{
+    display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:800;
+    padding:3px 9px; border-radius:999px;
+  }
+  .calendar-week-card-importance{
+    display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:800;
+  }
+  .calendar-week-card-title{ margin:0 0 4px; font-size:14.5px; font-weight:800; color:var(--ink-1); line-height:1.4; }
+  .calendar-week-card-desc{ margin:0 0 6px; font-size:12px; font-weight:600; color:var(--ink-2); line-height:1.5; }
+  .calendar-week-card-range{ margin:0 0 6px; font-size:11.5px; font-weight:600; color:var(--ink-3); }
+  .calendar-week-card-foot{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11.5px; font-weight:600; color:var(--ink-3); }
+  .calendar-week-card--minimal{ opacity:0.85; cursor:default; }
+
+  .calendar-empty{
+    text-align:center; padding:48px 16px; color:var(--ink-3);
+  }
+  .calendar-empty-icon{ font-size:34px; display:block; margin-bottom:10px; }
+  .calendar-empty p{ margin:0 0 14px; font-size:13.5px; font-weight:700; }
+  .calendar-empty-actions{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .calendar-empty-btn{
+    padding:10px 16px; border-radius:999px; border:1px solid var(--line);
+    background:var(--card); color:var(--ink-1); font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+
+  .calendar-mine-login-card{
+    text-align:center; padding:40px 20px; background:var(--card); border-radius:var(--radius-lg);
+  }
+  .calendar-mine-login-card i{ font-size:34px; color:var(--brand); margin-bottom:10px; display:block; }
+  .calendar-mine-login-card h3{ margin:0 0 8px; font-size:15px; font-weight:800; color:var(--ink-1); }
+  .calendar-mine-login-card p{ margin:0 0 18px; font-size:12.5px; font-weight:600; color:var(--ink-3); line-height:1.5; }
+  .calendar-mine-login-btn{
+    padding:13px 24px; border-radius:12px; border:none; background:var(--brand); color:#fff;
+    font-size:13.5px; font-weight:800; cursor:pointer; font-family:inherit;
+  }
+  .calendar-week-skeleton{
+    height:78px; border-radius:16px; margin-bottom:10px;
+    background:linear-gradient(90deg, var(--card-soft) 25%, var(--card) 37%, var(--card-soft) 63%);
+    background-size:400% 100%; animation:calendarSkeletonShine 1.4s ease infinite;
+  }
+  @keyframes calendarSkeletonShine{ 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
+
+  .calendar-selected-day-more{
+    width:100%; margin-top:10px; padding:11px; border-radius:12px; border:1px dashed var(--line);
+    background:transparent; color:var(--brand); font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+
   /* 알림 권한 soft-ask 배너 */
   .push-softask{
     position:fixed;left:16px;right:16px;bottom:16px;z-index:250;
@@ -2529,16 +2629,27 @@
     width:5px;height:5px;
     border-radius:50%;
     background:var(--brand-2);
-    margin-top:4px;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.6);
   }
+  .calendar-day-dots{ display:flex; align-items:center; gap:3px; margin-top:4px; }
+  .calendar-day-extra{ font-size:8.5px; font-weight:800; color:var(--ink-3); margin-left:1px; }
+  .calendar-day-cell.has-important .calendar-day-num{ box-shadow:0 0 0 1.5px var(--brand-2); border-radius:50%; padding:1px 4px; }
 
   .calendar-filter-pills{
     display:flex;
-    flex-wrap:wrap;
+    flex-wrap:nowrap;
+    overflow-x:auto;
     gap:6px;
     margin-bottom:22px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
   }
+  .calendar-filter-pills::-webkit-scrollbar{ display:none; }
   .calendar-filter-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    flex-shrink:0;
     padding:9px 16px;
     border-radius:999px;
     border:none;
@@ -2550,10 +2661,58 @@
     cursor:pointer;
     transition:background .18s ease, color .18s ease;
   }
+  .calendar-filter-pill i{ font-size:14px; }
   .calendar-filter-pill.active{
     background:var(--brand);
     color:#fff;
   }
+
+  /* ---------- 화면 모드 탭(이번 주 / 월간 / 내 일정) ---------- */
+  .calendar-mode-tabs{
+    display:flex;
+    gap:4px;
+    background:var(--card-soft);
+    border-radius:999px;
+    padding:4px;
+    margin-bottom:16px;
+  }
+  .calendar-mode-tab{
+    flex:1;
+    padding:10px 12px;
+    border:none;
+    border-radius:999px;
+    background:transparent;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:800;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease;
+  }
+  .calendar-mode-tab.active{ background:var(--card); color:var(--brand); box-shadow:0 2px 8px rgba(15,23,42,0.08); }
+
+  /* ---------- 검색 / 빠른 이동 ---------- */
+  .calendar-search-row{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  @media (min-width:640px){ .calendar-search-row{ flex-direction:row; align-items:center; justify-content:space-between; } }
+  .calendar-search-box{
+    display:flex; align-items:center; gap:8px;
+    background:var(--card); border-radius:14px; padding:10px 14px;
+    box-shadow:0 1px 6px rgba(15,23,42,0.05);
+  }
+  .calendar-search-box i{ color:var(--ink-3); font-size:15px; }
+  .calendar-search-box input{
+    border:none; outline:none; background:transparent; flex:1;
+    font-size:13.5px; color:var(--ink-1); min-width:0;
+  }
+  .calendar-quickjump-row{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; }
+  .calendar-quickjump-row::-webkit-scrollbar{ display:none; }
+  .calendar-quickjump-btn{
+    flex-shrink:0; padding:8px 12px; border-radius:10px; border:1px solid var(--line);
+    background:var(--card); color:var(--ink-2); font-size:12px; font-weight:700; cursor:pointer;
+  }
+  .calendar-search-result{
+    background:var(--card-soft); border-radius:var(--radius-lg); padding:14px; margin-bottom:16px;
+  }
+  .calendar-search-count{ font-size:12px; font-weight:700; color:var(--ink-3); margin:0 0 8px; }
 
   /* 날짜를 탭하면 캘린더 바로 밑에서 펼쳐지는 패널 — 아래 타임라인까지 스크롤해서 찾아가지 않아도
      되도록, 그 날짜의 일정만 이 자리에서 바로 보여준다. */

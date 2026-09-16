@@ -375,7 +375,10 @@ async function fetchDartDisclosuresForMarket(corpCls) {
         sourceUrl: "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=" + item.rcept_no,
         summary: null,
         isAutomatic: true,
-        needsReview: false
+        needsReview: false,
+        // 개별 기업 배당/실적 공시는 시장 전체에 영향을 주는 경제지표(기준금리·CPI 등)와 달리
+        // 초보자 기준 "일반" 중요도로 분류한다. 관리자가 importanceOverride로 개별 조정 가능.
+        autoImportance: "일반"
       });
     });
 
@@ -620,7 +623,9 @@ async function refreshIpoScheduleCache() {
       listingDate: s.listingDate,
       announcementDate: null,
       isAutomatic: true,
-      needsReview: false
+      needsReview: false,
+      // 공모주 청약(마감)·상장은 초보자에게도 실제 행동(청약 신청)이 걸린 일정이라 "중요"로 분류한다.
+      autoImportance: "중요"
     };
   }).filter(function (ev) { return ev.date; });
 
@@ -694,7 +699,9 @@ async function fetchCheongyakhomeSubscriptions() {
       isAutomatic: true,
       // 활용신청이 아직 응답을 한 번도 준 적이 없어(현재 401) 위 필드 매핑이 실제 응답으로 검증된 적이
       // 없다 — 키가 정상화된 뒤 첫 실제 데이터가 들어오면 관리자가 한 번 대조 확인하라는 의미로 true.
-      needsReview: true
+      needsReview: true,
+      // 청약 접수(마감)도 실제 신청 행동이 걸린 일정이라 "중요"로 분류한다.
+      autoImportance: "중요"
     });
   });
 
@@ -969,11 +976,15 @@ exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
     return;
   }
 
-  const { id, date, category, type, title, meta, status, flag, link, details } = req.body || {};
+  const {
+    id, date, category, type, title, meta, status, flag, link, details,
+    importanceOverride, descriptionOverride, hidden
+  } = req.body || {};
   if (!date || !category || !title) {
     res.status(400).json({ error: "date, category, title은 필수입니다." });
     return;
   }
+  const IMPORTANCE_VALUES = ["매우중요", "중요", "일반"];
 
   const docData = {
     date,
@@ -990,6 +1001,12 @@ exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
     needsReview: false,
     updatedAt: new Date()
   };
+  // 관리자 전용 필드 — 이 엔드포인트는 관리자 화면에서만 호출되고 자동 수집 파이프라인
+  // (dart/dart-ipo/cheongyakhome/gov24, upsertCalendarEvents 복수형 함수)은 절대 호출하지 않으므로,
+  // 매번 그대로 덮어써도 다음 자동 동기화 때 사라지지 않는다 — 빈 값을 보내면 override를 해제(null)한다.
+  docData.importanceOverride = IMPORTANCE_VALUES.indexOf(importanceOverride) > -1 ? importanceOverride : null;
+  docData.descriptionOverride = descriptionOverride ? String(descriptionOverride).slice(0, 200) : null;
+  docData.hidden = !!hidden;
 
   try {
     if (id) {
@@ -1231,6 +1248,7 @@ exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", 
 
     let savedCount = 0;
     const errors = [];
+    const calendarSubsidyEvents = [];
     await mapWithConcurrency(personalRows, 6, async function (row) {
       const serviceId = row["서비스ID"];
       if (!serviceId) return;
@@ -1274,13 +1292,44 @@ exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", 
       } catch (error) {
         errors.push(serviceId + ": " + error.message);
       }
+
+      // 신청 마감일이 명확한 것만 통합 금융캘린더(calendarEvents)에도 반영한다 — 마감일을 못 찾은
+      // 지원금(deadlineText가 "상시" 등이라 endDate가 null)은 "가짜 날짜 생성 금지" 원칙에 따라
+      // 캘린더에는 올리지 않고 supportPrograms(정부지원금 탭)에만 남긴다.
+      if (doc.endDate) calendarSubsidyEvents.push(Object.assign({ serviceId: serviceId }, doc));
     });
+
+    const calendarPayload = calendarSubsidyEvents.map(function (row) {
+      return {
+        sourceId: row.serviceId,
+        date: row.endDate,
+        eventDate: row.endDate,
+        category: "subsidy",
+        type: "지원금",
+        title: row.title + " 신청 마감",
+        meta: row.deadlineText || "",
+        status: null,
+        flag: "kr",
+        company: null,
+        companyName: null,
+        logo: null,
+        source: "gov24",
+        sourceUrl: row.applyUrl || "https://www.gov.kr",
+        summary: row.summary || null,
+        isAutomatic: true,
+        needsReview: false,
+        autoImportance: "중요"
+      };
+    });
+    const calendarUpsertResult = await upsertCalendarEvents(calendarPayload);
+    await recordSyncLog("gov24-calendar", Object.assign({ candidates: calendarSubsidyEvents.length }, calendarUpsertResult), null);
 
     res.status(200).json({
       candidateCount: candidateRows.length,
       personalCount: personalRows.length,
       savedCount: savedCount,
-      errorCount: errors.length
+      errorCount: errors.length,
+      calendarSynced: calendarUpsertResult
     });
   } catch (error) {
     console.error("보조금24 동기화 실패:", error);
