@@ -2845,6 +2845,11 @@
     background:var(--brand);
     border-radius:50%;
   }
+  /* 미국 주식: ticker 텍스트 뱃지 — 2~5글자가 들어가야 해서 폰트를 줄이고 자간을 좁힌다 */
+  .calendar-event-logo-fallback.ticker-badge{ font-size:9.5px; letter-spacing:-0.02em; padding:0 2px; }
+  /* 한국 주식(또는 ticker 미확인): 임의의 이니셜 대신 중립적인 "기업" 아이콘 — 브랜드색이 아닌 중립 톤 */
+  .calendar-event-logo-fallback.neutral-icon{ background:var(--card-soft); color:var(--ink-3); }
+  .calendar-event-logo-fallback.neutral-icon i{ font-size:15px; }
   .calendar-event-icon-circle.realestate-icon{background:rgba(5,150,105,0.12);}
   .calendar-event-icon-circle.realestate-icon i{font-size:15px;color:#059669;--ph-duotone-secondary-color:#059669;--ph-duotone-secondary-opacity:0.18;}
   .calendar-event-icon-circle.tax-icon{background:rgba(139,92,246,0.12);}

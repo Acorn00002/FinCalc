@@ -3205,8 +3205,195 @@ try {
     return CALENDAR_BADGE_PALETTE[hash % CALENDAR_BADGE_PALETTE.length];
   }
 
+  // ---------- Brandfetch Logo API 설정 ----------
+  // Client ID는 Brandfetch 공식 문서상 <img> URL에 그대로 노출되는 publishable 식별자라(비밀 아님)
+  // 정적 페이지에서 fetch로 한 번만 받아와 캐싱한다. /api/brandfetch-config는 이 값 하나만 반환하고
+  // 캐시 헤더가 길게 걸려있어(1일/7일) 페이지를 열 때마다 반복 호출되지 않는다.
+  var brandfetchClientId = null;
+  var brandfetchConfigLoaded = false;
+  function loadBrandfetchConfig(){
+    return fetch("/api/brandfetch-config")
+      .then(function(res){ return res.ok ? res.json() : {}; })
+      .then(function(data){ brandfetchClientId = data.clientId || null; })
+      .catch(function(){ brandfetchClientId = null; })
+      .then(function(){
+        brandfetchConfigLoaded = true;
+        // 첫 렌더 때는 아직 클라이언트ID가 없어 티커/중립 아이콘으로 보이다가, 로드가 끝나면
+        // 실제 로고로 "업그레이드"되도록 현재 보이는 화면만 다시 그린다.
+        if (brandfetchClientId && typeof renderCalendarActiveMode === "function") renderCalendarActiveMode();
+      });
+  }
+  // 기존 Google favicon 핫링크(171개)를 걷어내며 회사명→검증된 공식 도메인 매핑은 그대로 재사용한다.
+  // 이 도메인들로 더 이상 Google을 거치지 않고 Brandfetch CDN에서 공식 로고를 받아온다.
+  var CALENDAR_LOGO_DOMAINS = {
+    "맥코믹": "mccormick.com",
+    "마이크론": "micron.com",
+    "SK하이닉스": "skhynix.com",
+    "알파벳": "abc.xyz",
+    "테슬라": "tesla.com",
+    "현대차": "hyundai.com",
+    "삼성전자": "samsung.com",
+    "마이크로소프트": "microsoft.com",
+    "메타": "meta.com",
+    "배너": "bannerbank.com",
+    "오스타운 파이낸셜": "orrstown.com",
+    "인디펜던트 뱅코프": "independentbank.com",
+    "팔란티어": "palantir.com",
+    "AMD": "amd.com",
+    "웨스트 파마슈티컬": "westpharma.com",
+    "레이크랜드 파이낸셜": "lakecitybank.com",
+    "JB금융지주": "jbfg.com",
+    "KB금융": "kbfg.com",
+    "두산밥캣": "doosanbobcat.com",
+    "우리금융지주": "woorifg.com",
+    "하나금융지주": "hanafn.com",
+    "현대모비스": "mobis.co.kr",
+    "IBM": "ibm.com",
+    "PPG": "ppg.com",
+    "텍사스 인스트루먼트": "ti.com",
+    "스머커": "jmsmucker.com",
+    "리얼티 인컴": "realtyincome.com",
+    "원오크": "oneok.com",
+    "노스웨스트 내추럴": "nwnatural.com",
+    "버투스": "virtus.com",
+    "P&G": "pg.com",
+    "이스트 웨스트 뱅코프": "eastwestbank.com",
+    "A O 스미스": "aosmith.com",
+    "콘솔리데이티드 에디슨": "coned.com",
+    "APA": "apacorp.com",
+    "존슨앤드존슨": "jnj.com",
+    "패스널": "fastenal.com",
+    "엔비디아": "nvidia.com",
+    "알리바바": "alibaba.com",
+    "SK텔레콤": "sktelecom.com",
+    "신한지주": "shinhangroup.com",
+    "페이첵스": "paychex.com",
+    "록히드 마틴": "lockheedmartin.com",
+    "리전스 파이낸셜": "regions.com",
+    "기아": "kia.com",
+    "현대자동차": "hyundai.com",
+    "슐럼버거": "slb.com",
+    "인스페리티": "insperity.com",
+    "비자": "visa.com",
+    "코노코필립스": "conocophillips.com",
+    "WW 그레인저": "grainger.com",
+    "포드 모터": "ford.com",
+    "애플랙": "aflac.com",
+    "처치 앤드 드와이트": "churchdwight.com",
+    "펜스케 오토모티브": "penskeautomotive.com",
+    "머피 오일": "murphyoilcorp.com",
+    "델 테크놀로지스": "dell.com",
+    "홈디포": "homedepot.com",
+    "린드": "linde.com",
+    "퀄컴": "qualcomm.com",
+    "프린서플 파이낸셜": "principal.com",
+    "브로드리지": "broadridge.com",
+    "이선 알렌": "ethanallen.com",
+    "HF 싱클레어": "hfsinclair.com",
+    "브로드컴": "broadcom.com",
+    "펩시코": "pepsico.com",
+    "킴벌리클라크": "kimberly-clark.com",
+    "CH 로빈슨": "chrobinson.com",
+    "앰코": "amcor.com",
+    "제뉴인 파츠": "genpt.com",
+    "올드 리퍼블릭": "oldrepublic.com",
+    "UPS": "ups.com",
+    "CNA 파이낸셜": "cna.com",
+    "룰루레몬": "lululemon.com",
+    "스탠리 블랙 앤 데커": "stanleyblackanddecker.com",
+    "케이티앤지": "ktng.com",
+    "벡턴 디킨슨": "bd.com",
+    "애트모스 에너지": "atmosenergy.com",
+    "노드슨": "nordson.com",
+    "아처 대니얼스 미들랜드": "adm.com",
+    "처브": "chubb.com",
+    "ADP": "adp.com",
+    "알버말": "albemarle.com",
+    "플라워스 푸즈": "flowersfoods.com",
+    "일라이 릴리": "lilly.com",
+    "엑슨 모빌": "exxonmobil.com",
+    "셰브론": "chevron.com",
+    "에머슨 일렉트릭": "emerson.com",
+    "스냅 온": "snapon.com",
+    "오라클": "oracle.com",
+    "어도비": "adobe.com",
+    "크로거": "kroger.com",
+    "유나이티드헬스": "unitedhealthgroup.com",
+    "암젠": "amgen.com",
+    "셔윈-윌리엄즈": "sherwin-williams.com",
+    "코카콜라": "coca-colacompany.com",
+    "머크": "merck.com",
+    "알트리아": "altria.com",
+    "이콜랩": "ecolab.com",
+    "데번 에너지": "devonenergy.com",
+    "티 로 프라이스": "troweprice.com",
+    "메이시스": "macys.com",
+    "아레스 매니지먼트": "aresmgmt.com",
+    "피델리티 내셔널 파이낸셜": "fnf.com",
+    "웨스턴 유니언": "westernunion.com",
+    "넥스트에라 에너지": "nexteraenergy.com",
+    "신타스": "cintas.com",
+    "허쉬": "thehersheycompany.com",
+    "도버": "dovercorporation.com",
+    "오토리브": "autoliv.com",
+    "로버트 하프": "roberthalf.com",
+    "웬디스": "wendys.com",
+    "베스트 바이": "bestbuy.com",
+    "맥도날드": "mcdonalds.com",
+    "팩트셋": "factset.com",
+    "모엘리스": "moelis.com",
+    "페덱스": "fedex.com",
+    "현대엘리베이터": "hyundaielevator.co.kr",
+    "신시내티 파이낸셜": "cinfin.com",
+    "다든 레스토랑": "darden.com",
+    "메드트로닉": "medtronic.com",
+    "코스트코": "costco.com",
+    "일리노이 툴 웍스": "itw.com",
+    "프랭클린 리소시스": "franklinresources.com",
+    "에어 프로덕츠": "airproducts.com",
+    "카디널 헬스": "cardinalhealth.com"
+  };
+  function getCompanyDomain(ev){
+    return (ev.company && CALENDAR_LOGO_DOMAINS[ev.company]) || null;
+  }
+
+  // 로고 실패/부재 시 최종 폴백 — 미국 주식은 ticker 텍스트 뱃지, 한국 주식(또는 ticker를 못 찾은 경우)은
+  // 임의의 한글 첫 글자 대신 의미가 분명한 중립적인 "기업" 아이콘을 쓴다(회사 정체성을 지어내지 않음).
+  function buildStockFallbackHtml(ev, ticker, hidden){
+    var hiddenStyle = hidden ? "display:none;" : "";
+    if (ev.flag === "us" && ticker) {
+      var color = getStableBadgeColor(ticker);
+      return '<span class="calendar-event-logo-fallback ticker-badge" style="' + hiddenStyle + 'background:' + color + ';">' + ticker + '</span>';
+    }
+    return '<span class="calendar-event-logo-fallback neutral-icon" style="' + hiddenStyle + '"><i class="ph-duotone ph-briefcase"></i></span>';
+  }
+  function wrapLogoImgHtml(src, alt, fallbackHtml){
+    return '' +
+      '<span class="calendar-event-icon-circle has-logo">' +
+        '<img class="calendar-event-logo-img" src="' + src + '" alt="' + (alt || "") + '" ' +
+          'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">' +
+        fallbackHtml +
+      '</span>';
+  }
+  // 기업 일정 아이콘 우선순위: 1) 관리자 검증 로고 → 2) Brandfetch 공식 로고(도메인 매핑 있을 때만) →
+  // 3) 미국 주식 ticker 뱃지 / 5) 한국 주식 중립 아이콘. 검증 안 된 이미지는 어떤 단계에서도 쓰지 않는다.
+  function resolveStockIconHtml(ev){
+    var ticker = getEventTicker(ev);
+    var fallbackHtml = buildStockFallbackHtml(ev, ticker, false);
+
+    if (ev.logo) {
+      return wrapLogoImgHtml(ev.logo, ev.company, buildStockFallbackHtml(ev, ticker, true));
+    }
+    var domain = getCompanyDomain(ev);
+    if (domain && brandfetchClientId) {
+      var src = "https://cdn.brandfetch.io/" + domain + "?c=" + encodeURIComponent(brandfetchClientId);
+      return wrapLogoImgHtml(src, ev.company, buildStockFallbackHtml(ev, ticker, true));
+    }
+    return '<span class="calendar-event-icon-circle">' + fallbackHtml + '</span>';
+  }
+
   // 좌측 아이콘: 카테고리별 맞춤 로직
-  // - 주식: (검증된 로고가 있을 때만) 이미지 → 없으면 티커/국가 기반 고정색 이니셜 뱃지
+  // - 주식: resolveStockIconHtml() (관리자 로고 → Brandfetch → ticker/중립 아이콘)
   // - 공모주: IPO 워드마크 + 우측 하단 국기 배지 (그래프 아이콘 사용 안 함)
   // - 경제: 국기 이모지(기준금리/CPI 등은 특정 기업이 아니라 국가 단위 지표라서)
   // - 그 외: 의미가 분명한 카테고리 아이콘
@@ -3214,21 +3401,7 @@ try {
     var flagEmoji = ev.flag === "us" ? "🇺🇸" : "🇰🇷";
 
     if (ev.category === "stock") {
-      var ticker = getEventTicker(ev);
-      var badgeKey = ticker || ev.company || ev.title || "?";
-      var badgeColor = getStableBadgeColor(badgeKey);
-      var fallbackChar = (ev.company || ev.title || "?").charAt(0);
-      if (ev.logo) {
-        // ev.logo는 이제 검증되지 않은 외부 도메인 자동 추정 URL(Google favicons 등)을 쓰지 않는다 —
-        // 향후 라이선스가 확인된 로고를 관리자가 직접 등록하는 경로로만 채워질 필드.
-        return '' +
-          '<span class="calendar-event-icon-circle has-logo">' +
-            '<img class="calendar-event-logo-img" src="' + ev.logo + '" alt="' + (ev.company || "") + '" ' +
-              'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">' +
-            '<span class="calendar-event-logo-fallback" style="display:none;background:' + badgeColor + ';">' + fallbackChar + '</span>' +
-          '</span>';
-      }
-      return '<span class="calendar-event-icon-circle"><span class="calendar-event-logo-fallback" style="background:' + badgeColor + ';">' + fallbackChar + '</span></span>';
+      return resolveStockIconHtml(ev);
     }
     if (ev.category === "realestate") {
       return '<span class="calendar-event-icon-circle realestate-icon"><i class="ph-duotone ph-buildings"></i></span>';
@@ -6706,6 +6879,7 @@ try {
     initCalendarModeTabs();
     initCalendarSearch();
     initCalendarQuickJump();
+    loadBrandfetchConfig();
     return loadCalendarEventsFromFirestore();
   }
 
