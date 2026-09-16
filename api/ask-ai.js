@@ -53,19 +53,64 @@ const GEMINI_SYSTEM_INSTRUCTION =
   "'## 💡 개선 제안'(실행 가능한 조정 방향을 불렛포인트로). " +
   "포트폴리오 분석 요청이 아닌 질문(시장 브리핑, 뉴스 요약, 절세 팁 등)에는 이 3단계 형식을 쓰지 말고 평소처럼 자유롭게 답변하세요.";
 
-async function callGemini(prompt) {
+// 자산 현황(마이페이지) 업데이트 제안 — 실제 저장은 절대 여기서 하지 않는다. Gemini가 이 함수를
+// "호출"하면 그건 그냥 { cash, stock, realestate } 제안값일 뿐이고, 사용자가 화면에서 확인 버튼을
+// 눌러야만 Firestore에 써진다(기존 마이페이지 저장 로직 그대로 재사용).
+const PROPOSE_ASSET_UPDATE_FUNCTION = {
+  name: "propose_asset_update",
+  description:
+    "사용자가 채팅에서 현금·주식·부동산 등 자산이 얼마로 바뀌었다고 말하면 호출해서 새 절대 금액을 제안한다. " +
+    "값이 바뀐 항목만 포함하고 언급되지 않은 항목은 절대 넣지 마라. " +
+    "'늘었다/줄었다'처럼 상대적으로 말한 경우, 함께 전달된 현재 자산 현황을 기준으로 새 절대값을 계산해서 넣어라.",
+  parameters: {
+    type: "object",
+    properties: {
+      cash: { type: "number", description: "새 현금성 자산 절대 금액(원). 변경 없으면 생략." },
+      stock: { type: "number", description: "새 주식·투자 자산 절대 금액(원). 변경 없으면 생략." },
+      realestate: { type: "number", description: "새 부동산 자산 절대 금액(원). 변경 없으면 생략." },
+      summary: { type: "string", description: "사용자에게 보여줄 한 줄 확인 문구. 예: '현금을 500만원 → 800만원으로 변경할까요?'" }
+    }
+  }
+};
+
+// 자산 언급 + 변경 표현이 같이 있어 보이면 이번 요청만 검색 그라운딩 대신 함수 호출 전용으로 처리한다.
+// (2026-09 기준 google_search 내장 도구와 커스텀 functionDeclarations를 같은 요청에 안정적으로
+// 섞어 쓰는 건 Gemini 3 프리뷰 기능이라 별도 응답 형식이 필요해서, 지금은 둘을 요청 단위로 분리한다.)
+// 오탐이어도 안전하다 — mode:"AUTO"라 Gemini가 자산 변경 의도가 아니라고 판단하면 그냥 평소처럼 텍스트로 답한다.
+const ASSET_SUBJECT_WORDS = ["자산", "현금", "예금", "적금", "주식", "부동산", "잔고", "보유액", "재산"];
+const ASSET_ACTION_WORDS = ["저장", "업데이트", "반영", "기록", "바꿔", "바뀌", "변경", "늘었", "줄었", "늘어", "줄어", "됐어", "채워", "입력"];
+function looksLikeAssetUpdateRequest(prompt) {
+  const hasSubject = ASSET_SUBJECT_WORDS.some((w) => prompt.includes(w));
+  const hasAction = ASSET_ACTION_WORDS.some((w) => prompt.includes(w));
+  return hasSubject && hasAction;
+}
+
+async function callGemini(prompt, currentAssets) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
 
+  const useAssetTool = looksLikeAssetUpdateRequest(prompt);
   const url = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + apiKey;
+
+  let promptText = prompt;
+  const body = { systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] } };
+
+  if (useAssetTool) {
+    if (currentAssets) {
+      promptText += "\n\n(참고: 사용자의 현재 자산 현황 — 현금 " + (currentAssets.cash || 0) + "원, " +
+        "주식 " + (currentAssets.stock || 0) + "원, 부동산 " + (currentAssets.realestate || 0) + "원)";
+    }
+    body.tools = [{ functionDeclarations: [PROPOSE_ASSET_UPDATE_FUNCTION] }];
+    body.toolConfig = { functionCallingConfig: { mode: "AUTO" } };
+  } else {
+    body.tools = [{ google_search: {} }];
+  }
+  body.contents = [{ parts: [{ text: promptText }] }];
+
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
-      tools: [{ google_search: {} }],
-      contents: [{ parts: [{ text: prompt }] }]
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -77,9 +122,24 @@ async function callGemini(prompt) {
   const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content
     ? data.candidates[0].content.parts
     : null;
-  const text = parts && parts[0] ? parts[0].text : "";
-  if (!text) throw new Error("Gemini 응답에 텍스트가 없습니다.");
-  return text;
+  if (!parts) throw new Error("Gemini 응답에 콘텐츠가 없습니다.");
+
+  const functionCallPart = parts.find((p) => p.functionCall && p.functionCall.name === "propose_asset_update");
+  if (functionCallPart) {
+    const args = functionCallPart.functionCall.args || {};
+    const proposal = {};
+    if (typeof args.cash === "number") proposal.cash = Math.max(0, Math.round(args.cash));
+    if (typeof args.stock === "number") proposal.stock = Math.max(0, Math.round(args.stock));
+    if (typeof args.realestate === "number") proposal.realestate = Math.max(0, Math.round(args.realestate));
+    const summaryText = typeof args.summary === "string" && args.summary
+      ? args.summary
+      : "자산 현황 변경을 제안했어요. 아래에서 확인해주세요.";
+    return { text: summaryText, assetUpdateProposal: Object.keys(proposal).length ? proposal : null };
+  }
+
+  const textPart = parts.find((p) => typeof p.text === "string" && p.text);
+  if (!textPart) throw new Error("Gemini 응답에 텍스트가 없습니다.");
+  return { text: textPart.text, assetUpdateProposal: null };
 }
 
 export default async function handler(req, res) {
@@ -92,9 +152,19 @@ export default async function handler(req, res) {
   }
 
   let prompt = "";
+  let currentAssets = null;
   if (req.method === "POST") {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
     prompt = String(body.prompt || body.message || "").trim();
+    // 자산 업데이트 제안 계산에만 쓰는 참고값이라(Firestore에 직접 쓰지 않음) 숫자만 뽑아 신뢰 범위를 좁힌다.
+    if (body.currentAssets && typeof body.currentAssets === "object") {
+      const ca = body.currentAssets;
+      currentAssets = {
+        cash: typeof ca.cash === "number" ? ca.cash : 0,
+        stock: typeof ca.stock === "number" ? ca.stock : 0,
+        realestate: typeof ca.realestate === "number" ? ca.realestate : 0
+      };
+    }
   } else if (req.method === "GET") {
     const query = req.query || {};
     prompt = String(query.prompt || query.message || "").trim();
@@ -135,8 +205,8 @@ export default async function handler(req, res) {
   // Vercel에서 실제로 Firestore 포인트를 검증/차감하려면 Firebase 서비스 계정 키를
   // Vercel 프로젝트 환경변수에 별도로 등록하는 작업이 추가로 필요하다.
   try {
-    const reply = await callGemini(prompt);
-    return res.status(200).json({ reply: reply, remainingPoints: null });
+    const reply = await callGemini(prompt, currentAssets);
+    return res.status(200).json({ reply: reply.text, assetUpdateProposal: reply.assetUpdateProposal, remainingPoints: null });
   } catch (error) {
     console.error("Gemini 호출 실패:", error);
     return res.status(502).json({ error: "AI 응답 생성에 실패했습니다." });

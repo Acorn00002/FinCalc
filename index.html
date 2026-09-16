@@ -520,6 +520,7 @@ try {
       </div>
 
       <div class="home-ai-answer" id="homeAiAnswer" hidden></div>
+      <div class="home-ai-asset-proposal" id="homeAiAssetProposal" hidden></div>
     </form>
   </section>
 
@@ -5589,19 +5590,30 @@ try {
   // 그대로 set해도 subscribeToUserDoc()의 onSnapshot이 뒤이어 같은 값을 다시 밀어줄 뿐 어긋나지 않는다
   // (상대값으로 두 번 차감하는 방식이 아니라 절대값을 그대로 반영하는 방식이라 중복 차감 위험이 없음).
   var AI_CALL_COST = 50; // 서버 상수와 동일한 값 — UI 안내 문구 표시 및 클라이언트 사전 체크용
+  // onDone(reply, assetUpdateProposal) — assetUpdateProposal은 "AI에게 자산 변동을 저장해달라"고
+  // 말했을 때만 { cash?, stock?, realestate? } 형태로 채워진다(그 외엔 null). 실제 저장은 여기서
+  // 하지 않고 호출부가 사용자 확인을 받은 뒤 saveUserAssetFields()로 처리한다.
   function requestAiAssist(prompt, onDone){
     if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
       showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
       handleGoogleLogin();
-      if (onDone) onDone(null);
+      if (onDone) onDone(null, null);
       return;
     }
+
+    // AI가 "현금 500만원 늘었어" 같은 상대적 표현을 절대값으로 계산할 수 있도록, 지금 알고 있는
+    // 최신 자산 현황(assetDashLatestBreakdown, userAssets 실시간 구독으로 항상 최신 유지됨)을 함께 보낸다.
+    var currentAssets = assetDashLatestBreakdown ? {
+      cash: assetDashLatestBreakdown.cash || 0,
+      stock: assetDashLatestBreakdown.stock || 0,
+      realestate: assetDashLatestBreakdown.realestate || 0
+    } : null;
 
     firebaseAuth.currentUser.getIdToken().then(function(idToken){
       return fetch("/api/ask-ai", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": "Bearer " + idToken },
-        body: JSON.stringify({ prompt: prompt })
+        body: JSON.stringify({ prompt: prompt, currentAssets: currentAssets })
       });
     }).then(function(res){
       return res.json().then(function(data){ return { ok: res.ok, status: res.status, data: data || {} }; });
@@ -5612,18 +5624,18 @@ try {
         } else {
           showToast(result.data.error || "AI 응답 생성에 실패했어요. 다시 시도해주세요.", "ph-warning");
         }
-        if (onDone) onDone(null);
+        if (onDone) onDone(null, null);
         return;
       }
       if (typeof result.data.remainingPoints === "number") {
         authState.userPoints = result.data.remainingPoints;
         syncAuthUI();
       }
-      if (onDone) onDone(result.data.reply);
+      if (onDone) onDone(result.data.reply, result.data.assetUpdateProposal || null);
     }).catch(function(error){
       console.error("AI 호출 실패:", error);
       showToast("AI 응답 생성에 실패했어요. 다시 시도해주세요.", "ph-warning");
-      if (onDone) onDone(null);
+      if (onDone) onDone(null, null);
     });
   }
 
@@ -6258,6 +6270,27 @@ try {
     return isFinite(n) && !isNaN(n) && n >= 0 ? n : 0;
   }
 
+  // 자산 현황 저장 — 마이페이지 입력 폼과 AI 채팅의 "저장하기" 확인 버튼이 공통으로 쓴다.
+  // fields는 {cash?, stock?, realestate?} 중 바뀐 값만 담아서 넘기면 된다(merge:true라 나머지는 안 건드림).
+  function saveUserAssetFields(fields, onSuccess, onError){
+    if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
+      showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
+      handleGoogleLogin();
+      if (onError) onError();
+      return;
+    }
+    var uid = firebaseAuth.currentUser.uid;
+    var payload = Object.assign({}, fields, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    db.collection("userAssets").doc(uid).set(payload, { merge: true }).then(function(){
+      showToast("자산 현황이 저장됐어요", "ph-check-circle");
+      if (onSuccess) onSuccess();
+    }).catch(function(error){
+      console.error("자산 현황 저장 실패:", error);
+      showToast("저장에 실패했어요. 다시 시도해주세요.", "ph-warning");
+      if (onError) onError(error);
+    });
+  }
+
   (function initAssetDashboardForm(){
     var saveBtn = document.getElementById("assetDashSaveBtn");
     if (!saveBtn) return;
@@ -6279,28 +6312,13 @@ try {
     });
 
     saveBtn.addEventListener("click", function(){
-      if (!authState.isLoggedIn || !firebaseAuth.currentUser) {
-        showToast("로그인 후 이용할 수 있어요", "ph-lock-simple");
-        handleGoogleLogin();
-        return;
-      }
-      var uid = firebaseAuth.currentUser.uid;
-      var payload = {
+      var fields = {
         cash: parseAssetDashInput(document.getElementById("assetDashCashInput")),
         stock: parseAssetDashInput(document.getElementById("assetDashStockInput")),
-        realestate: parseAssetDashInput(document.getElementById("assetDashRealestateInput")),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        realestate: parseAssetDashInput(document.getElementById("assetDashRealestateInput"))
       };
-
       saveBtn.disabled = true;
-      db.collection("userAssets").doc(uid).set(payload, { merge: true }).then(function(){
-        saveBtn.disabled = false;
-        showToast("자산 현황이 저장됐어요", "ph-check-circle");
-      }).catch(function(error){
-        saveBtn.disabled = false;
-        console.error("자산 현황 저장 실패:", error);
-        showToast("저장에 실패했어요. 다시 시도해주세요.", "ph-warning");
-      });
+      saveUserAssetFields(fields, function(){ saveBtn.disabled = false; }, function(){ saveBtn.disabled = false; });
     });
   })();
 
@@ -8501,6 +8519,56 @@ try {
       wrapAiAnswerSections(aiAnswerEl);
     }
 
+    // AI가 "자산 업데이트 제안"을 반환했을 때만 뜨는 확인 카드 — 여기서 저장 버튼을 눌러야만
+    // 실제로 Firestore에 반영된다(saveUserAssetFields, 마이페이지 저장과 동일한 경로).
+    var ASSET_PROPOSAL_FIELD_LABELS = { cash: "현금성 자산", stock: "주식·투자 자산", realestate: "부동산 자산" };
+    var aiAssetProposalEl = document.getElementById("homeAiAssetProposal");
+    function renderAssetUpdateProposalCard(proposal){
+      if (!aiAssetProposalEl || !proposal) return;
+      var current = assetDashLatestBreakdown || { cash: 0, stock: 0, realestate: 0 };
+      var rowsHtml = Object.keys(ASSET_PROPOSAL_FIELD_LABELS).filter(function(key){
+        return typeof proposal[key] === "number";
+      }).map(function(key){
+        var before = current[key] || 0;
+        var after = proposal[key];
+        return '<div class="home-ai-asset-proposal-row">' +
+          '<span class="home-ai-asset-proposal-label">' + ASSET_PROPOSAL_FIELD_LABELS[key] + '</span>' +
+          '<span class="home-ai-asset-proposal-values">' + before.toLocaleString("ko-KR") + '원 → <b>' + after.toLocaleString("ko-KR") + '원</b></span>' +
+        '</div>';
+      }).join("");
+
+      if (!rowsHtml) { aiAssetProposalEl.hidden = true; return; }
+
+      aiAssetProposalEl.innerHTML =
+        '<p class="home-ai-asset-proposal-title"><i class="ph-duotone ph-piggy-bank"></i>자산 현황 변경 제안</p>' +
+        rowsHtml +
+        '<div class="home-ai-asset-proposal-actions">' +
+          '<button type="button" class="home-ai-asset-proposal-btn secondary" id="homeAiAssetProposalCancel">취소</button>' +
+          '<button type="button" class="home-ai-asset-proposal-btn primary" id="homeAiAssetProposalSave">저장하기</button>' +
+        '</div>';
+      aiAssetProposalEl.hidden = false;
+
+      var fieldsToSave = {};
+      Object.keys(ASSET_PROPOSAL_FIELD_LABELS).forEach(function(key){
+        if (typeof proposal[key] === "number") fieldsToSave[key] = proposal[key];
+      });
+
+      document.getElementById("homeAiAssetProposalCancel").addEventListener("click", function(){
+        aiAssetProposalEl.hidden = true;
+        aiAssetProposalEl.innerHTML = "";
+      });
+      document.getElementById("homeAiAssetProposalSave").addEventListener("click", function(){
+        var saveBtnEl = document.getElementById("homeAiAssetProposalSave");
+        saveBtnEl.disabled = true;
+        saveUserAssetFields(fieldsToSave, function(){
+          aiAssetProposalEl.hidden = true;
+          aiAssetProposalEl.innerHTML = "";
+        }, function(){
+          saveBtnEl.disabled = false;
+        });
+      });
+    }
+
     if (aiForm) {
       aiForm.addEventListener("submit", function(e){
         e.preventDefault();
@@ -8519,8 +8587,9 @@ try {
         aiInput.disabled = true;
         aiSubmitBtn.textContent = "분석 중...";
         aiAnswerEl.hidden = true;
+        if (aiAssetProposalEl) { aiAssetProposalEl.hidden = true; aiAssetProposalEl.innerHTML = ""; }
 
-        requestAiAssist(prompt, function(reply){
+        requestAiAssist(prompt, function(reply, assetUpdateProposal){
           aiSubmitBtn.disabled = false;
           aiInput.disabled = false;
           aiSubmitBtn.textContent = "질문하기";
@@ -8531,6 +8600,7 @@ try {
             aiInput.value = "";
             resizeAiInput();
             hideAiGuideCard();
+            renderAssetUpdateProposalCard(assetUpdateProposal);
           }
         });
       });

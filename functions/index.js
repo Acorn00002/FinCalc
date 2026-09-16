@@ -85,20 +85,62 @@ const GEMINI_SYSTEM_INSTRUCTION =
   "'## 💡 개선 제안'(실행 가능한 조정 방향을 불렛포인트로). " +
   "포트폴리오 분석 요청이 아닌 질문(시장 브리핑, 뉴스 요약, 절세 팁 등)에는 이 3단계 형식을 쓰지 말고 평소처럼 자유롭게 답변하세요.";
 
-async function callGemini(prompt) {
+// 자산 현황(마이페이지) 업데이트 제안 — 실제 저장은 절대 여기서 하지 않는다. Gemini가 이 함수를
+// "호출"하면 그건 그냥 { cash, stock, realestate } 제안값일 뿐이고, 사용자가 화면에서 확인 버튼을
+// 눌러야만 Firestore에 써진다(기존 마이페이지 저장 로직 그대로 재사용). api/ask-ai.js(Vercel 배포본)와
+// 동일하게 유지한다.
+const PROPOSE_ASSET_UPDATE_FUNCTION = {
+  name: "propose_asset_update",
+  description:
+    "사용자가 채팅에서 현금·주식·부동산 등 자산이 얼마로 바뀌었다고 말하면 호출해서 새 절대 금액을 제안한다. " +
+    "값이 바뀐 항목만 포함하고 언급되지 않은 항목은 절대 넣지 마라. " +
+    "'늘었다/줄었다'처럼 상대적으로 말한 경우, 함께 전달된 현재 자산 현황을 기준으로 새 절대값을 계산해서 넣어라.",
+  parameters: {
+    type: "object",
+    properties: {
+      cash: { type: "number", description: "새 현금성 자산 절대 금액(원). 변경 없으면 생략." },
+      stock: { type: "number", description: "새 주식·투자 자산 절대 금액(원). 변경 없으면 생략." },
+      realestate: { type: "number", description: "새 부동산 자산 절대 금액(원). 변경 없으면 생략." },
+      summary: { type: "string", description: "사용자에게 보여줄 한 줄 확인 문구. 예: '현금을 500만원 → 800만원으로 변경할까요?'" }
+    }
+  }
+};
+
+const ASSET_SUBJECT_WORDS = ["자산", "현금", "예금", "적금", "주식", "부동산", "잔고", "보유액", "재산"];
+const ASSET_ACTION_WORDS = ["저장", "업데이트", "반영", "기록", "바꿔", "바뀌", "변경", "늘었", "줄었", "늘어", "줄어", "됐어", "채워", "입력"];
+function looksLikeAssetUpdateRequest(prompt) {
+  const hasSubject = ASSET_SUBJECT_WORDS.some((w) => prompt.includes(w));
+  const hasAction = ASSET_ACTION_WORDS.some((w) => prompt.includes(w));
+  return hasSubject && hasAction;
+}
+
+async function callGemini(prompt, currentAssets) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY가 설정되지 않았습니다.");
 
+  const useAssetTool = looksLikeAssetUpdateRequest(prompt);
   const url = "https://generativelanguage.googleapis.com/v1beta/models/" + GEMINI_MODEL + ":generateContent?key=" + apiKey;
+
+  let promptText = prompt;
+  const body = { systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] } };
+
+  if (useAssetTool) {
+    if (currentAssets) {
+      promptText += "\n\n(참고: 사용자의 현재 자산 현황 — 현금 " + (currentAssets.cash || 0) + "원, " +
+        "주식 " + (currentAssets.stock || 0) + "원, 부동산 " + (currentAssets.realestate || 0) + "원)";
+    }
+    body.tools = [{ functionDeclarations: [PROPOSE_ASSET_UPDATE_FUNCTION] }];
+    body.toolConfig = { functionCallingConfig: { mode: "AUTO" } };
+  } else {
+    // 구글 검색 그라운딩 — 모델 학습 시점 이후의 최신 시사/정치/경제 정보를 반영해 답변하도록 함
+    body.tools = [{ google_search: {} }];
+  }
+  body.contents = [{ parts: [{ text: promptText }] }];
+
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: GEMINI_SYSTEM_INSTRUCTION }] },
-      // 구글 검색 그라운딩 — 모델 학습 시점 이후의 최신 시사/정치/경제 정보를 반영해 답변하도록 함
-      tools: [{ google_search: {} }],
-      contents: [{ parts: [{ text: prompt }] }]
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -110,9 +152,24 @@ async function callGemini(prompt) {
   const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content
     ? data.candidates[0].content.parts
     : null;
-  const text = parts && parts[0] ? parts[0].text : "";
-  if (!text) throw new Error("Gemini 응답에 텍스트가 없습니다.");
-  return text;
+  if (!parts) throw new Error("Gemini 응답에 콘텐츠가 없습니다.");
+
+  const functionCallPart = parts.find((p) => p.functionCall && p.functionCall.name === "propose_asset_update");
+  if (functionCallPart) {
+    const args = functionCallPart.functionCall.args || {};
+    const proposal = {};
+    if (typeof args.cash === "number") proposal.cash = Math.max(0, Math.round(args.cash));
+    if (typeof args.stock === "number") proposal.stock = Math.max(0, Math.round(args.stock));
+    if (typeof args.realestate === "number") proposal.realestate = Math.max(0, Math.round(args.realestate));
+    const summaryText = typeof args.summary === "string" && args.summary
+      ? args.summary
+      : "자산 현황 변경을 제안했어요. 아래에서 확인해주세요.";
+    return { text: summaryText, assetUpdateProposal: Object.keys(proposal).length ? proposal : null };
+  }
+
+  const textPart = parts.find((p) => typeof p.text === "string" && p.text);
+  if (!textPart) throw new Error("Gemini 응답에 텍스트가 없습니다.");
+  return { text: textPart.text, assetUpdateProposal: null };
 }
 
 // 홈 화면 등에서 로그인한 사용자가 AI 기능을 요청할 때 호출하는 엔드포인트.
@@ -131,6 +188,16 @@ exports.aiAsk = onRequest({ cors: true, region: "asia-northeast3" }, async (req,
   if (prompt.length > MAX_PROMPT_LENGTH) {
     res.status(400).json({ error: "요청이 너무 깁니다. " + MAX_PROMPT_LENGTH + "자 이내로 입력해주세요." });
     return;
+  }
+  // 자산 업데이트 제안 계산에만 쓰는 참고값이라(Firestore에 직접 쓰지 않음) 숫자만 뽑아 신뢰 범위를 좁힌다.
+  let currentAssets = null;
+  if (req.body && req.body.currentAssets && typeof req.body.currentAssets === "object") {
+    const ca = req.body.currentAssets;
+    currentAssets = {
+      cash: typeof ca.cash === "number" ? ca.cash : 0,
+      stock: typeof ca.stock === "number" ? ca.stock : 0,
+      realestate: typeof ca.realestate === "number" ? ca.realestate : 0
+    };
   }
 
   // 1. Authorization 헤더의 Firebase ID 토큰을 검증해 uid를 서버에서 직접 확보한다 (클라이언트가 보낸 uid는 신뢰하지 않음)
@@ -195,8 +262,8 @@ exports.aiAsk = onRequest({ cors: true, region: "asia-northeast3" }, async (req,
   //    (Firestore 트랜잭션 안에서 외부 API를 직접 호출하지 않는 이유: 트랜잭션은 경합 시 재시도될 수 있어
   //    그 안에서 외부 호출을 하면 같은 요청이 중복 실행될 위험이 있다 — 그래서 "차감 → 호출 → 실패 시 환불" 순서로 분리했다.)
   try {
-    const reply = await callGemini(prompt);
-    res.status(200).json({ reply: reply, remainingPoints: remainingPoints });
+    const reply = await callGemini(prompt, currentAssets);
+    res.status(200).json({ reply: reply.text, assetUpdateProposal: reply.assetUpdateProposal, remainingPoints: remainingPoints });
   } catch (error) {
     console.error("Gemini 호출 실패, 포인트 환불 처리:", error);
     // TODO: 개발 완료 후 포인트 차감 로직 재활성화 — DEV_BYPASS_POINT_CHECK가 꺼지면 이 환불도 다시 의미를 갖는다
