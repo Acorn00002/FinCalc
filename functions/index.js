@@ -1,6 +1,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
+const { computeEcosPeriod, parseEcosResponse } = require("./helpers/ecosParser");
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -635,25 +636,89 @@ async function fetchCheongyakhomeSubscriptions() {
 
 // sourceId 기반 결정론적 문서 ID(예: "dart_20260722000123")로 set(merge:true) 하기 때문에
 // 같은 이벤트를 다시 수집해도 새 문서가 늘어나지 않고 필드만 갱신된다 — 이것이 중복 수집 방지 + upsert의 핵심.
+//
+// 이번에 추가한 것: (1) firstSeenAt/lastSeenAt으로 "언제 처음/마지막으로 이 소스에서 관측됐는지" 추적,
+// (2) 기존 문서와 비교해 날짜·제목·상태가 바뀌었으면 eventChangeLogs에 변경 전/후를 기록하고 자동으로
+// status를 "변경"으로 표시(이벤트 쪽에서 이미 더 구체적인 status를 주면 그 값을 우선). "취소/연기/종료"는
+// 소스 API가 명시적으로 알려주지 않는 한 추측하지 않는다(placeholder로 잘못 표시하는 게 더 위험함) —
+// 이건 FINANCIAL_CALENDAR_AUTOMATION.md에 알려진 한계로 남겨둔다.
+const CHANGE_TRACKED_FIELDS = ["date", "title", "meta", "status"];
+
 async function upsertCalendarEvents(events) {
-  if (!events.length) return 0;
+  if (!events.length) return { written: 0, added: 0, updated: 0, changed: 0 };
   const batchSize = 400; // Firestore 배치 최대 500건 제한에 여유를 둠
-  let written = 0;
+  let written = 0, added = 0, updated = 0, changed = 0;
 
   for (let i = 0; i < events.length; i += batchSize) {
-    const chunk = events.slice(i, i + batchSize);
+    const chunk = events.filter((ev) => ev.date && ev.sourceId).slice(i, i + batchSize);
+    if (!chunk.length) continue;
+
+    const refs = chunk.map((ev) => db.collection("calendarEvents").doc(ev.source + "_" + ev.sourceId));
+    const existingSnaps = await db.getAll(...refs);
+
     const batch = db.batch();
-    chunk.forEach((ev) => {
-      if (!ev.date || !ev.sourceId) return;
-      const ref = db.collection("calendarEvents").doc(ev.source + "_" + ev.sourceId);
-      batch.set(ref, Object.assign({}, ev, {
-        updatedAt: new Date()
-      }), { merge: true });
+    const now = new Date();
+    chunk.forEach((ev, idx) => {
+      const ref = refs[idx];
+      const prev = existingSnaps[idx].exists ? existingSnaps[idx].data() : null;
+
+      const diffs = {};
+      if (prev) {
+        CHANGE_TRACKED_FIELDS.forEach((field) => {
+          const before = prev[field] != null ? prev[field] : null;
+          const after = ev[field] != null ? ev[field] : null;
+          if (before !== after) diffs[field] = { before, after };
+        });
+      }
+
+      const docData = Object.assign({}, ev, {
+        updatedAt: now,
+        lastSeenAt: now,
+        firstSeenAt: prev && prev.firstSeenAt ? prev.firstSeenAt : now
+      });
+      // 소스가 이미 구체적인 상태(예: 관리자가 수동으로 "취소"를 입력)를 주지 않았고, 실제로 뭔가
+      // 바뀐 게 있으면 "변경"으로 표시한다. 신규 이벤트는 건드리지 않고 소스가 준 status(대개 null)를 둔다.
+      if (prev && Object.keys(diffs).length && !ev.status) {
+        docData.status = "변경";
+      }
+
+      batch.set(ref, docData, { merge: true });
       written += 1;
+      if (!prev) added += 1;
+      else {
+        updated += 1;
+        if (Object.keys(diffs).length) {
+          changed += 1;
+          const logRef = db.collection("eventChangeLogs").doc();
+          batch.set(logRef, {
+            eventId: ref.id,
+            source: ev.source,
+            sourceId: ev.sourceId,
+            diffs,
+            changedAt: now
+          });
+        }
+      }
     });
     await batch.commit();
   }
-  return written;
+  return { written, added, updated, changed };
+}
+
+// 동기화 실행 결과(성공/실패, 소스별 건수)를 syncLogs에 남긴다 — 콘솔 로그는 Cloud Functions 로그에서만
+// 보이고 운영 중 admin 화면에서 조회할 수 없어서, 관리자 캘린더 화면의 "최근 동기화 이력"이 이 컬렉션을 읽는다.
+async function recordSyncLog(job, result, error) {
+  try {
+    await db.collection("syncLogs").add({
+      job,
+      ok: !error,
+      error: error ? String(error.message || error) : null,
+      result: result || null,
+      ranAt: new Date()
+    });
+  } catch (logError) {
+    console.error("syncLogs 기록 실패(" + job + "):", logError);
+  }
 }
 
 async function runCalendarSync() {
@@ -662,9 +727,13 @@ async function runCalendarSync() {
     fetchCheongyakhomeSubscriptions().catch((err) => { console.error("청약홈 수집 실패:", err); return []; })
   ]);
 
-  const written = await upsertCalendarEvents(dartEvents.concat(cheongyakhomeEvents));
-  const summary = { dart: dartEvents.length, cheongyakhome: cheongyakhomeEvents.length, written: written };
+  const upsertResult = await upsertCalendarEvents(dartEvents.concat(cheongyakhomeEvents));
+  const summary = Object.assign(
+    { dart: dartEvents.length, cheongyakhome: cheongyakhomeEvents.length },
+    upsertResult
+  );
   console.log("금융 캘린더 동기화 완료:", JSON.stringify(summary));
+  await recordSyncLog("calendar", summary, null);
   return summary;
 }
 
@@ -1366,5 +1435,133 @@ exports.apartmentSubscriptionsLive = onRequest({ cors: true, region: "asia-north
   } catch (error) {
     console.error("apartmentSubscriptionsLive 실패:", error);
     res.status(502).json({ error: "실시간 아파트 청약 일정을 불러오지 못했습니다." });
+  }
+});
+
+// ---------- 한국은행 ECOS 경제지표 (기준금리 / 소비자물가지수 / 원-달러 환율) ----------
+// ECOS는 "통계값"만 주는 API라 향후 발표 "일정"은 여기서 얻을 수 없다(발표 예정일은 한국은행이
+// 별도로 공지하는 값이라 이 파이프라인은 캘린더 이벤트를 만들지 않고, economicIndicators 컬렉션에
+// "가장 최근 관측치 스냅샷"만 저장한다 — 미래 발표일을 추측해서 만들지 않는다는 원칙을 지키기 위함).
+//
+// 키 발급: https://ecos.bok.or.kr 회원가입 → Open API 신청 → 인증키 발급(보통 즉시).
+// 통계표코드/항목코드는 한국은행이 공개한 통계코드 목록(ECOS 통계코드 검색)에서 확인 가능하며,
+// 여기 적힌 코드는 그 목록에 문서화된 값을 그대로 쓴 것이다 — 다만 실제 키로 라이브 호출까지
+// 검증하지는 못했으므로(발급된 키가 없음), 키를 발급받은 뒤 반드시 한 번 수동 동기화로 실제
+// 응답을 확인할 것을 권장한다(자세한 확인 절차는 FINANCIAL_CALENDAR_AUTOMATION.md 참고).
+const ECOS_API_KEY = process.env.ECOS_API_KEY || "";
+const ECOS_BASE_URL = "https://ecos.bok.or.kr/api/StatisticSearch";
+
+// 새 지표를 추가하려면 이 배열에 한 줄만 더 넣으면 된다(코드 로직 수정 불필요).
+const ECOS_INDICATORS = [
+  {
+    key: "base-rate",
+    label: "한국은행 기준금리",
+    statCode: "722Y001",
+    itemCode1: "0101000",
+    cycle: "M", // 월별 — 금통위 개최월에만 값이 갱신되므로 넉넉히 12개월 범위로 조회
+    lookbackUnits: 12,
+    unit: "%"
+  },
+  {
+    key: "cpi",
+    label: "소비자물가지수(총지수)",
+    statCode: "901Y009",
+    itemCode1: "0",
+    cycle: "M",
+    lookbackUnits: 6,
+    unit: "2020=100"
+  },
+  {
+    key: "usd-krw",
+    label: "원/달러 환율(매매기준율)",
+    statCode: "731Y001",
+    itemCode1: "0000001",
+    cycle: "D", // 영업일별 — 주말/공휴일 공백 대비 넉넉히 14일 범위로 조회
+    lookbackUnits: 14,
+    unit: "원"
+  }
+];
+
+// 지표 하나를 조회해 가장 최근 관측치 1건을 돌려준다. 응답이 없거나 ECOS가 에러를 반환하면
+// null을 돌려주고(추측 금지), 호출부에서 해당 지표만 건너뛴다.
+// 순수 파싱 로직은 helpers/ecosParser.js에 분리해뒀다(테스트는 functions/test/ecosParser.test.js 참고).
+async function fetchEcosIndicator(indicator) {
+  const start = computeEcosPeriod(indicator.cycle, -indicator.lookbackUnits);
+  const end = computeEcosPeriod(indicator.cycle, 0);
+  const url = [
+    ECOS_BASE_URL,
+    encodeURIComponent(ECOS_API_KEY),
+    "json", "kr", "1", "100",
+    indicator.statCode, indicator.cycle, start, end, indicator.itemCode1
+  ].join("/");
+
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.error("ECOS API 응답 오류(" + indicator.key + "):", res.status);
+    return null;
+  }
+  const data = await res.json();
+  const parsed = parseEcosResponse(indicator, data);
+  if (parsed.error) {
+    console.error("ECOS API 오류(" + indicator.key + "):", parsed.error.code, parsed.error.message);
+    return null;
+  }
+  return parsed.value;
+}
+
+async function syncEconomicIndicators() {
+  if (!ECOS_API_KEY) {
+    console.warn("ECOS_API_KEY가 설정되지 않아 경제지표 수집을 건너뜁니다.");
+    await recordSyncLog("economicIndicators", { skipped: true, reason: "no_api_key" }, null);
+    return { skipped: true };
+  }
+
+  let updated = 0, failed = 0;
+  const now = new Date();
+  const batch = db.batch();
+
+  for (const indicator of ECOS_INDICATORS) {
+    let result = null;
+    try {
+      result = await fetchEcosIndicator(indicator);
+    } catch (error) {
+      console.error("ECOS 수집 실패(" + indicator.key + "):", error);
+    }
+    if (!result) { failed += 1; continue; }
+
+    const ref = db.collection("economicIndicators").doc(indicator.key);
+    batch.set(ref, Object.assign({}, result, { collectedAt: now }), { merge: true });
+    updated += 1;
+  }
+
+  if (updated) await batch.commit();
+  const summary = { updated, failed, total: ECOS_INDICATORS.length };
+  console.log("경제지표 동기화 완료:", JSON.stringify(summary));
+  await recordSyncLog("economicIndicators", summary, null);
+  return summary;
+}
+
+// 매일 오전 9시(KST) 자동 실행 — 대부분 값이 하루에 여러 번 바뀌지 않아 캘린더 동기화(새벽 2시)와
+// 시간을 분리해 부하를 나눴다.
+exports.syncEconomicIndicators = onSchedule(
+  { schedule: "0 9 * * *", timeZone: "Asia/Seoul", region: "asia-northeast3" },
+  async () => {
+    await syncEconomicIndicators();
+  }
+);
+
+// 수동 실행용(키 발급 직후 즉시 검증하고 싶을 때) — 캘린더와 동일한 비밀값을 재사용한다
+// (둘 다 "금융 데이터 동기화"라는 같은 성격의 관리자 작업이라 시크릿을 따로 늘리지 않았다).
+exports.syncEconomicIndicatorsManual = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (!CALENDAR_SYNC_SECRET || req.query.secret !== CALENDAR_SYNC_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  try {
+    const result = await syncEconomicIndicators();
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("수동 경제지표 동기화 실패:", error);
+    res.status(500).json({ error: "동기화 중 오류가 발생했습니다." });
   }
 });

@@ -6,6 +6,9 @@
   "engines": {
     "node": "20"
   },
+  "scripts": {
+    "test": "node --test test/ecosParser.test.js"
+  },
   "dependencies": {
     "firebase-functions": "^5.0.0",
     "firebase-admin": "^12.0.0"
