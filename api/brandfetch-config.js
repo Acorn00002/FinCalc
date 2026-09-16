@@ -9,9 +9,11 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // 값 자체가 바뀔 일이 거의 없는 정적 공개 설정이라 캐시를 길게 잡아, 페이지를 열 때마다
-  // 이 함수가 반복 호출되지 않게 한다(브라우저 1일, CDN 엣지 7일, 이후 30일은 stale-while-revalidate).
-  res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=604800, stale-while-revalidate=2592000");
+  // 값 자체가 바뀔 일이 거의 없는 정적 공개 설정이지만, 브라우저 캐시를 너무 길게 잡으면
+  // 값이 없던 시점에 한 번이라도 요청한 사용자가 환경변수를 나중에 채워도 캐시가 만료될 때까지
+  // 계속 null을 보게 되는 사고로 이어질 수 있어(실제로 겪음) 브라우저는 10분으로만 캐싱한다.
+  // 반복 호출 방지는 CDN 엣지 캐시(1일)가 대신 맡는다.
+  res.setHeader("Cache-Control", "public, max-age=600, s-maxage=86400, stale-while-revalidate=604800");
 
   return res.status(200).json({
     clientId: process.env.BRANDFETCH_CLIENT_ID || null

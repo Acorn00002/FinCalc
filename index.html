@@ -3207,8 +3207,10 @@ try {
 
   // ---------- Brandfetch Logo API 설정 ----------
   // Client ID는 Brandfetch 공식 문서상 <img> URL에 그대로 노출되는 publishable 식별자라(비밀 아님)
-  // 정적 페이지에서 fetch로 한 번만 받아와 캐싱한다. /api/brandfetch-config는 이 값 하나만 반환하고
-  // 캐시 헤더가 길게 걸려있어(1일/7일) 페이지를 열 때마다 반복 호출되지 않는다.
+  // 정적 페이지에서 fetch로 한 번만 받아와 캐싱한다. /api/brandfetch-config는 이 값 하나만 반환한다.
+  // (브라우저 캐시는 짧게 잡아뒀다 — 기존에 24시간으로 걸어뒀던 게, 값이 없던 시점에 한 번이라도
+  // 요청한 브라우저는 값이 고쳐진 뒤에도 최대 24시간 동안 null을 계속 캐시에서 읽는 사고로
+  // 이어질 수 있어서 10분으로 줄였다. 값 자체는 거의 안 바뀌므로 CDN 엣지 캐시만 길게 유지한다.)
   var brandfetchClientId = null;
   var brandfetchConfigLoaded = false;
   function loadBrandfetchConfig(){
@@ -3218,9 +3220,16 @@ try {
       .catch(function(){ brandfetchClientId = null; })
       .then(function(){
         brandfetchConfigLoaded = true;
+        if (!brandfetchClientId) return;
         // 첫 렌더 때는 아직 클라이언트ID가 없어 티커/중립 아이콘으로 보이다가, 로드가 끝나면
-        // 실제 로고로 "업그레이드"되도록 현재 보이는 화면만 다시 그린다.
-        if (brandfetchClientId && typeof renderCalendarActiveMode === "function") renderCalendarActiveMode();
+        // 실제 로고로 "업그레이드"되도록 다시 그린다. 이 시점에 사용자가 어느 모드를 보고 있는지
+        // (혹은 아직 모드 탭 초기화가 안 끝났는지) 추측하지 않고, 로고가 나타날 수 있는 화면을
+        // 전부 다시 그려서 어떤 경우에도 최신 상태가 반영되게 한다.
+        if (typeof renderCalendarGrid === "function") renderCalendarGrid();
+        if (typeof renderCalendarSelectedDayPanel === "function") renderCalendarSelectedDayPanel();
+        if (typeof renderCalendarTimeline === "function") renderCalendarTimeline();
+        if (typeof renderCalendarWeekMode === "function") renderCalendarWeekMode();
+        if (typeof renderCalendarMineMode === "function") renderCalendarMineMode();
       });
   }
   // 기존 Google favicon 핫링크(171개)를 걷어내며 회사명→검증된 공식 도메인 매핑은 그대로 재사용한다.
@@ -6869,6 +6878,10 @@ try {
   }
 
   function initFinanceCalendar(){
+    // 이 함수 뒤쪽의 다른 초기화 단계 중 하나가 예외를 던지면 그 아래 줄은 아예 실행되지 않는다
+    // (자바스크립트 동기 실행 특성) — 로고 표시가 통째로 안 되는 사고를 막기 위해 Brandfetch
+    // 설정 로딩만은 가장 먼저, 독립적으로 시작해둔다.
+    loadBrandfetchConfig();
     renderCalendarFilters();
     renderCalendarGrid();
     renderCalendarTimeline();
@@ -6879,7 +6892,6 @@ try {
     initCalendarModeTabs();
     initCalendarSearch();
     initCalendarQuickJump();
-    loadBrandfetchConfig();
     return loadCalendarEventsFromFirestore();
   }
 
