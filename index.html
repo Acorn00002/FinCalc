@@ -6649,7 +6649,6 @@ try {
     var catMeta = CALENDAR_CATEGORY_META[ev.category] || { label: ev.category || "", color: "#585CE5", bg: "rgba(88,92,229,0.10)", icon: "ph-calendar" };
     var importance = getEventImportance(ev);
     var impMeta = CALENDAR_IMPORTANCE_META[importance];
-    var desc = getEventDescription(ev);
     var dDayLabel = calendarDDayLabel(ev.date, todayStr);
     var globalIdx = CALENDAR_EVENTS.indexOf(ev);
     var statusHtml = ev.status ? '<span class="calendar-event-status ' + calendarStatusClass(ev.status) + '">' + ev.status + '</span>' : "";
@@ -6667,7 +6666,6 @@ try {
               (impMeta ? '<span class="calendar-week-card-importance importance-' + importance + '"><i class="' + impMeta.icon + '"></i>' + impMeta.label + '</span>' : "") +
             '</div>' +
             '<p class="calendar-week-card-title">' + (ev.title || "") + '</p>' +
-            (desc ? '<p class="calendar-week-card-desc">' + desc + '</p>' : "") +
             (rangeText ? '<p class="calendar-week-card-range">' + rangeText + '</p>' : "") +
             '<div class="calendar-week-card-foot">' +
               '<span>' + (ev.date || "") + (ev.meta ? " · " + ev.meta : "") + '</span>' +
