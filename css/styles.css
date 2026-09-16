@@ -320,7 +320,10 @@
     cursor:pointer; font-family:inherit;
   }
   .calendar-week-card:hover{ box-shadow:0 4px 14px rgba(15,23,42,0.07); }
-  .calendar-week-card-top{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .calendar-week-card-row{ display:flex; align-items:flex-start; gap:10px; }
+  .calendar-week-card-body{ flex:1; min-width:0; }
+  .calendar-week-card-dday{ flex-shrink:0; }
+  .calendar-week-card-top{ display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px; }
   .calendar-week-card-cat{
     display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:800;
     padding:3px 9px; border-radius:999px;
@@ -2807,10 +2810,11 @@
     transition:box-shadow .15s ease;
   }
   .calendar-event-row:hover{box-shadow:0 4px 14px rgba(15,23,42,0.07);}
-  /* 좌측 원형 아이콘 — 기존 KR/US 원형 크기(30px)는 그대로 유지, 내부 콘텐츠만 카테고리별로 교체 */
+  /* 좌측 원형 아이콘 — 기존 원형 형태는 유지하되 크기를 30→36px로 키우고, 로고 이미지에는
+     내부 여백을 둬서 정사각형이 아닌 로고(와이드 워드마크 등)가 잘리지 않게 한다. */
   .calendar-event-icon-circle{
     flex-shrink:0;
-    width:30px;height:30px;
+    width:36px;height:36px;
     border-radius:50%;
     background:var(--card-soft);
     display:flex;
@@ -2820,11 +2824,14 @@
     overflow:hidden;
     position:relative;
   }
+  /* 로고 이미지는 흰 배경을 전제로 만들어진 경우가 많아 라이트/다크 모드와 무관하게 흰 바탕을
+     유지하되, 다크 모드에서 주변과 너무 튀지 않도록 옅은 테두리만 추가한다. */
+  .calendar-event-icon-circle.has-logo{ padding:5px; box-sizing:border-box; background:#fff; }
+  [data-theme="dark"] .calendar-event-icon-circle.has-logo{ box-shadow:0 0 0 1px rgba(255,255,255,0.08); }
   .calendar-event-logo-img{
     width:100%;
     height:100%;
-    object-fit:cover;
-    border-radius:50%;
+    object-fit:contain;
   }
   .calendar-event-logo-fallback{
     position:absolute;
@@ -2832,7 +2839,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    font-size:12px;
+    font-size:13px;
     font-weight:800;
     color:#fff;
     background:var(--brand);
@@ -2845,8 +2852,17 @@
   .calendar-event-icon-circle.economy-icon{background:rgba(49,130,246,0.10);}
   .calendar-event-icon-circle.subsidy-icon{background:rgba(219,39,119,0.12);}
   .calendar-event-icon-circle.subsidy-icon i{font-size:15px;color:#db2777;--ph-duotone-secondary-color:#db2777;--ph-duotone-secondary-opacity:0.18;}
-  .calendar-event-icon-circle.ipo-icon{background:rgba(8,145,178,0.12);}
-  .calendar-event-icon-circle.ipo-icon i{font-size:15px;color:#0891b2;--ph-duotone-secondary-color:#0891b2;--ph-duotone-secondary-opacity:0.18;}
+  /* 공모주 기본 아이콘 — 검증된 기업 로고가 없을 때 그래프 아이콘 대신 "IPO" 워드마크 + 국기 배지.
+     자산파일럿 공모주 카테고리 색(#0891b2)을 그대로 쓴다. */
+  .calendar-event-icon-circle.ipo-icon{ background:#0891b2; }
+  .calendar-event-ipo-mark{ font-size:10px; font-weight:900; color:#fff; letter-spacing:-0.02em; }
+  .calendar-event-flag-badge{
+    position:absolute; right:-1px; bottom:-1px;
+    width:14px; height:14px; border-radius:50%;
+    background:var(--card); box-shadow:0 0 0 1.5px var(--card);
+    display:flex; align-items:center; justify-content:center;
+    font-size:9px; line-height:1;
+  }
   .calendar-event-icon-circle.personal-icon{background:rgba(107,114,128,0.14);}
   .calendar-event-icon-circle.personal-icon i{font-size:15px;color:#6b7280;--ph-duotone-secondary-color:#6b7280;--ph-duotone-secondary-opacity:0.18;}
   .calendar-event-body{flex:1;min-width:0;}
