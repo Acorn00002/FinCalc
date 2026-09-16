@@ -1,0 +1,171 @@
+
+
+  /* ---------- Fin Pilot: grid state vs. detail (iframe) state ---------- */
+  #finpilotGridState.is-hidden{display:none;}
+
+  #finpilotDetailState{display:none;}
+  #finpilotDetailState.is-active{
+    display:flex;
+    flex-direction:column;
+  }
+  #finpilotDetailState iframe{
+    flex:1;
+    min-height:0;
+    height:auto;
+  }
+  .detail-back-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-shrink:0;
+    padding:14px 20px;
+    background:var(--card-soft);
+    border:none;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink-2);
+    cursor:pointer;
+    transition:color .15s ease;
+  }
+  .detail-back-btn:hover{color:var(--brand);}
+  .detail-back-btn i{font-size:16px;--ph-duotone-secondary-opacity:0;}
+
+  /* ---------- fincalc: 통합 계산기 마스터 모달 레이어 ---------- */
+  .fincalc-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.4);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    z-index:300;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .fincalc-overlay.show{display:flex;opacity:1;}
+
+  .fincalc-modal{
+    width:100%;
+    max-width:800px;
+    height:min(720px, 88vh);
+    background:var(--card);
+    border-radius:28px;
+    box-shadow:0 24px 70px -20px rgba(15,23,42,0.35);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transform:translateY(20px);
+    opacity:0;
+    transition:transform .3s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+    letter-spacing:-0.03em;
+  }
+  .fincalc-overlay.show .fincalc-modal{
+    transform:translateY(0);
+    opacity:1;
+  }
+
+  .fincalc-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px;
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .fincalc-title-wrap{display:flex;align-items:center;gap:10px;min-width:0;}
+  .fincalc-icon{
+    width:36px;height:36px;
+    border-radius:11px;
+    background:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .fincalc-icon i{font-size:19px;color:var(--brand);--ph-duotone-secondary-opacity:0.14;}
+  .fincalc-title{
+    font-size:16px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .fincalc-close-btn{
+    width:36px;height:36px;
+    flex-shrink:0;
+    border-radius:999px;
+    border:none;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .fincalc-close-btn i{font-size:18px;--ph-duotone-secondary-opacity:0;}
+  .fincalc-close-btn:hover{background:var(--line);}
+  .fincalc-close-btn:active{transform:scale(0.92);}
+
+  .fincalc-body{
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+    position:relative;
+    letter-spacing:-0.03em;
+  }
+  .fincalc-body iframe{
+    display:block;
+    width:100%;
+    height:100%;
+    border:none;
+    background:var(--card-soft);
+  }
+
+  .fincalc-loading{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:var(--card);
+  }
+  .fincalc-spinner{
+    width:28px;height:28px;
+    border-radius:50%;
+    border:3px solid var(--line);
+    border-top-color:var(--brand);
+    animation:fincalc-spin .7s linear infinite;
+  }
+  @keyframes fincalc-spin{ to{ transform:rotate(360deg); } }
+
+  .fincalc-soon{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:60px 24px;
+    letter-spacing:-0.03em;
+  }
+  .fincalc-soon-icon{
+    width:64px;height:64px;
+    border-radius:20px;
+    background:var(--card-soft);
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;
+  }
+  .fincalc-soon-icon i{font-size:30px;color:var(--ink-3);--ph-duotone-secondary-color:var(--ink-3);}
+  .fincalc-soon h3{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--ink-1);}
+  .fincalc-soon p{margin:0;font-size:13.5px;color:var(--ink-3);font-weight:500;}
+
+  @media (max-width:640px){
+    .fincalc-overlay{padding:0;align-items:flex-end;}
+    .fincalc-modal{
+      max-width:100%;height:92vh;border-radius:24px 24px 0 0;
+      padding-bottom:env(safe-area-inset-bottom, 0px);
+    }
+  }

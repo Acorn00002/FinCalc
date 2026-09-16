@@ -186,7 +186,18 @@ try {
   firebase.initializeApp(firebaseConfig);
 </script>
 
-<link rel="stylesheet" href="css/styles.css">
+<!-- css/styles.css(4289줄 단일 파일)를 기능별로 분리 — finpilot/index.html은 별도로 그 파일을 계속
+     쓰고 있어서(자산파일럿 메인 앱과 무관한 임베드 엔진) 그 파일 자체는 그대로 남겨뒀다.
+     로드 순서가 원본과 달라진 부분이 있지만, 분리 전 같은 selector가 서로 다른 파일로 쪼개진
+     경우가 있는지 전수 검사해 충돌 없음을 확인했다(자세한 내용은 REFACTOR_NOTES.md 참고). -->
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/assets.css">
+<link rel="stylesheet" href="css/community.css">
+<link rel="stylesheet" href="css/calendar.css">
+<link rel="stylesheet" href="css/calculators.css">
+<link rel="stylesheet" href="css/responsive-native.css">
 </head>
 <body>
 

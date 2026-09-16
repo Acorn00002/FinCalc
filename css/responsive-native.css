@@ -1,0 +1,42 @@
+
+
+  /* ---------- Embedded views ---------- */
+  .app-view{display:none;}
+  .app-view.active{display:block;}
+
+  /* 애드센스 심사 기간 임시 숨김 — 준비중 메뉴, 빈 커뮤니티, 베타 상담, 뉴스 RSS 피드.
+     심사 통과 후 이 규칙만 지우면 원상 복구됨. */
+  .review-hide{display:none!important;}
+
+  .embed-view{
+    height:calc(100vh - var(--chrome-h, 76px));
+    min-height:420px;
+  }
+  .embed-view iframe{
+    display:block;
+    width:100%;
+    height:100%;
+    border:none;
+    background:#f9fafb;
+  }
+  @media (max-width:640px){
+    /* 모바일에서는 하단 고정 바텀 네비게이션 높이만큼 iframe 뷰 높이도 함께 줄여서 겹치지 않게 함 */
+    .embed-view{height:calc(100vh - var(--chrome-h, 76px) - 64px - env(safe-area-inset-bottom, 0px));}
+  }
+
+  /* ==================================================
+     네이티브 하이브리드 앱(mobile-app/) 전용 — Expo WebView가 UA에 "AssetPilotNativeApp"을
+     붙여서 로드하면 <html>에 native-embed 클래스가 붙는다(index.html 상단 조기 스크립트 참고).
+     네이티브 헤더/드로어/하단바가 이미 있으므로 웹 자체 헤더·사이드바·하단바는 전부 숨기고
+     본문 콘텐츠만 채운다. 일반 브라우저/기존 TWA는 이 클래스가 없으므로 영향 없음.
+     ================================================== */
+  .native-embed .app-header,
+  .native-embed .bottom-nav,
+  .native-embed .app-sidebar,
+  .native-embed .sidebar-backdrop{display:none !important;}
+  .native-embed .app-main{padding-bottom:0 !important;margin-left:0 !important;}
+  .native-embed .embed-view{height:calc(100vh - var(--chrome-h, 0px)) !important;}
+  /* 네이티브 앱의 진짜 콜드 스타트(최초 로드)에서는 이 화살표 발사 스플래시가 그대로 보여야 하고,
+     이후 메뉴 전환으로 WebView가 다시 로드될 때만 재생되지 않아야 한다. index.html 상단 스크립트가
+     URL의 embednav 마커 유무로 이 둘을 구분해 native-embed-skip-splash 클래스를 붙인다. */
+  .native-embed-skip-splash .app-splash{display:none !important;}

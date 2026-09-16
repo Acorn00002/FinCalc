@@ -1,0 +1,1755 @@
+
+
+  /* ---------- Calculator card grid ---------- */
+  /* 최소 3열 고정: 화면 폭과 무관하게 PC·모바일 모두 항상 가로 3열 이상 유지 */
+  .calc-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    padding:0;
+  }
+  @media (min-width:768px){
+    .calc-grid{gap:16px;}
+  }
+  .calc-card{
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    height:140px;
+    padding:24px;
+    position:relative;
+    background:var(--card);
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.03);
+    cursor:pointer;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .calc-card:hover{
+    transform:translateY(-4px);
+    box-shadow:var(--shadow-card-hover);
+  }
+  .calc-card.is-hidden{display:none;}
+  .calc-icon{
+    width:44px;height:44px;
+    border-radius:12px;
+    background-color:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .calc-icon i{font-size:21px;}
+  .calc-card h3{
+    margin:0;
+    font-size:16px;
+    font-weight:700;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    word-break:keep-all;
+  }
+  .calc-soon-badge{
+    position:absolute;
+    top:20px;right:20px;
+    font-size:10px;
+    font-weight:800;
+    padding:3px 8px;
+    border-radius:999px;
+    background:var(--card-soft);
+    color:var(--ink-3);
+  }
+  .calc-soon-badge.new{
+    background:var(--brand-soft-2);
+    color:var(--brand-2);
+  }
+  .calc-card.soon .calc-icon{background:var(--card-soft);}
+  .calc-card.soon .calc-icon i{
+    color:var(--ink-3);
+    --ph-duotone-secondary-color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0.18;
+  }
+  .calc-card.soon:hover{transform:none;box-shadow:0 4px 20px rgba(0,0,0,0.03);}
+
+  /* 핵심 서비스인 세금 계산기(양도소득세·증여세·상속세)만 미세한 컬러 포인트로 주목도를 높임 */
+  .calc-card[data-category="tax"]{
+    border:1.5px solid rgba(245,158,11,0.35);
+    background:linear-gradient(160deg, rgba(245,158,11,0.07), var(--card) 60%);
+  }
+  .calc-card[data-category="tax"] .calc-icon{background:rgba(245,158,11,0.16);}
+  .calc-card[data-category="tax"] .calc-icon i{color:#f59e0b;--ph-duotone-secondary-color:#f59e0b;}
+
+  /* 모바일 3열 디테일 튜닝: 화면 폭 767px 미만 */
+  @media (max-width:767px){
+    .calc-grid{gap:8px; padding:0;}
+    .calc-card{
+      height:110px;
+      padding:12px;
+      border-radius:16px;
+    }
+    .calc-icon{
+      width:32px;height:32px;
+      border-radius:8px;
+    }
+    .calc-icon i{font-size:16px;}
+    .calc-card h3{
+      font-size:12px;
+      line-height:1.3;
+      word-break:keep-all;
+    }
+    .calc-soon-badge{
+      top:10px;right:10px;
+      font-size:9px;
+      padding:2px 6px;
+    }
+  }
+
+  .calc-empty{
+    text-align:center;
+    padding:48px 20px;
+    color:var(--ink-3);
+    font-size:14px;
+    font-weight:600;
+  }
+
+  /* ---------- Coming soon ---------- */
+  .soon-section{margin-top:52px;}
+  .soon-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  .soon-card{
+    background:var(--card-soft);
+    border-radius:var(--radius-lg);
+    padding:26px;
+    display:flex;
+    gap:16px;
+    align-items:flex-start;
+    max-width:480px;
+  }
+  .soon-card .icon-plate{
+    width:48px;height:48px;
+    border-radius:14px;
+    background:#eceef1;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .soon-card .icon-plate i{
+    font-size:23px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0.18;
+  }
+  .soon-card .body{min-width:0;}
+  .soon-card .title-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .soon-card h4{
+    margin:0;
+    font-size:15.5px;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .badge.soon{
+    background:#e4e7eb;
+    color:var(--ink-3);
+  }
+  .soon-card p{
+    margin:0;
+    font-size:13px;
+    color:var(--ink-3);
+    font-weight:500;
+    line-height:1.55;
+    word-break:keep-all;
+  }
+
+  /* ---------- Trust strip ---------- */
+  .trust-strip{
+    margin-top:56px;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    padding:26px 28px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px 32px;
+    box-shadow:var(--shadow-card);
+  }
+  .trust-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-2);
+  }
+  .trust-item i{font-size:19px;--ph-duotone-secondary-opacity:0.14;}
+
+  footer{
+    max-width:960px;
+    margin:56px auto 0;
+    padding:24px 20px 0;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-3);
+    font-weight:500;
+    line-height:1.7;
+  }
+  .home-footer-links{
+    display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px;
+  }
+  .home-footer-links a{font-weight:600;color:var(--ink-3);}
+  .home-footer-links a:hover{color:var(--brand);}
+  @media (min-width:640px){ footer{padding:24px 32px 0;} }
+
+  /* ---------- Home SEO guide ---------- */
+  .home-seo-guide{
+    max-width:960px;
+    margin:40px auto 0;
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:26px 28px;
+  }
+  @media (min-width:640px){ .home-seo-guide{padding:30px 32px;} }
+  .home-seo-guide h2{font-size:17px;font-weight:800;margin:0 0 12px;color:var(--ink-1);}
+  .home-seo-guide h3{font-size:14.5px;font-weight:700;margin:20px 0 8px;color:var(--ink-1);}
+  .home-seo-guide p{margin:0 0 10px;font-size:13.5px;line-height:1.75;color:var(--ink-2);word-break:keep-all;}
+  .home-seo-guide .faq-item{margin-bottom:14px;}
+  .home-seo-guide .faq-item:last-child{margin-bottom:0;}
+  .home-seo-guide .faq-q{font-size:13.5px;font-weight:700;color:var(--ink-1);margin:0 0 4px;}
+  .home-seo-guide .faq-a{font-size:13px;color:var(--ink-2);margin:0;line-height:1.65;word-break:keep-all;}
+
+  /* ---------- Home: 모바일 퍼스트 스택 ---------- */
+  /* 당겨서 새로고침 — 드래그 중엔 JS가 height를 직접 픽셀 단위로 조절해 손가락과 1:1로 반응하게 하고,
+     손을 뗀 순간에만 트랜지션을 켜서 정착/복귀 애니메이션을 부드럽게 만든다. */
+  .pull-refresh-indicator{
+    height:0;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .pull-refresh-indicator.is-settling{transition:height .2s ease;}
+  .pull-refresh-icon{
+    font-size:22px;color:var(--brand);
+    --ph-duotone-secondary-opacity:0.16;
+  }
+  .pull-refresh-indicator.is-loading .pull-refresh-icon{
+    animation:pullRefreshSpin .7s linear infinite;
+  }
+  @keyframes pullRefreshSpin{ to { transform:rotate(360deg); } }
+
+  /* 2. 웰컴 & 포인트 배지 (한 줄, 간결하게) */
+  .home-welcome-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:16px 2px 10px;
+  }
+  .home-welcome-name{margin:0;font-size:18px;font-weight:700;color:var(--ink-1);letter-spacing:-0.03em;}
+  .home-points-badge{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex-shrink:0;
+    background:var(--brand-soft);
+    color:var(--brand);
+    border:none;
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    white-space:nowrap;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .home-points-badge:hover{background:rgba(88,92,229,0.14);}
+  .home-points-badge:active{transform:scale(0.96);}
+  .home-points-badge i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+
+  /* 미래 자산 예측 시뮬레이터 — 슬라이더 두 개(월 저축액/대출 추가상환)로 5년 뒤 예상 자산과
+     절감 이자를 실시간 계산해 보여주는 토스 스타일 카드. 입력창 없이 슬라이더+원터치 버튼만 사용. */
+  .home-sim-section{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+  .home-sim-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .home-sim-label{margin:0 0 6px;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .home-sim-value{margin:0 0 6px;font-size:21px;font-weight:800;color:var(--brand);letter-spacing:-0.02em;}
+  .home-sim-value--loss{color:#dc2626;}
+  .home-sim-sub{margin:0 0 14px;font-size:12px;font-weight:500;color:var(--ink-3);}
+  .home-sim-slider{
+    width:100%;
+    height:6px;
+    border-radius:999px;
+    background:var(--brand-soft);
+    accent-color:var(--brand);
+    appearance:none;
+    -webkit-appearance:none;
+    cursor:pointer;
+    margin-bottom:12px;
+  }
+  .home-sim-slider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;border-radius:50%;
+    background:var(--brand);border:3px solid var(--card);
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    cursor:pointer;
+  }
+  .home-sim-slider::-moz-range-thumb{
+    width:20px;height:20px;border-radius:50%;
+    background:var(--brand);border:3px solid var(--card);
+    box-shadow:0 1px 4px rgba(0,0,0,0.25);
+    cursor:pointer;
+  }
+  .home-sim-slider--loan{accent-color:#dc2626;}
+  .home-sim-slider--loan::-webkit-slider-thumb{background:#dc2626;}
+  .home-sim-slider--loan::-moz-range-thumb{background:#dc2626;}
+  .home-sim-quick{display:flex;gap:8px;}
+  .home-sim-quick-btn{
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  .home-sim-quick-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .home-sim-quick-btn:active{transform:scale(0.96);}
+
+  /* 자산 비교 & 자산 점수 카드 — 모바일 앱 AssetScoreScreen.tsx와 동일한 로직/문구를 웹에 이식 */
+  .home-score-section{margin-bottom:24px;}
+  .home-score-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:20px 18px;}
+  .home-score-input-title{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--ink-1);}
+  .home-score-sync-hint{display:flex;align-items:center;gap:4px;margin:-8px 0 14px;font-size:11.5px;font-weight:600;color:var(--brand);}
+  .home-score-sync-hint i{font-size:12px;--ph-duotone-secondary-opacity:0;}
+  .home-score-bracket-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+  .home-score-bracket-chip{
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:9px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .home-score-bracket-chip.active{background:var(--brand);color:#fff;}
+  .home-score-input-row{display:flex;align-items:center;gap:8px;background:var(--card-soft);border-radius:14px;padding:12px 14px;margin-bottom:8px;}
+  .home-score-quick-add-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .home-score-quick-add-btn{
+    background:transparent;
+    color:var(--brand);
+    border:1.5px solid var(--brand-soft);
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .home-score-quick-add-btn:active{background:var(--brand-soft);}
+  .home-score-input-label{flex-shrink:0;font-size:13px;font-weight:700;color:var(--ink-2);width:52px;}
+  .home-score-input{flex:1;min-width:0;border:none;background:transparent;font-size:16px;font-weight:700;color:var(--ink-1);}
+  .home-score-input::placeholder{color:var(--ink-3);}
+  .home-score-input-suffix{font-size:13px;font-weight:700;color:var(--ink-3);}
+  .home-score-submit-btn{
+    width:100%;
+    background:var(--brand);
+    color:#fff;
+    border:none;
+    padding:14px;
+    border-radius:14px;
+    font-size:14.5px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .home-score-result-title{margin:0 0 16px;font-size:18px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .home-score-gauge-track{width:100%;height:10px;border-radius:999px;background:var(--card-soft);overflow:hidden;}
+  .home-score-gauge-fill{height:100%;border-radius:999px;background:var(--brand);transition:width .3s ease;}
+  .home-score-gauge-fill--score{background:var(--profit, #059669);}
+  .home-score-caption{margin:8px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-3);}
+  .home-score-divider{height:1px;background:var(--line);margin:18px 0;}
+  .home-score-sub-label{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--ink-3);}
+  .home-score-value{margin:0 0 14px;font-size:28px;font-weight:800;color:var(--brand);}
+  .home-score-disclaimer{margin:12px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.5;}
+  .home-score-edit-btn{width:100%;background:none;border:none;padding:14px 0 0;font-size:13px;font-weight:700;color:var(--ink-3);cursor:pointer;}
+
+  /* 오늘의 3초 자산 꿀팁 — 앱의 푸시 알림 리마인더에 대응하는 웹 전용 읽기 달성 카드 */
+  .home-tip-section{margin-bottom:24px;}
+  .home-tip-card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);padding:18px;}
+  .home-tip-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .home-tip-badge{font-size:12.5px;font-weight:700;color:var(--brand);}
+  .home-tip-streak{font-size:12px;font-weight:600;color:var(--ink-3);}
+  .home-tip-text{margin:0 0 14px;font-size:14px;font-weight:500;color:var(--ink-1);line-height:1.55;}
+  .home-tip-btn{
+    width:100%;
+    background:var(--card-soft);
+    color:var(--ink-1);
+    border:none;
+    padding:12px;
+    border-radius:12px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .home-tip-btn:hover{background:var(--brand-soft);color:var(--brand);}
+  .home-tip-btn.done{background:var(--brand);color:#fff;}
+
+  /* 3. 실시간 경제 뉴스 — 토스/당근마켓 벤치마킹, 장식 없이 타이포그래피 대비로만 위계를 만든 미니멀 피드 */
+  .home-news-section{margin-bottom:24px;}
+  .home-news-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 12px;padding:0 16px;}
+  .home-news-heading{margin:0;padding:0;font-size:18px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;}
+  .home-news-more{
+    display:flex;
+    align-items:center;
+    gap:1px;
+    font-size:13px;
+    font-weight:600;
+    color:#8e8e93;
+    flex-shrink:0;
+    transition:color .15s ease;
+  }
+  .home-news-more i{font-size:12px;--ph-duotone-secondary-opacity:0;}
+  .home-news-more:hover{color:var(--brand-2);}
+
+  .home-news-list{background:var(--card);border-radius:16px;max-height:420px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  @media (min-width:961px){ .home-news-list{max-height:630px;} }
+  .home-news-item{
+    display:block;
+    padding:12px 16px;
+    border-bottom:1px solid #f0f0f0;
+  }
+  .home-news-item:last-child{border-bottom:none;}
+  .home-news-title{
+    margin:0;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink-1);
+    line-height:1.4;
+    word-break:keep-all;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .home-news-meta{margin:4px 0 0;font-size:12px;font-weight:400;color:#8e8e93;}
+
+  .home-news-item.skeleton{
+    height:50px;
+    margin:12px 16px;
+    padding:0;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(90deg, var(--card-soft) 25%, #eef0f2 37%, var(--card-soft) 63%);
+    background-size:400% 100%;
+    animation:homeNewsSkeletonPulse 1.5s ease infinite;
+  }
+  @keyframes homeNewsSkeletonPulse{ 0%{background-position:100% 50%;} 100%{background-position:0 50%;} }
+
+  .home-news-empty{margin:0;padding:32px 16px;font-size:13.5px;font-weight:500;color:var(--ink-3);text-align:center;}
+
+  /* 1. AI 자산파일럿 서포터 — 제미나이 그라디언트 포인트를 준 카드형 검색창 (홈 최상단 배치) */
+  .home-ai-section{margin:8px 0 24px;}
+  .home-ai-card{
+    background:linear-gradient(135deg, var(--card) 0%, var(--card-soft) 100%);
+    border-radius:16px;
+    box-shadow:var(--shadow-card);
+    padding:18px;
+  }
+  .home-ai-card-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .home-ai-card-head h3{margin:0;font-size:15px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;}
+  .home-ai-intro{margin:0 0 10px;font-size:13px;font-weight:600;color:var(--ink-2);}
+  .home-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .home-ai-chip{
+    background:var(--card-soft);
+    color:var(--ink-2);
+    border:none;
+    padding:7px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s ease, color .15s ease, transform .15s ease;
+  }
+  .home-ai-chip:hover{background:var(--brand-soft);color:var(--brand);}
+  .home-ai-chip:active{transform:scale(0.96);}
+  .home-ai-icon{flex-shrink:0;}
+
+  /* 포트폴리오 분석 작성 가이드 카드 — "내 포트폴리오 분석" 칩을 누르면 나타나 [종목명: 비중]
+     예시 양식을 실제 카드로 보여준다. */
+  .home-ai-guide-card{
+    background:var(--brand-soft);
+    border:1px solid rgba(88,92,229,0.16);
+    border-radius:16px;
+    padding:14px 16px;
+    margin-bottom:12px;
+  }
+  .home-ai-guide-head{display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;}
+  .home-ai-guide-title{flex:1;margin:0;font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.5;}
+  .home-ai-guide-title i{color:var(--brand);margin-right:3px;font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .home-ai-guide-title b{color:var(--brand);font-weight:800;}
+  .home-ai-guide-close{
+    flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    width:24px;height:24px;border-radius:8px;border:none;
+    background:transparent;color:var(--ink-3);cursor:pointer;
+  }
+  .home-ai-guide-close:hover{background:rgba(255,255,255,0.5);color:var(--ink-1);}
+  .home-ai-guide-close i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .home-ai-guide-example{
+    background:var(--card);
+    border-radius:12px;
+    padding:10px 14px;
+    margin-bottom:10px;
+  }
+  .home-ai-guide-example-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:5px 0;font-size:13px;
+  }
+  .home-ai-guide-example-row span{color:var(--ink-2);font-weight:600;}
+  .home-ai-guide-example-row b{color:var(--brand);font-weight:800;}
+  .home-ai-guide-apply-btn{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    width:100%;background:var(--brand);color:#fff;border:none;
+    padding:11px;border-radius:12px;font-size:12.5px;font-weight:700;cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  .home-ai-guide-apply-btn:hover{opacity:0.9;}
+  .home-ai-guide-apply-btn i{font-size:14px;--ph-duotone-secondary-opacity:0;}
+
+  .home-ai-input-wrap{position:relative;}
+  .home-ai-input-box{position:relative;}
+  .home-ai-input-icon{position:absolute;left:16px;top:17px;pointer-events:none;}
+  .home-ai-input{
+    display:block;
+    width:100%;
+    box-sizing:border-box;
+    background:var(--card-soft);
+    border:none;
+    border-radius:999px;
+    padding:15px 108px 15px 44px;
+    font-family:inherit;
+    font-size:14.5px;
+    font-weight:500;
+    line-height:1.5;
+    color:var(--ink-1);
+    resize:none;
+    min-height:52px;
+    max-height:160px;
+    overflow-y:hidden;
+  }
+  .home-ai-input::placeholder{color:var(--ink-3);}
+  .home-ai-input:focus{outline:2px solid var(--brand-soft);}
+  .home-ai-submit-btn{
+    position:absolute;
+    right:6px;
+    bottom:6px;
+    flex-shrink:0;
+    background:#2d3a82;
+    color:#fff;
+    border:none;
+    height:40px;
+    padding:0 18px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .home-ai-submit-btn:active{transform:scale(0.97);}
+  .home-ai-submit-btn:disabled{opacity:0.5;cursor:default;}
+
+  .home-ai-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 4px 0;}
+  .home-ai-cost-hint{margin:0;font-size:11.5px;font-weight:500;color:var(--ink-3);}
+  .home-ai-cost-hint b{color:var(--ink-2);font-weight:700;}
+  .home-ai-charge-link{
+    display:flex;
+    align-items:center;
+    gap:2px;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--brand);
+    flex-shrink:0;
+    white-space:nowrap;
+  }
+  .home-ai-charge-link i{font-size:11px;--ph-duotone-secondary-opacity:0;}
+
+  @media (max-width:420px){
+    .home-ai-input{padding-right:14px;}
+    .home-ai-submit-btn{position:static;transform:none;width:100%;margin-top:10px;}
+  }
+  .home-ai-answer{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid var(--line);
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-2);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+  /* marked가 만들어주는 마크다운 요소 스타일 — 굵기/간격 대비로만 위계를 주는 기존 톤 유지 */
+  .home-ai-answer p{margin:0 0 10px;}
+  .home-ai-answer p:last-child{margin-bottom:0;}
+  .home-ai-answer strong{color:var(--ink-1);font-weight:700;}
+  .home-ai-answer ul,
+  .home-ai-answer ol{margin:0 0 10px;padding-left:18px;}
+  .home-ai-answer li{margin-bottom:4px;}
+  .home-ai-answer li:last-child{margin-bottom:0;}
+  .home-ai-answer a{color:var(--brand-2);text-decoration:underline;text-underline-offset:2px;}
+  .home-ai-answer code{
+    background:var(--card-soft);
+    padding:2px 5px;
+    border-radius:5px;
+    font-size:12px;
+  }
+  .home-ai-answer h1,
+  .home-ai-answer h2,
+  .home-ai-answer h3{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--ink-1);}
+
+  /* 포트폴리오 분석 답변 섹션 카드 — 서버가 ## 진단 요약/리스크/개선 제안 3개 헤더로 답하면
+     JS(wrapAiAnswerSections)가 각 헤더+본문을 이 카드로 감싼다. 헤더가 없는 일반 답변에는
+     적용되지 않는다. */
+  .home-ai-answer-section{
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:14px 16px;
+    margin:0 0 10px;
+  }
+  .home-ai-answer-section:last-child{margin-bottom:0;}
+  .home-ai-answer-section h2{
+    margin:0 0 8px !important;
+    font-size:13.5px !important;
+    font-weight:800 !important;
+    color:var(--ink-1);
+  }
+  .home-ai-answer-section > *:last-child{margin-bottom:0;}
+  .home-ai-answer-section--summary{border-left:3px solid var(--brand);}
+  .home-ai-answer-section--risk{border-left:3px solid #dc2626;background:rgba(220,38,38,0.05);}
+  .home-ai-answer-section--action{border-left:3px solid var(--profit, #059669);background:rgba(5,150,105,0.06);}
+
+  /* ---------- 증권시장 대시보드 (TradingView 위젯) ---------- */
+  .market-head{padding:28px 2px 20px;}
+  @media (min-width:640px){ .market-head{padding:36px 2px 24px;} }
+  .market-head h2{
+    margin:0 0 6px;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    color:var(--ink-1);
+  }
+  .market-head p{
+    margin:0;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-3);
+  }
+
+  .index-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+    margin-bottom:20px;
+  }
+  @media (max-width:767px){
+    /* 모바일에서는 3장이 눌려 찌그러지는 대신, 가로로 스와이프하는 큼직한 캐러셀 카드로 전환 */
+    .index-grid{
+      display:flex;
+      grid-template-columns:none;
+      gap:12px;
+      overflow-x:auto;
+      scroll-snap-type:x mandatory;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      margin:0 -20px 20px;
+      padding:0 20px;
+    }
+    .index-grid::-webkit-scrollbar{display:none;}
+    .index-grid .index-card{
+      flex:0 0 82%;
+      scroll-snap-align:center;
+    }
+  }
+
+  .index-card{
+    background:linear-gradient(180deg, rgba(88,92,229,0.07), #ffffff 60%);
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.03);
+    padding:20px 18px 16px;
+    overflow:visible;
+  }
+  .index-card-head{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .index-card-name{
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .index-card-code{
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink-3);
+    letter-spacing:0.02em;
+  }
+  .index-card-widget{
+    height:170px;
+    min-height:170px;
+    margin:0 -6px;
+  }
+  .index-card-widget .tradingview-widget-container,
+  .index-card-widget .tradingview-widget-container__widget{
+    height:100%;
+    width:100%;
+  }
+  .index-card-widget .tv-loading{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-3);
+  }
+
+  .main-chart-card{
+    background:#ffffff;
+    border-radius:24px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.03);
+    padding:20px;
+    margin-bottom:32px;
+  }
+  @media (min-width:640px){ .main-chart-card{padding:24px;} }
+
+  .main-chart-head{
+    display:flex;
+    align-items:center;
+    margin-bottom:16px;
+  }
+
+  .market-toggle-tabs{
+    display:inline-flex;
+    background:#f2f4f6;
+    border-radius:30px;
+    padding:4px;
+    gap:4px;
+  }
+  .market-toggle-tabs .toggle-tab{
+    padding:10px 20px;
+    border-radius:26px;
+    border:none;
+    background:transparent;
+    color:var(--ink-3);
+    font-size:13.5px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .18s cubic-bezier(.4,0,.2,1), color .18s ease, box-shadow .18s ease;
+  }
+  .market-toggle-tabs .toggle-tab.active{
+    background:#ffffff;
+    color:var(--brand);
+    box-shadow:0 2px 8px rgba(15,23,42,0.08);
+  }
+  .market-toggle-tabs .toggle-tab .tab-soon-badge{
+    display:inline-block;
+    margin-left:5px;
+    padding:1px 6px;
+    border-radius:999px;
+    background:#e4e7eb;
+    color:var(--ink-3);
+    font-size:9.5px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    vertical-align:middle;
+  }
+
+  .main-chart-body{
+    width:100%;
+    height:520px;
+    border-radius:16px;
+    overflow:hidden;
+    background:var(--card-soft);
+  }
+  @media (max-width:767px){
+    .main-chart-body{height:420px;}
+  }
+  .main-chart-body iframe{width:100% !important;}
+
+  .market-chart-soon{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 24px;
+  }
+  .market-chart-soon-icon{
+    width:56px;height:56px;
+    border-radius:18px;
+    background:#ffffff;
+    box-shadow:0 1px 3px rgba(15,23,42,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:16px;
+  }
+  .market-chart-soon-icon i{
+    font-size:26px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-color:var(--ink-3);
+  }
+  .market-chart-soon h3{
+    margin:0 0 8px;
+    font-size:16px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    color:var(--ink-1);
+  }
+  .market-chart-soon p{
+    margin:0;
+    font-size:13px;
+    font-weight:500;
+    line-height:1.6;
+    color:var(--ink-3);
+  }
+
+  /* ==================================================
+     금융 — 실시간 최저/최고 금리 비교 대시보드
+     ================================================== */
+  .finance-head{padding:28px 2px 20px;}
+  @media (min-width:640px){ .finance-head{padding:36px 2px 24px;} }
+  .finance-head h2{
+    margin:0 0 6px;
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    color:var(--ink-1);
+    transition:opacity .18s ease;
+  }
+  .finance-head p{
+    margin:0;
+    font-size:13.5px;
+    font-weight:500;
+    color:var(--ink-3);
+    transition:opacity .18s ease;
+  }
+
+  .finance-ad-card{
+    position:relative;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:linear-gradient(135deg, var(--brand-soft) 0%, var(--brand-soft-2) 100%);
+    border:1px solid rgba(88,92,229,0.14);
+    border-radius:var(--radius-lg);
+    padding:20px 22px;
+    margin-bottom:20px;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .finance-ad-badge{
+    position:absolute;
+    top:14px;
+    right:16px;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0.02em;
+    color:#b5b9c2;
+    background:rgba(255,255,255,0.7);
+    padding:3px 7px;
+    border-radius:999px;
+  }
+  [data-theme="dark"] .finance-ad-badge{
+    color:#6b7280;
+    background:rgba(0,0,0,0.25);
+  }
+  .finance-ad-icon{
+    flex-shrink:0;
+    width:48px;height:48px;
+    border-radius:16px;
+    background:#ffffff;
+    box-shadow:0 2px 8px rgba(15,23,42,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .finance-ad-icon i{font-size:23px;}
+  .finance-ad-body{min-width:0;flex:1;}
+  .finance-ad-bank{
+    font-size:12px;
+    font-weight:700;
+    color:var(--brand);
+    margin:0 0 3px;
+  }
+  .finance-ad-title{
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    margin:0 0 4px;
+    word-break:keep-all;
+  }
+  .finance-ad-desc{
+    font-size:12.5px;
+    font-weight:500;
+    color:var(--ink-2);
+    margin:0;
+    word-break:keep-all;
+  }
+  .finance-ad-rate{
+    flex-shrink:0;
+    text-align:right;
+  }
+  .finance-ad-rate .num{
+    font-size:19px;
+    font-weight:800;
+    color:var(--brand);
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+  }
+  .finance-ad-rate .lbl{
+    display:block;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    margin-top:2px;
+  }
+  @media (max-width:560px){
+    .finance-ad-card{flex-wrap:wrap;padding:18px 18px 16px;}
+    .finance-ad-rate{margin-left:62px;text-align:left;}
+  }
+
+  .finance-filter-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .finance-filter-pills{
+    display:inline-flex;
+    background:var(--bg);
+    border-radius:30px;
+    padding:4px;
+    gap:4px;
+  }
+  .finance-filter-pill{
+    padding:9px 16px;
+    border-radius:26px;
+    border:none;
+    background:transparent;
+    color:var(--ink-3);
+    font-size:12.5px;
+    font-weight:700;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .18s ease, color .18s ease, box-shadow .18s ease;
+    white-space:nowrap;
+  }
+  .finance-filter-pill.active{
+    background:var(--card);
+    color:var(--brand);
+    box-shadow:0 2px 8px rgba(15,23,42,0.08);
+  }
+  .finance-filter-count{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-3);
+    flex-shrink:0;
+  }
+
+  .finance-rank-list{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .finance-rank-item{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--card);
+    border-radius:18px;
+    box-shadow:0 2px 10px rgba(15,23,42,0.04);
+    padding:16px 18px;
+    cursor:pointer;
+    transition:box-shadow .15s ease, transform .15s ease, opacity .25s ease;
+  }
+  .finance-rank-chevron{flex-shrink:0;font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;}
+
+  .finance-loading{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    padding:56px 20px;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:600;
+  }
+  .finance-loading[hidden]{display:none;}
+  .finance-spinner{
+    width:28px;height:28px;
+    border-radius:50%;
+    border:3px solid var(--card-soft);
+    border-top-color:var(--brand);
+    animation:financeSpin 0.8s linear infinite;
+  }
+  @keyframes financeSpin{ to{ transform:rotate(360deg); } }
+
+  .finance-error{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    padding:56px 20px;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+  }
+  .finance-error[hidden]{display:none;}
+  .finance-error i{font-size:32px;--ph-duotone-secondary-opacity:0;}
+  .finance-rank-item:hover{
+    box-shadow:0 6px 18px rgba(15,23,42,0.08);
+  }
+  .finance-rank-num{
+    flex-shrink:0;
+    width:28px;height:28px;
+    border-radius:9px;
+    background:var(--bg);
+    color:var(--ink-3);
+    font-size:12.5px;
+    font-weight:800;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .finance-rank-item[data-rank="1"] .finance-rank-num{background:#fef3c7;color:#b45309;}
+  .finance-rank-item[data-rank="2"] .finance-rank-num{background:#e5e7eb;color:#4b5563;}
+  .finance-rank-item[data-rank="3"] .finance-rank-num{background:#fde8e0;color:#c2410c;}
+  [data-theme="dark"] .finance-rank-item[data-rank="1"] .finance-rank-num{background:rgba(245,158,11,0.22);color:#fbbf24;}
+  [data-theme="dark"] .finance-rank-item[data-rank="2"] .finance-rank-num{background:rgba(156,163,175,0.22);color:#d1d5db;}
+  [data-theme="dark"] .finance-rank-item[data-rank="3"] .finance-rank-num{background:rgba(249,115,22,0.22);color:#fdba74;}
+
+  .finance-rank-info{flex:1;min-width:0;}
+  .finance-rank-bank{
+    font-size:12px;
+    font-weight:700;
+    color:var(--ink-3);
+    margin:0 0 2px;
+  }
+  .finance-rank-name{
+    font-size:14.5px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+    margin:0 0 6px;
+    word-break:keep-all;
+  }
+  .finance-rank-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+  }
+  .finance-rank-tag{
+    display:inline-flex;
+    align-items:center;
+    font-size:10.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    background:var(--bg);
+    padding:3px 8px;
+    border-radius:999px;
+    white-space:nowrap;
+  }
+  .finance-rank-tag.guarantee{color:var(--brand);background:var(--brand-soft);}
+
+  .finance-rank-rates{
+    flex-shrink:0;
+    text-align:right;
+  }
+  .finance-rank-rate-primary{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:3px;
+    font-size:17px;
+    font-weight:800;
+    color:var(--brand);
+    letter-spacing:-0.03em;
+    white-space:nowrap;
+  }
+  .finance-rate-info-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:16px;height:16px;
+    border:none;
+    background:none;
+    color:var(--ink-3);
+    cursor:pointer;
+    flex-shrink:0;
+    padding:0;
+  }
+  .finance-rate-info-btn i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .finance-rank-rate-secondary{
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-3);
+    margin-top:2px;
+    white-space:nowrap;
+  }
+  .finance-rank-prepay{color:var(--ink-3);opacity:0.85;}
+
+  .finance-disclaimer{
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+    padding:2px 4px 40px;
+  }
+  .finance-disclaimer[hidden]{display:none;}
+  .finance-disclaimer i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;margin-top:1px;}
+  .finance-disclaimer-body{display:flex;flex-direction:column;gap:6px;}
+  .finance-disclaimer-asof{
+    margin:0;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .finance-disclaimer p{
+    margin:0;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--ink-3);
+    font-weight:500;
+  }
+
+  @media (max-width:560px){
+    .finance-rank-item{
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+    .finance-rank-info{
+      flex-basis:calc(100% - 42px);
+    }
+    .finance-rank-rates{
+      flex-basis:100%;
+      text-align:left;
+      margin-top:10px;
+      padding-top:10px;
+      border-top:1px solid var(--line);
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+    }
+    .finance-rank-rate-secondary{margin-top:0;}
+  }
+
+  /* ---------- 오늘의 금융 포인트 부스터 미션 ---------- */
+  .reward-mission-section{margin-top:28px;position:relative;}
+  .reward-mission-head{margin-bottom:14px;}
+  .reward-mission-head h3{margin:0 0 4px;font-size:17px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
+  .reward-mission-head p{margin:0;font-size:12.5px;font-weight:500;color:var(--ink-3);}
+  .reward-mission-list{
+    display:flex;flex-direction:column;gap:10px;
+    background:var(--card);border-radius:var(--radius-lg);padding:10px;
+    transition:filter .2s ease;
+  }
+  .reward-mission-list.is-locked{filter:blur(4px);pointer-events:none;user-select:none;}
+  .reward-mission-item{
+    display:flex;align-items:center;gap:14px;width:100%;
+    padding:14px;border-radius:14px;border:none;background:transparent;
+    cursor:pointer;text-align:left;transition:background .15s ease, opacity .15s ease;
+  }
+  .reward-mission-item:hover:not(:disabled){background:var(--card-soft);}
+  .reward-mission-item:disabled{cursor:default;}
+  .reward-mission-icon{
+    width:40px;height:40px;flex-shrink:0;border-radius:12px;background:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .reward-mission-icon i{font-size:19px;color:var(--brand);}
+  .reward-mission-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
+  .reward-mission-title{font-size:13.5px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;}
+  .reward-mission-desc{font-size:11.5px;font-weight:500;color:var(--ink-3);}
+  .reward-mission-point{
+    flex-shrink:0;font-size:13px;font-weight:800;color:var(--brand);
+    background:var(--brand-soft);padding:6px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .reward-mission-item.done .reward-mission-point{color:var(--ink-3);background:var(--card-soft);}
+  .reward-mission-item.done{opacity:0.6;}
+
+  .reward-mission-lock-overlay{
+    position:absolute;inset:0;top:52px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    color:var(--ink-2);font-size:13px;font-weight:700;
+    pointer-events:none;
+  }
+  .reward-mission-lock-overlay i{font-size:16px;color:var(--ink-3);}
+
+  /* ---------- 기프티콘 교환 팝업 모달 ---------- */
+  .reward-shop-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .reward-shop-overlay.open{opacity:1;pointer-events:auto;}
+  .reward-shop-modal{
+    width:100%;max-width:420px;max-height:86vh;overflow-y:auto;
+    background:#fff;border-radius:var(--radius-lg);padding:24px;
+    transform:translateY(12px) scale(0.98);opacity:0;transition:transform .22s ease, opacity .22s ease;
+  }
+  .reward-shop-overlay.open .reward-shop-modal{transform:translateY(0) scale(1);opacity:1;}
+  .reward-shop-topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .reward-shop-title{font-size:17px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
+  .reward-shop-close-btn{
+    width:32px;height:32px;border-radius:10px;border:none;background:var(--card-soft);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .reward-shop-close-btn:hover{background:#e5e8eb;}
+  .reward-shop-balance{margin:0 0 18px;font-size:13px;font-weight:600;color:var(--ink-3);}
+  .reward-shop-balance b{color:var(--brand);font-weight:800;font-size:15px;}
+  .reward-shop-list{display:flex;flex-direction:column;gap:10px;}
+  .reward-shop-item{
+    display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:var(--card-soft);
+  }
+  .reward-shop-item-icon{
+    width:42px;height:42px;flex-shrink:0;border-radius:13px;background:#fff;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(15,23,42,0.06);
+  }
+  .reward-shop-item-icon i{font-size:20px;color:var(--brand);}
+  .reward-shop-item-body{flex:1;min-width:0;}
+  .reward-shop-item-cat{font-size:11px;font-weight:700;color:var(--brand);}
+  .reward-shop-item-name{margin:2px 0 3px;font-size:13.5px;font-weight:700;color:var(--ink-1);letter-spacing:-0.02em;line-height:1.4;}
+  .reward-shop-item-price{margin:0;font-size:12.5px;font-weight:700;color:var(--ink-3);}
+  .reward-shop-item-btn{
+    flex-shrink:0;padding:10px 16px;border-radius:12px;border:none;
+    background:var(--brand-2);color:#fff;font-size:12.5px;font-weight:800;letter-spacing:-0.02em;
+    cursor:pointer;transition:background .15s ease, transform .15s ease;
+  }
+  .reward-shop-item-btn:hover{background:#1b64da;}
+  .reward-shop-item-btn:active{transform:scale(0.96);}
+  .reward-shop-item-btn.disabled, .reward-shop-item-btn:disabled{
+    background:#e5e7eb;color:var(--ink-3);cursor:default;
+  }
+  .reward-shop-item-btn.disabled:hover, .reward-shop-item-btn:disabled:hover{background:#e5e7eb;}
+
+  @media (max-width:560px){
+    .reward-mission-item{flex-wrap:wrap;}
+    .reward-mission-point{margin-left:54px;}
+  }
+
+  /* ---------- 세무사 1:1 절세 상담 (베타 신청 폼) ---------- */
+  .tax-consult-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);z-index:1200;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .tax-consult-overlay[hidden]{display:none;}
+  .tax-consult-modal{
+    background:var(--card);border-radius:22px;padding:26px 24px;max-width:400px;width:100%;
+    max-height:88vh;overflow-y:auto;
+  }
+  .tax-consult-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+  .tax-consult-icon-plate{
+    width:44px;height:44px;border-radius:14px;background:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;font-size:21px;color:var(--brand);
+  }
+  .tax-consult-close-btn{
+    width:32px;height:32px;border-radius:10px;border:none;background:var(--card-soft);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  }
+  .tax-consult-eyebrow{margin:0 0 6px;font-size:12px;font-weight:800;color:var(--brand);}
+  .tax-consult-modal h3{margin:0 0 8px;font-size:19px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .tax-consult-desc{margin:0 0 20px;font-size:13px;color:var(--ink-2);line-height:1.6;}
+
+  .tax-consult-label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-2);margin:0 0 6px;}
+  .tax-consult-select-wrap{position:relative;margin-bottom:14px;}
+  .tax-consult-select{
+    width:100%;appearance:none;background:var(--card-soft);border:1px solid var(--line);border-radius:12px;
+    padding:12px 40px 12px 14px;font-size:14px;font-weight:700;color:var(--ink-1);font-family:inherit;cursor:pointer;
+  }
+  .tax-consult-select-caret{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    font-size:13px;color:var(--ink-3);pointer-events:none;
+  }
+  .tax-consult-input, .tax-consult-textarea{
+    width:100%;background:var(--card-soft);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:14px;color:var(--ink-1);font-family:inherit;margin-bottom:14px;
+    letter-spacing:-0.02em;
+  }
+  .tax-consult-textarea{resize:vertical;min-height:72px;}
+  .tax-consult-notice{margin:-6px 0 10px;font-size:12px;color:var(--loss, #dc2626);min-height:1px;}
+  .tax-consult-submit-btn{
+    width:100%;background:var(--brand);color:#fff;border:none;border-radius:14px;
+    padding:15px;font-size:14.5px;font-weight:800;cursor:pointer;font-family:inherit;
+    box-shadow:0 6px 16px -4px var(--brand);
+  }
+  .tax-consult-submit-btn:disabled{opacity:0.6;cursor:default;}
+  .tax-consult-fineprint{margin:12px 0 0;font-size:11px;color:var(--ink-3);line-height:1.6;text-align:center;}
+
+  .tax-consult-success{text-align:center;padding:20px 4px 6px;}
+  .tax-consult-success-icon{font-size:44px;color:var(--profit-color, #059669);display:inline-flex;margin-bottom:14px;}
+  .tax-consult-success-title{margin:0 0 8px;font-size:16.5px;font-weight:800;color:var(--ink-1);}
+  .tax-consult-success-desc{margin:0 0 22px;font-size:13px;color:var(--ink-2);line-height:1.6;}
+  .tax-consult-success-close-btn{
+    width:100%;background:var(--brand);color:#fff;border:none;border-radius:14px;
+    padding:14px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+
+  /* ---------- 맞춤형 정부지원금 조회 (토스 스타일 리팩토링) ---------- */
+  .subsidy-filter-summary-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card-soft);border-radius:14px;padding:13px 14px;margin-bottom:18px;
+    cursor:pointer;
+  }
+  .subsidy-filter-summary-text{display:flex;align-items:center;gap:7px;min-width:0;}
+  .subsidy-filter-summary-text i{font-size:16px;color:var(--ink-3);flex-shrink:0;}
+  .subsidy-filter-summary-text span{
+    font-size:13px;font-weight:700;color:var(--ink-2);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .subsidy-filter-edit-btn{
+    display:flex;align-items:center;gap:2px;flex-shrink:0;
+    border:none;background:none;color:var(--brand);font-size:13px;font-weight:800;
+    padding:0;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-filter-edit-btn i{font-size:13px;}
+
+  .subsidy-filter-reset-link{
+    border:none;background:none;color:var(--ink-3);font-size:12.5px;font-weight:700;
+    padding:0;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-filter-reset-link:hover{color:var(--ink-1);}
+
+  .subsidy-hero{margin-bottom:20px;}
+  .subsidy-hero-title{
+    margin:0;font-size:21px;font-weight:800;color:var(--ink-1);line-height:1.4;letter-spacing:-0.02em;
+  }
+  .subsidy-hero-title strong{color:var(--brand);}
+
+  .subsidy-category-pills{
+    display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;
+    margin-bottom:14px;padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .subsidy-category-pills::-webkit-scrollbar{display:none;}
+  .subsidy-category-pill{
+    flex-shrink:0;padding:8px 14px;border-radius:999px;border:none;
+    font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;
+    white-space:nowrap;transition:background .15s ease, color .15s ease;
+  }
+
+  .subsidy-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:12px;}
+  .subsidy-sort-tabs{display:flex;gap:4px;background:var(--card-soft);border-radius:10px;padding:3px;}
+  .subsidy-sort-tab{
+    border:none;background:transparent;color:var(--ink-3);font-size:12px;font-weight:700;
+    padding:7px 12px;border-radius:8px;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-sort-tab.is-active{background:var(--card);color:var(--ink-1);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+  .subsidy-card-list{display:flex;flex-direction:column;gap:10px;}
+  .subsidy-card{
+    background:var(--card);border:none;border-radius:20px;
+    padding:18px;cursor:pointer;box-shadow:var(--shadow-card);transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .subsidy-card:hover{box-shadow:var(--shadow-card-hover);}
+  .subsidy-card:active{transform:scale(0.99);}
+  .subsidy-card-top{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:10px;}
+  .subsidy-card-dday{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--card-soft);color:var(--ink-2);}
+  .subsidy-card-dday.is-urgent{background:rgba(240,68,82,0.12);color:#f04452;}
+  .subsidy-card-dday.is-closed{background:var(--card-soft);color:var(--ink-3);}
+  .subsidy-bookmark-btn{
+    border:none;background:none;padding:4px;margin:-4px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .subsidy-bookmark-btn i{font-size:19px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;transition:color .15s ease;}
+  .subsidy-bookmark-btn:active{transform:scale(0.9);}
+  .subsidy-bookmark-btn.is-bookmarked i{color:#f04452;--ph-duotone-secondary-opacity:0.25;}
+  .subsidy-card-cat-mini{display:block;font-size:11.5px;font-weight:800;margin-bottom:4px;}
+  .subsidy-card-title{margin:0 0 6px;font-size:15.5px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .subsidy-card-summary{margin:0;font-size:13px;color:var(--ink-3);line-height:1.5;}
+  .subsidy-card-link{
+    display:flex;align-items:center;gap:4px;margin-top:12px;padding-top:12px;
+    border-top:1px solid var(--line);font-size:12.5px;font-weight:800;color:var(--brand);
+  }
+  .subsidy-card-link i{font-size:13px;}
+
+  .subsidy-empty-state{text-align:center;padding:48px 20px;}
+  .subsidy-empty-state p{margin:0 0 14px;font-size:13.5px;font-weight:600;color:var(--ink-3);}
+  .subsidy-empty-cta{
+    border:none;background:var(--brand-soft);color:var(--brand);
+    padding:11px 20px;border-radius:12px;font-size:13px;font-weight:800;
+    cursor:pointer;font-family:inherit;
+  }
+
+  .subsidy-card.is-skeleton{cursor:default;box-shadow:none;background:var(--card);}
+  .subsidy-skel-bar{
+    display:inline-block;border-radius:6px;
+    background:linear-gradient(90deg, var(--card-soft) 25%, #eef0f2 37%, var(--card-soft) 63%);
+    background-size:400% 100%;
+    animation:homeNewsSkeletonPulse 1.5s ease infinite;
+  }
+
+  .subsidy-detail-modal{display:flex;flex-direction:column;padding:0;}
+  .subsidy-detail-scroll{overflow-y:auto;padding:22px;flex:1;min-height:0;}
+  .subsidy-detail-header-actions{display:flex;align-items:center;gap:6px;}
+
+  .subsidy-detail-benefit-box{
+    margin:0 0 18px;padding:14px 16px;background:var(--brand-soft);border-radius:14px;
+  }
+  .subsidy-detail-benefit-eyebrow{margin:0 0 4px;font-size:11.5px;font-weight:800;color:var(--brand);}
+  .subsidy-detail-benefit{margin:0;font-size:15px;font-weight:800;color:var(--ink-1);line-height:1.55;}
+
+  .subsidy-checklist{margin-bottom:20px;}
+  .subsidy-checklist-title{display:flex;align-items:center;gap:6px;margin:0 0 10px;font-size:13px;font-weight:800;color:var(--ink-2);}
+  .subsidy-checklist-title i{font-size:15px;}
+  .subsidy-checklist-rows{display:flex;flex-direction:column;gap:8px;}
+  .subsidy-checklist-row{
+    display:flex;align-items:center;gap:10px;padding:11px 12px;
+    background:var(--card-soft);border-radius:10px;cursor:pointer;
+  }
+  .subsidy-checklist-row input{width:17px;height:17px;flex-shrink:0;accent-color:var(--brand);}
+  .subsidy-checklist-row span{font-size:13px;font-weight:600;color:var(--ink-1);}
+  .subsidy-checklist-row.is-checked span{color:var(--ink-3);text-decoration:line-through;}
+
+  .subsidy-detail-actionbar{
+    display:flex;flex-direction:column;gap:8px;flex-shrink:0;
+    padding:14px 22px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line);background:var(--card);
+  }
+  .subsidy-detail-actionrow{display:flex;gap:8px;}
+  .subsidy-share-btn-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
+    background:#FEE500;color:#3C1E1E;border:none;border-radius:12px;
+    padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .subsidy-apply-btn-v2{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--brand);color:#fff;border-radius:12px;padding:14px;
+    font-size:14px;font-weight:800;text-decoration:none;
+  }
+  .subsidy-ai-ask-btn-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;width:100%;
+    background:var(--brand-soft);color:var(--brand);border:none;border-radius:12px;
+    padding:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+
+  /* ---------- 청약·공모주 (토스 스타일) ---------- */
+  .ipo-segmented{
+    display:flex;gap:4px;background:var(--card-soft);border-radius:12px;padding:4px;margin-bottom:20px;
+  }
+  .ipo-segmented-tab{
+    flex:1;border:none;background:transparent;color:var(--ink-3);font-size:13px;font-weight:800;
+    padding:10px 8px;border-radius:9px;cursor:pointer;font-family:inherit;
+  }
+  .ipo-segmented-tab.is-active{background:var(--card);color:var(--ink-1);box-shadow:0 1px 3px rgba(0,0,0,0.08);}
+
+  .ipo-hero{margin-bottom:20px;}
+  .ipo-hero-title{margin:0 0 12px;font-size:21px;font-weight:800;color:var(--ink-1);line-height:1.4;letter-spacing:-0.02em;}
+  .ipo-hero-title strong{color:var(--brand);}
+  .ipo-hero-score-link{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--brand-soft);color:var(--brand);border:none;border-radius:999px;
+    padding:9px 14px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .ipo-hero-score-link:hover{background:var(--brand-soft-2);}
+
+  .ipo-category-filter{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .ipo-category-chip{
+    padding:8px 15px;border-radius:999px;border:none;
+    background:var(--card-soft);color:var(--ink-2);
+    font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-0.02em;
+  }
+  .ipo-category-chip.is-active{background:var(--brand);color:#fff;}
+
+  .ipo-card-list{display:flex;flex-direction:column;gap:10px;}
+  .ipo-card{
+    background:var(--card);border:none;border-radius:18px;padding:18px;
+    cursor:pointer;box-shadow:var(--shadow-card);transition:box-shadow .15s ease, transform .15s ease;
+  }
+  .ipo-card:hover{box-shadow:var(--shadow-card-hover);}
+  .ipo-card:active{transform:scale(0.99);}
+  .ipo-card-top{display:flex;align-items:center;gap:6px;margin-bottom:12px;}
+  .ipo-card-dday{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--card-soft);color:var(--ink-2);}
+  .ipo-card-dday.is-urgent{background:rgba(240,68,82,0.12);color:#f04452;}
+  .ipo-card-dday.is-closed{background:var(--card-soft);color:var(--ink-3);}
+  .ipo-card-underwriter{font-size:11.5px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--brand-soft);color:var(--brand);}
+  .ipo-card-category{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--card-soft);color:var(--ink-3);}
+  .ipo-card-category-spac{background:rgba(8,145,178,0.12);color:#0891b2;}
+  .ipo-card-category-reit{background:rgba(217,119,6,0.12);color:#d97706;}
+  .ipo-card-category-rights{background:rgba(147,51,234,0.12);color:#9333ea;}
+  .ipo-card-stage{font-size:11px;font-weight:700;color:var(--ink-3);}
+  .ipo-card-name{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--ink-1);line-height:1.4;}
+  .ipo-card-price{margin:0 0 14px;font-size:13.5px;font-weight:700;color:var(--ink-2);}
+  .ipo-card-meta{display:flex;flex-direction:column;gap:6px;padding-top:12px;border-top:1px solid var(--line);}
+  .ipo-card-meta-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;}
+  .ipo-card-meta-label{color:var(--ink-3);font-weight:600;flex-shrink:0;}
+  .ipo-card-meta-value{color:var(--ink-1);font-weight:700;text-align:right;}
+
+  /* .ipo-detail-modal 등은 이름과 달리 청약·공모주 전용이 아니라 finance-products 상세 모달
+     (financeDetailRateLabel/financeDetailRate/financeDetailSiteBtn)도 같이 쓰는 공용 클래스라
+     삭제하지 않고 그대로 둔다 — 청약 모달 전용 스타일은 전부 .ipo160-* 새 클래스로 분리했다. */
+  .ipo-detail-modal{display:flex;flex-direction:column;padding:0;}
+  .ipo-detail-price-box{
+    margin:0 0 18px;padding:14px 16px;background:var(--brand-soft);border-radius:14px;
+  }
+  .ipo-detail-price-eyebrow{margin:0 0 4px;font-size:11.5px;font-weight:800;color:var(--brand);}
+  .ipo-detail-price{margin:0;font-size:17px;font-weight:800;color:var(--ink-1);}
+  .ipo-broker-btn-v2{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:var(--brand);color:#fff;border:none;border-radius:12px;padding:14px;
+    font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;
+    box-shadow:0 6px 16px -4px var(--brand);
+  }
+
+  /* ---------- 청약·공모주 상세 모달: 일육공(160) 스타일 카드·타임라인 ---------- */
+  .ipo160-modal{display:flex;flex-direction:column;padding:0;}
+  .ipo-detail-scroll{overflow-y:auto;padding:22px;flex:1;min-height:0;position:relative;}
+  .ipo160-close-btn{
+    position:absolute;top:18px;right:18px;z-index:2;
+    width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:999px;cursor:pointer;
+  }
+
+  .ipo160-profile{text-align:center;padding:8px 0 20px;}
+  .ipo160-logo{
+    width:56px;height:56px;margin:0 auto 12px;border-radius:50%;
+    background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;
+  }
+  .ipo160-profile h3{margin:0 0 6px;font-size:19px;font-weight:800;color:var(--ink-1);}
+  .ipo160-market-line{margin:0 0 8px;font-size:12.5px;font-weight:700;color:var(--brand);}
+  .ipo160-tagline{margin:0;font-size:12.5px;color:var(--ink-3);font-weight:600;}
+
+  .ipo160-card{background:var(--card-soft);border-radius:16px;padding:16px;margin-bottom:14px;}
+  .ipo160-section-title{margin:0 0 12px;font-size:13px;font-weight:800;color:var(--ink-1);}
+
+  .ipo160-broker-card{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .ipo160-broker-row{display:flex;align-items:center;gap:10px;}
+  .ipo160-broker-badge{
+    width:32px;height:32px;border-radius:10px;flex-shrink:0;
+    background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:800;
+  }
+  .ipo160-broker-name{font-size:13.5px;font-weight:800;color:var(--ink-1);}
+  .ipo160-min-unit{margin:0;font-size:11.5px;font-weight:700;color:var(--ink-3);}
+
+  .ipo160-timeline{padding:4px 4px 0;}
+  .ipo160-timeline-step{display:flex;gap:12px;position:relative;padding-bottom:20px;}
+  .ipo160-timeline-step:last-child{padding-bottom:0;}
+  .ipo160-timeline-step::before{
+    content:"";position:absolute;left:5px;top:16px;bottom:0;width:1px;
+    border-left:1.5px dashed var(--line);
+  }
+  .ipo160-timeline-step:last-child::before{display:none;}
+  .ipo160-timeline-dot{
+    width:11px;height:11px;border-radius:50%;flex-shrink:0;margin-top:3px;
+    background:var(--card);border:2px solid var(--ink-3);
+  }
+  .ipo160-timeline-step.is-done .ipo160-timeline-dot{background:var(--profit-color, var(--brand));border-color:var(--profit-color, var(--brand));}
+  .ipo160-timeline-step.is-active .ipo160-timeline-dot{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 4px var(--brand-soft);}
+  .ipo160-timeline-label{margin:0 0 3px;font-size:12px;font-weight:700;color:var(--ink-3);}
+  .ipo160-timeline-step.is-active .ipo160-timeline-label{color:var(--brand);}
+  .ipo160-timeline-date{margin:0;font-size:13.5px;font-weight:800;color:var(--ink-1);}
+
+  .ipo160-accordion-toggle{
+    display:flex;align-items:center;justify-content:space-between;width:100%;
+    background:none;border:none;cursor:pointer;font-family:inherit;
+    font-size:13px;font-weight:800;color:var(--ink-1);padding:0;
+  }
+  .ipo160-accordion-arrow{font-size:10px;color:var(--ink-3);transition:transform .2s ease;}
+  .ipo160-accordion-toggle[aria-expanded="true"] .ipo160-accordion-arrow{transform:rotate(180deg);}
+  .ipo160-accordion-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .ipo160-info-row{
+    display:flex;justify-content:space-between;gap:10px;font-size:13px;
+    padding:10px 0;border-top:1px solid var(--line);
+  }
+  .ipo160-info-row:first-child{border-top:none;padding-top:12px;}
+  .ipo160-info-row span{color:var(--ink-3);font-weight:600;}
+  .ipo160-info-row strong{color:var(--ink-1);font-weight:800;}
+  .ipo160-info-row strong.muted{color:var(--ink-3);font-weight:700;font-size:12px;}
+
+  .ipo160-demand-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .ipo160-demand-item{
+    background:var(--card);border-radius:12px;padding:12px;text-align:center;
+  }
+  .ipo160-demand-item span{display:block;font-size:11px;font-weight:600;color:var(--ink-3);margin-bottom:6px;}
+  .ipo160-demand-item strong{font-size:14px;font-weight:800;color:var(--ink-1);}
+  .ipo160-demand-item strong.muted{color:var(--ink-3);}
+
+  .ipo160-disclaimer-card{background:var(--card-soft);border-radius:16px;padding:16px;}
+  .ipo160-disclaimer-list{margin:0;padding-left:18px;}
+  .ipo160-disclaimer-list li{font-size:12px;line-height:1.7;color:var(--ink-3);margin-bottom:6px;}
+  .ipo160-disclaimer-list li:last-child{margin-bottom:0;}
+
+  .ipo-detail-actionbar{
+    display:flex;gap:8px;flex-shrink:0;
+    padding:14px 22px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top:1px solid var(--line);background:var(--card);
+  }
+  .ipo-share-btn-v2{
+    display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;
+    background:var(--card-soft);color:var(--ink-2);border:none;border-radius:12px;
+    padding:14px 16px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+  }
+  .ipo160-share-btn-full{flex:1;background:var(--brand);color:#fff;box-shadow:0 6px 16px -4px var(--brand);}
+
+  /* ---------- IpoAllocationCalculator (청약 상세 모달 내) ---------- */
+  .ipo-alloc-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .ipo-alloc-chip{
+    background:var(--card);color:var(--ink-2);border:none;border-radius:999px;
+    padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+  }
+  .ipo-alloc-chip:hover{background:var(--brand-soft);color:var(--brand);}
+  .ipo-alloc-input-row{display:flex;gap:8px;margin-bottom:12px;}
+  .ipo-alloc-input-group{flex:1;min-width:0;}
+  .ipo-alloc-input-group label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-3);margin-bottom:5px;}
+  .ipo-alloc-input-group input{
+    width:100%;background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:10px 12px;font-size:13.5px;font-weight:700;color:var(--ink-1);font-family:inherit;
+  }
+  .ipo-alloc-result{background:var(--card);border-radius:12px;padding:14px;}
+  .ipo-alloc-row{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:6px 0;}
+  .ipo-alloc-row span{color:var(--ink-3);font-weight:600;}
+  .ipo-alloc-row strong{color:var(--ink-1);font-weight:800;}
+  .ipo-alloc-row strong.muted{color:var(--ink-3);font-weight:700;font-size:12px;}
+  .ipo-alloc-hint{margin:8px 0 0;font-size:11.5px;color:var(--ink-3);line-height:1.6;}
+
+  .ipo-scoring-source-link{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12.5px;font-weight:800;color:var(--brand);
+  }
+
+  /* ---------- 경제사전 (오늘의 경제용어) ---------- */
+  .dict-head{margin-bottom:18px;}
+  .dict-head h2{margin:4px 0 6px;font-size:20px;font-weight:800;color:var(--ink-1);}
+  .dict-head p{margin:0;font-size:13px;color:var(--ink-3);}
+
+  .dict-today-card{
+    background:linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+    border-radius:20px;padding:24px;margin-bottom:26px;color:#fff;
+  }
+  .dict-today-badge{
+    display:inline-block;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:999px;
+    background:rgba(255,255,255,0.2);margin-bottom:12px;
+  }
+  .dict-today-term{margin:0 0 10px;font-size:24px;font-weight:800;letter-spacing:-0.02em;}
+  .dict-today-def{margin:0 0 14px;font-size:14px;font-weight:500;line-height:1.6;opacity:0.95;}
+  .dict-today-example{
+    font-size:13px;font-weight:500;line-height:1.6;padding:12px 14px;
+    background:rgba(255,255,255,0.14);border-radius:12px;
+  }
+
+  .dict-list-title{margin:0 0 12px;font-size:14px;font-weight:800;color:var(--ink-1);}
+  .dict-term-list{display:flex;flex-direction:column;gap:8px;}
+  .dict-term-item{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card);border:none;border-radius:14px;padding:14px 16px;cursor:pointer;
+    box-shadow:var(--shadow-card);transition:box-shadow .15s ease;
+  }
+  .dict-term-item:hover{box-shadow:var(--shadow-card-hover);}
+  .dict-term-name{font-size:14px;font-weight:800;color:var(--ink-1);}
+  .dict-term-item i{font-size:16px;color:var(--ink-3);flex-shrink:0;}
+
+  .dict-detail-def{margin:0 0 14px;font-size:14px;font-weight:600;color:var(--ink-1);line-height:1.6;}
+  .dict-detail-example{
+    font-size:13px;font-weight:500;color:var(--ink-2);line-height:1.6;
+    padding:14px 16px;background:var(--card-soft);border-radius:12px;
+  }
+
+  /* ---------- 뉴스 · 금융소식 ---------- */
+  .news-head{margin-bottom:20px;}
+  .news-head h2{margin:4px 0 7px;font-size:23px;font-weight:800;color:var(--ink-1);}
+  .news-head p{margin:0;font-size:14.5px;color:var(--ink-3);}
+
+  .news-category-filter{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px;}
+  .news-category-chip{
+    padding:10px 17px;border-radius:999px;border:none;
+    background:var(--card-soft);color:var(--ink-2);
+    font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:-0.02em;
+  }
+  .news-category-chip.is-active{background:var(--brand);color:#fff;}
+
+  /* 실시간 트렌드 — 라벨은 고정하고 칩 트랙만 가로로 흐른다(JS가 자동으로 왕복 스크롤).
+     스크롤바는 시각적으로만 숨기고(overflow는 유지) 터치/드래그로 직접 넘기는 것도 그대로 된다. */
+  .news-trend-row{display:flex;align-items:center;gap:11px;margin-bottom:16px;}
+  .news-trend-label{
+    flex-shrink:0;display:flex;align-items:center;gap:5px;
+    font-size:14px;font-weight:800;color:var(--ink-2);
+  }
+  .news-trend-label i{color:#f59e0b;font-size:16px;--ph-duotone-secondary-opacity:0;}
+  .news-trend-chips{
+    display:flex;gap:7px;
+    flex:1;min-width:0;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .news-trend-chips::-webkit-scrollbar{display:none;}
+  .news-trend-chip{
+    flex-shrink:0;background:var(--card-soft);color:var(--ink-2);border:none;
+    padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;
+    white-space:nowrap;font-family:inherit;
+  }
+  .news-trend-chip.is-active{background:var(--brand);color:#fff;}
+
+  /* 오늘 주요뉴스 — 현재 탭 목록의 상위 2건을 강조 카드로 보여준다. */
+  .news-top-section{margin-bottom:18px;}
+  .news-top-title{display:flex;align-items:center;gap:5px;margin:0 0 10px;font-size:14.5px;font-weight:800;color:var(--ink-1);}
+  .news-top-title i{color:#f59e0b;font-size:16px;--ph-duotone-secondary-opacity:0.2;}
+  .news-top-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .news-top-item{
+    display:block;background:var(--brand-soft);border-radius:14px;padding:14px;
+    text-decoration:none;transition:box-shadow .15s ease;
+  }
+  .news-top-item:hover{box-shadow:var(--shadow-card-hover);}
+  .news-top-title-text{
+    margin:0 0 8px;font-size:13px;font-weight:700;color:var(--ink-1);line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .news-top-meta{display:flex;gap:6px;font-size:11px;font-weight:600;color:var(--ink-3);}
+  .news-top-source{color:var(--brand);}
+  @media (max-width:480px){
+    .news-top-grid{grid-template-columns:1fr;}
+  }
+
+  .news-page-list{display:flex;flex-direction:column;gap:10px;}
+  .news-page-item{
+    display:block;background:var(--card);border-radius:16px;padding:16px;
+    box-shadow:var(--shadow-card);transition:box-shadow .15s ease;text-decoration:none;
+  }
+  .news-page-item:hover{box-shadow:var(--shadow-card-hover);}
+  .news-page-title{margin:0 0 8px;font-size:14.5px;font-weight:700;color:var(--ink-1);line-height:1.5;}
+  .news-page-meta{display:flex;gap:8px;font-size:12px;font-weight:600;color:var(--ink-3);}
+  .news-page-source{color:var(--brand);}
+
+  .news-page-empty{text-align:center;padding:48px 20px;font-size:13.5px;font-weight:600;color:var(--ink-3);}
+
+  .news-page-skel{
+    height:78px;border-radius:16px;
+    background:linear-gradient(90deg, var(--card-soft) 25%, #eef0f2 37%, var(--card-soft) 63%);
+    background-size:400% 100%;animation:homeNewsSkeletonPulse 1.5s ease infinite;
+  }
+
+  /* ---------- 핀 파일럿 허브 하단 SEO 안내 ---------- */
+  .finpilot-seo-guide{
+    margin:36px 0 12px;padding:24px 20px;
+    background:var(--card);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+  }
+  .finpilot-seo-guide h2{margin:0 0 16px;font-size:18px;font-weight:800;color:var(--ink-1);}
+  .finpilot-seo-guide h3{margin:20px 0 8px;font-size:15px;font-weight:800;color:var(--ink-1);}
+  .finpilot-seo-guide h3:first-of-type{margin-top:0;}
+  .finpilot-seo-guide p{margin:0 0 4px;font-size:13.5px;line-height:1.75;color:var(--ink-2);}
+  .finpilot-seo-guide strong{color:var(--ink-1);font-weight:700;}
+  .finpilot-seo-guide-disclaimer{margin-top:18px !important;font-size:12px !important;color:var(--ink-3) !important;line-height:1.6 !important;}

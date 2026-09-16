@@ -1,0 +1,1006 @@
+
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px 20px 14px;
+  }
+  @media (min-width:640px){ header{padding:20px 32px 16px;} }
+
+  .logo{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:19px;
+    font-weight:800;
+    color:var(--ink-1);
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    transition:transform .12s ease;
+  }
+  .logo:active{transform:scale(0.97);}
+  .logo .dot{color:var(--brand);}
+  .brand-logo-svg{
+    width:22px;
+    height:22px;
+    flex-shrink:0;
+    color:var(--ink-1);
+    transition:all 0.2s ease;
+    overflow:visible;
+  }
+  .logo:hover .brand-logo-svg{
+    color:var(--brand);
+    transform:translate(1px,-1px);
+  }
+  .online-dot{
+    width:7px;height:7px;
+    border-radius:50%;
+    background:#0acf83;
+    margin-left:2px;
+    box-shadow:0 0 0 3px rgba(10,207,131,0.15);
+    flex-shrink:0;
+  }
+
+  .sidebar-toggle-btn{
+    display:flex;
+    width:36px;height:36px;
+    border-radius:10px;
+    border:none;
+    background:transparent;
+    color:var(--ink-1);
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:background .15s ease;
+  }
+  .sidebar-toggle-btn i{font-size:20px;--ph-duotone-secondary-opacity:0;}
+  .sidebar-toggle-btn:hover{background:var(--card-soft);}
+
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    flex-shrink:0;
+    margin-left:auto;
+  }
+
+  /* ---------- 모바일 전용 슬림 헤더 로고 (데스크톱에서는 사이드바 로고가 대신 역할) ---------- */
+  .mobile-header-logo{
+    display:none;
+    align-items:center;
+    gap:6px;
+    font-size:15px;
+    font-weight:800;
+    color:var(--ink-1);
+    cursor:pointer;
+    flex-shrink:0;
+  }
+  .mobile-header-logo .brand-logo-svg{width:20px;height:20px;color:var(--brand);flex-shrink:0;}
+  .mobile-header-logo .dot{color:var(--brand);}
+  .icon-btn-ghost{
+    position:relative;
+    width:38px;height:38px;
+    border-radius:50%;
+    border:none;
+    background:transparent;
+    color:var(--ink-2);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .icon-btn-ghost i{font-size:19px;--ph-duotone-secondary-opacity:0;}
+  .icon-btn-ghost:hover{background:var(--card-soft);}
+  .notif-dot{
+    display:none;
+    position:absolute;
+    top:7px;right:7px;
+    width:7px;height:7px;
+    border-radius:50%;
+    background:#f04452;
+    border:1.5px solid var(--bg);
+  }
+  .notif-dot.show{display:block;}
+
+  /* 알림함 모달 — 글쓰기 모달과 같은 오버레이 패턴, 다만 상단 정렬(알림은 목록형이라 위에서부터 채움) */
+  .notif-center-overlay{
+    position:fixed;inset:0;background:rgba(15,23,42,0.45);
+    display:flex;align-items:flex-start;justify-content:center;
+    padding:20px;z-index:230;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .notif-center-overlay.open{opacity:1;pointer-events:auto;}
+  .notif-center-modal{
+    width:100%;max-width:420px;max-height:80vh;overflow-y:auto;margin-top:64px;
+    background:var(--card);border-radius:20px;padding:20px;
+    transform:translateY(12px) scale(0.98);opacity:0;transition:transform .22s ease, opacity .22s ease;
+  }
+  .notif-center-overlay.open .notif-center-modal{transform:translateY(0) scale(1);opacity:1;}
+  .notif-center-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .notif-center-top h3{margin:0;font-size:16px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .notif-center-top-actions{display:flex;align-items:center;gap:10px;}
+  .notif-center-read-all-btn{border:none;background:none;color:var(--brand);font-size:12.5px;font-weight:700;cursor:pointer;padding:4px;}
+  .notif-center-close{
+    width:30px;height:30px;border-radius:9px;border:none;background:var(--bg);
+    color:var(--ink-2);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .notif-center-close:hover{background:var(--line);}
+  .notif-center-list{display:flex;flex-direction:column;gap:4px;}
+  .notif-center-item{
+    display:flex;align-items:flex-start;gap:12px;padding:12px 8px;border-radius:12px;
+    cursor:pointer;transition:background .15s ease;
+  }
+  .notif-center-item:hover{background:var(--card-soft);}
+  .notif-center-item.is-unread{background:var(--brand-soft);}
+  .notif-center-icon{
+    width:36px;height:36px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--card-soft);color:var(--brand);font-size:17px;
+    --ph-duotone-secondary-opacity:0.16;
+  }
+  .notif-center-body{flex:1;min-width:0;}
+  .notif-center-item-title{margin:0 0 2px;font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .notif-center-item-desc{margin:0;font-size:12.5px;font-weight:500;color:var(--ink-2);line-height:1.4;}
+  .notif-center-item-time{margin:4px 0 0;font-size:11px;font-weight:600;color:var(--ink-3);}
+  .notif-center-dismiss{
+    flex-shrink:0;width:22px;height:22px;border-radius:6px;border:none;background:transparent;
+    color:var(--ink-3);display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .notif-center-dismiss:hover{background:var(--line);color:var(--ink-1);}
+  .notif-center-dismiss i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .notif-center-empty{padding:36px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-3);}
+  #calDetailTitle{margin:0 0 4px;font-size:17px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;line-height:1.4;}
+
+  /* ---------- 헤더 우측 상단: 구글 로그인 버튼 / 프리미엄 미니 회원 칩 ---------- */
+  .header-auth-slot{display:flex;align-items:center;flex-shrink:0;}
+
+  .header-login-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    color:var(--ink-1);
+    border:1.5px solid var(--line);
+    padding:9px 16px 9px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:background .15s ease, border-color .15s ease, transform .15s ease;
+  }
+  .header-login-btn:hover{background:var(--card-soft);border-color:#d8dce2;}
+  .header-login-btn:active{transform:scale(0.96);}
+  .header-login-icon{width:16px;height:16px;flex-shrink:0;}
+
+  @keyframes headerChipFadeIn{ from{opacity:0;transform:translateY(-4px) scale(0.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+  .header-member-chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:var(--card-soft);
+    padding:5px 14px 5px 5px;
+    border-radius:999px;
+    animation:headerChipFadeIn .35s cubic-bezier(.22,1,.36,1);
+  }
+  .header-member-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
+  .header-member-text{display:flex;flex-direction:column;line-height:1.25;}
+  .header-member-name{font-size:12px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;white-space:nowrap;}
+  .header-member-points{font-size:11.5px;font-weight:700;color:var(--brand);}
+  .header-member-logout{
+    margin-left:2px;
+    background:none;
+    border:none;
+    font-size:11px;
+    font-weight:600;
+    color:var(--ink-3);
+    cursor:pointer;
+    padding:4px 2px;
+    text-decoration:underline;
+    text-underline-offset:2px;
+    white-space:nowrap;
+    transition:color .15s ease;
+  }
+  .header-member-logout:hover{color:var(--ink-1);}
+
+  @media (max-width:420px){
+    .header-member-text{display:none;}
+    .header-login-btn span{display:none;}
+    .header-login-btn{padding:9px;}
+  }
+
+  /* ---------- Hub shell: 서브 사이드바를 걷어내고 메인 사이드바 하나로 단일화된 대시보드 ---------- */
+  /* finpilot 그리드 뷰만 .wrap의 중앙정렬/최대너비 제약을 풀어서, 메인 콘텐츠가 app-sidebar 옆
+     나머지 공간을 flex:1로 시원하게 통째로 채우도록 함 (필터링은 상단 hub-pills 칩이 전담) */
+  #finpilotGridState{
+    max-width:none;
+    margin:0;
+    padding:0;
+  }
+
+  .hub-shell{
+    display:block;
+  }
+
+  .hub-main{
+    background:var(--bg);
+    padding:20px;
+  }
+  @media (min-width:640px){ .hub-main{padding:32px;} }
+
+  .hub-search{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--card);
+    border-radius:16px;
+    padding:14px 18px;
+    box-shadow:var(--shadow-card);
+    margin-bottom:16px;
+  }
+  .hub-search i{font-size:19px;color:var(--ink-3);--ph-duotone-secondary-opacity:0.12;flex-shrink:0;}
+  .hub-search input{
+    border:none;outline:none;background:transparent;
+    flex:1;font:inherit;font-size:15px;font-weight:600;
+    color:var(--ink-1);letter-spacing:inherit;
+  }
+  .hub-search input::placeholder{color:var(--ink-3);font-weight:500;}
+
+  .hub-pills{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    margin-bottom:24px;
+    padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .hub-pills::-webkit-scrollbar{display:none;}
+  .hub-pill{
+    flex-shrink:0;
+    padding:9px 18px;
+    border-radius:999px;
+    background:var(--card);
+    color:var(--ink-2);
+    font-size:13.5px;
+    font-weight:700;
+    border:none;
+    cursor:pointer;
+    box-shadow:var(--shadow-card);
+    transition:background .15s ease, color .15s ease;
+  }
+  .hub-pill.active{background:var(--brand);color:#fff;box-shadow:none;}
+
+  /* ---------- Section heading ---------- */
+  .section-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    padding:0 2px 16px;
+    gap:12px;
+  }
+  .section-head h2{
+    font-size:20px;
+    font-weight:800;
+    margin:0;
+    letter-spacing:-0.03em;
+  }
+  .section-head p{
+    margin:5px 0 0;
+    font-size:13.5px;
+    color:var(--ink-3);
+    font-weight:500;
+  }
+
+  .badge{
+    font-size:10.5px;
+    font-weight:800;
+    padding:3px 8px;
+    border-radius:999px;
+    letter-spacing:-0.01em;
+  }
+
+  /* ---------- App shell / tab bar ---------- */
+  /* Android 16(API 36)부터 edge-to-edge가 강제되면서 상태표시줄 뒤로 콘텐츠가 그려질 수 있어,
+     고정 헤더가 노치/상태표시줄에 가려지지 않도록 안전 영역만큼 위쪽 여백을 미리 확보해둔다.
+     env() 미지원/inset이 0인 기기에서는 그냥 0px로 계산되어 기존과 동일하게 보인다. */
+  .app-header{
+    position:sticky;
+    top:0;
+    z-index:40;
+    background:rgba(242,244,246,0.86);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    padding-top:env(safe-area-inset-top, 0px);
+  }
+  html[data-theme="dark"] .app-header{background:rgba(11,15,20,0.86);}
+
+  .tab-bar{
+    display:inline-flex;
+    min-width:0;
+    max-width:100%;
+    gap:2px;
+    background:var(--card-soft);
+    padding:4px;
+    border-radius:999px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .tab-bar::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:9px 16px;
+    border-radius:999px;
+    font-size:13.5px;
+    font-weight:700;
+    color:var(--ink-3);
+    cursor:pointer;
+    border:none;
+    background:transparent;
+    white-space:nowrap;
+    flex-shrink:0;
+    transition:background .18s ease, color .18s ease;
+  }
+  .tab-btn i{font-size:15px;--ph-duotone-secondary-opacity:0;color:var(--ink-3);}
+  .tab-btn.active{
+    background:var(--card);
+    color:var(--brand);
+    box-shadow:0 1px 4px rgba(15,23,42,0.08);
+  }
+  .tab-btn.active i{color:var(--brand);}
+  .tab-btn-badge{margin-left:1px;flex-shrink:0;}
+
+  /* ---------- 상단 메뉴바 드롭다운 (금융 / 정보) — 사이드바 아코디언 구조의 1:1 미러링 ---------- */
+  .navbar-dropdown{position:relative;flex-shrink:0;}
+  .dropdown-trigger{font-family:inherit;}
+  .navbar-dropdown-caret{
+    font-size:11px !important;margin-left:1px;--ph-duotone-secondary-opacity:0;
+    transition:transform .18s ease;
+  }
+  .navbar-dropdown.open .navbar-dropdown-caret{transform:rotate(180deg);}
+
+  /* JS에서 document.body 바로 아래로 옮겨지는 요소라(.app-header의 backdrop-filter가 만드는
+     containing block을 피하기 위함), 열림 상태도 부모(.navbar-dropdown)가 아니라 이 요소 자신의
+     .open 클래스로 직접 제어함 */
+  .navbar-dropdown-menu{
+    position:fixed;
+    min-width:230px;
+    background:#ffffff;
+    border-radius:16px;
+    padding:8px;
+    box-shadow:0 16px 36px -14px rgba(15,23,42,0.20), 0 4px 14px rgba(15,23,42,0.06);
+    border:1px solid rgba(15,23,42,0.04);
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-6px);
+    transition:opacity .16s ease, transform .16s ease, visibility .16s;
+    z-index:210;
+  }
+  .navbar-dropdown-menu.open{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+  }
+  .navbar-dropdown-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    border-radius:11px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-2);
+    white-space:nowrap;
+    letter-spacing:-0.02em;
+    transition:background .15s ease, color .15s ease;
+  }
+  .navbar-dropdown-item i{font-size:16px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;flex-shrink:0;}
+  .navbar-dropdown-item:hover{background:var(--card-soft);color:var(--ink-1);}
+  .navbar-dropdown-item.active,
+  .navbar-dropdown-item.is-selected{background:var(--brand-soft);color:var(--brand);font-weight:800;}
+  .navbar-dropdown-item.active i,
+  .navbar-dropdown-item.is-selected i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+  .navbar-dropdown-badge{margin-left:auto;flex-shrink:0;}
+
+  /* ---------- App shell: full-height left sidebar + scrollable main content ---------- */
+  .app-shell{
+    display:flex;
+    height:100vh;
+    overflow:hidden;
+    background-color:var(--bg);
+  }
+
+  /* 사이드바는 상단 네비게이션바(.tab-bar)와 항상 동시에 보이면 메뉴가 중복되므로,
+     화면 폭과 무관하게 항상 오프캔버스 드로어로만 동작함 — 데스크톱에서도 고정 컬럼을 차지하지 않음.
+     상단 바가 유일한 상시 노출 내비게이션이고, 사이드바는 햄버거 버튼으로 열어보는 전체 메뉴 역할 */
+  .app-sidebar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:280px;
+    height:100vh;
+    z-index:200;
+    background-color:var(--card);
+    border-right:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 12px 40px rgba(0,0,0,0.15);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    transform:translateX(-100%);
+    transition:transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .app-sidebar.open{transform:translateX(0);}
+
+  .sidebar-logo-area{
+    padding:24px 20px 32px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-shrink:0;
+  }
+
+  .sidebar-close-btn{
+    display:flex;
+    width:34px;height:34px;
+    flex-shrink:0;
+    border-radius:10px;
+    border:none;
+    background:var(--card-soft);
+    color:var(--ink-2);
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+  }
+  .sidebar-close-btn i{font-size:17px;--ph-duotone-secondary-opacity:0;}
+
+  .sidebar-nav{
+    display:flex;
+    flex-direction:column;
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding:0 0 24px;
+    scrollbar-width:thin;
+  }
+
+  .sidebar-standalone{
+    display:flex;
+    flex-direction:column;
+  }
+  .sidebar-group + .sidebar-group,
+  .sidebar-standalone + .sidebar-group,
+  .sidebar-group + .sidebar-standalone,
+  .sidebar-standalone + .sidebar-standalone{
+    margin-top:18px;
+  }
+  .sidebar-group-header{
+    width:calc(100% - 20px);
+    margin:2px 10px;
+    display:flex;
+    align-items:center;
+    padding:10px 14px;
+    border-radius:14px;
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    letter-spacing:-0.03em;
+    transition:background .15s ease;
+  }
+  .sidebar-group-header:hover{background:rgba(88,92,229,0.045);}
+  .sidebar-group-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink-1);
+    letter-spacing:-0.03em;
+  }
+  .sidebar-group-title i{
+    font-size:18px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+  }
+  .sidebar-caret{
+    font-size:12px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+    margin-left:auto;
+    flex-shrink:0;
+  }
+
+  .sidebar-group-body{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .25s ease;
+  }
+  .sidebar-group.open .sidebar-group-body{max-height:420px;}
+
+  .sidebar-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin:2px 10px;
+    padding:10px 14px;
+    border-radius:14px;
+    letter-spacing:-0.03em;
+    cursor:pointer;
+    transition:background .18s cubic-bezier(.4,0,.2,1), color .18s ease, transform .12s ease;
+  }
+  .sidebar-item:hover{background:rgba(88,92,229,0.05);color:var(--ink-1);transform:translateX(1px);}
+  .sidebar-item:hover .sidebar-item-icon-plate i{color:var(--brand);}
+  .sidebar-item:active{transform:scale(0.98);}
+
+  /* 상위 메인 메뉴: 금융/정보 그룹 헤더와 동급 비주얼 무게감 */
+  .sidebar-standalone .sidebar-item{
+    font-size:15px;
+    font-weight:700;
+    color:var(--ink-1);
+  }
+  .sidebar-standalone .sidebar-item i{font-size:18px;}
+
+  /* 하위 서브 메뉴: 톤다운된 폰트 + 좌측 인덴트로 아코디언 종속 관계를 명확히 구분 */
+  .sidebar-group-body .sidebar-item{
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-2);
+    margin-left:32px;
+  }
+
+  .sidebar-item-icon-plate{
+    width:28px;height:28px;
+    border-radius:9px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    background:transparent;
+    transition:background .18s ease;
+  }
+  .sidebar-item i{
+    font-size:17px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0;
+    flex-shrink:0;
+    transition:color .18s ease;
+  }
+  .sidebar-item.active{background:var(--brand-soft);color:var(--brand);font-weight:800;}
+  .sidebar-item.active .sidebar-item-icon-plate{background:rgba(255,255,255,0.6);}
+  .sidebar-item.active i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+  .sidebar-item.is-selected{background:var(--brand-soft);color:var(--brand);font-weight:800;}
+  .sidebar-item.is-selected .sidebar-item-icon-plate{background:rgba(255,255,255,0.6);}
+  .sidebar-item.is-selected i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+  .sidebar-item-badge{
+    margin-left:auto;
+    flex-shrink:0;
+  }
+  .sidebar-item-badge.new{background:var(--brand-soft-2);color:var(--brand-2);}
+
+  /* 세무사 1:1 절세 상담 — <button>이라 브라우저 기본 스타일 리셋 필요 */
+  .sidebar-item-highlight{
+    width:100%;text-align:left;border:none;background:none;font:inherit;letter-spacing:inherit;
+  }
+  .sidebar-item-icon-plate-highlight{background:var(--brand-soft);}
+  .sidebar-item-icon-plate-highlight i{color:var(--brand) !important;--ph-duotone-secondary-opacity:0.16 !important;}
+
+  .sidebar-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.4);
+    z-index:190;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .sidebar-backdrop.show{opacity:1;pointer-events:auto;}
+
+  .app-main{
+    flex:1;
+    min-width:0;
+    height:100vh;
+    overflow-y:auto;
+    background:var(--bg);
+  }
+
+  /* ==================================================
+     모바일 퍼스트 리팩토링 — 슬림 헤더 + 하단 고정 바텀 네비게이션
+     ================================================== */
+  .bottom-nav{
+    display:none;
+    position:fixed;
+    left:0; right:0; bottom:0;
+    background:var(--card);
+    border-radius:6px 6px 0 0;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    box-shadow:0 -6px 24px rgba(15,23,42,0.10);
+    z-index:150;
+  }
+  .bottom-nav-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    padding:8px 4px;
+    border-radius:24px;
+    color:var(--ink-3);
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    transition:color .15s ease, background .15s ease;
+  }
+  .bottom-nav-item i{font-size:22px;--ph-duotone-secondary-opacity:0;color:var(--ink-3);transition:color .15s ease;}
+  .bottom-nav-item.active{color:var(--brand);background:var(--brand-soft);}
+  .bottom-nav-item.active i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+
+  @media (max-width:640px){
+    /* 상단 헤더: 로고 + 알림 종 아이콘만 남기고 나머지는 걷어냄 (프로필·포인트·로그아웃은 마이페이지로 이동) */
+    header{padding:12px 16px;gap:10px;}
+    .tab-bar{display:none;}
+    .mobile-header-logo{display:flex;}
+    #calendarBtn{display:none;}
+    .header-auth-slot{display:none;}
+
+    /* 하단 바텀 네비게이션 노출 + 컨텐츠가 바텀바에 가리지 않도록 여백 확보 */
+    .bottom-nav{display:flex;}
+    .app-main{padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px));}
+  }
+
+  /* PC 화면(≥961px): 사이드바를 상시 고정 컬럼으로 전환.
+     상단 탭바(홈/금융/정보 드롭다운 등)와 사이드바 메뉴가 동시에 보이면 예전에 겪었던
+     "메뉴 중복" 문제가 재발하므로, 이 폭에서는 탭바를 숨기고 사이드바를 유일한 내비게이션으로 둔다.
+     태블릿/모바일 폭(≤960px)은 기존과 동일하게 오프캔버스 드로어 + 상단 탭바 조합을 유지한다. */
+  @media (min-width:961px){
+    .sidebar-toggle-btn{display:none;}
+    .sidebar-close-btn{display:none;}
+    .sidebar-backdrop{display:none;}
+    .tab-bar{display:none;}
+
+    .app-sidebar{
+      transform:translateX(0);
+      box-shadow:none;
+    }
+
+    .app-main{margin-left:280px;}
+  }
+
+  /* ---------- Generic "coming soon" full page teaser ---------- */
+  .view-teaser{
+    max-width:420px;
+    margin:0 auto;
+    padding:96px 20px 64px;
+    text-align:center;
+  }
+  .view-teaser-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:64px;height:64px;
+    border-radius:20px;
+    background:#eceef1;
+    margin-bottom:20px;
+  }
+  .view-teaser-icon i{
+    font-size:30px;
+    color:var(--ink-3);
+    --ph-duotone-secondary-color:var(--ink-3);
+    --ph-duotone-secondary-opacity:0.18;
+  }
+  .view-teaser .badge.soon{
+    display:inline-block;
+    margin-bottom:14px;
+  }
+  .view-teaser h2{
+    margin:0 0 10px;
+    font-size:22px;
+    font-weight:800;
+    letter-spacing:-0.03em;
+    color:var(--ink-1);
+  }
+  .view-teaser p{
+    margin:0;
+    font-size:14px;
+    font-weight:500;
+    color:var(--ink-3);
+    line-height:1.6;
+    word-break:keep-all;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translateX(-50%) translateY(20px);
+    background:#191f28;
+    color:#fff;
+    padding:14px 20px;
+    border-radius:14px;
+    font-size:13.5px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+    box-shadow:0 12px 30px -8px rgba(0,0,0,0.35);
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast i{font-size:16px;color:var(--brand-2);--ph-duotone-secondary-opacity:0.2;}
+
+  /* ---------- 헤더 미니 프로필 버튼 (아바타 클릭 → 마이페이지) ---------- */
+  .header-mypage-btn{
+    border:none;background:transparent;padding:0;margin:0;cursor:pointer;
+    border-radius:50%;line-height:0;flex-shrink:0;
+  }
+  .header-mypage-btn img{transition:box-shadow .15s ease;}
+  .header-mypage-btn:hover img{box-shadow:0 0 0 2px rgba(88,92,229,0.35);}
+  .header-mypage-btn.active img{box-shadow:0 0 0 2px var(--brand);}
+
+  /* ==================================================
+     마이페이지 — 프로필 · 포인트 · 리워드 몰 · 히스토리
+     ================================================== */
+  .mypage-head{padding:28px 2px 20px;}
+  @media (min-width:640px){ .mypage-head{padding:36px 2px 24px;} }
+  .mypage-eyebrow{margin:0 0 6px;font-size:13px;font-weight:700;color:var(--brand);}
+  .mypage-head h2{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-0.03em;color:var(--ink-1);}
+  .mypage-head p{margin:0;font-size:13.5px;font-weight:500;color:var(--ink-3);}
+
+  .mypage-logged-out{
+    background:var(--card);border-radius:var(--radius-lg);padding:56px 24px;text-align:center;
+    box-shadow:var(--shadow-card);
+  }
+  .mypage-logged-out-icon{
+    width:56px;height:56px;margin:0 auto 16px;border-radius:18px;background:var(--brand-soft);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .mypage-logged-out-icon i{font-size:26px;color:var(--brand);}
+  .mypage-logged-out-title{margin:0 0 6px;font-size:16px;font-weight:800;color:var(--ink-1);}
+  .mypage-logged-out-desc{margin:0 0 20px;font-size:13px;font-weight:500;color:var(--ink-3);}
+  .mypage-login-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    background:#fff;color:var(--ink-1);border:1.5px solid var(--line);
+    padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:700;
+    cursor:pointer;transition:background .15s ease, border-color .15s ease;
+  }
+  .mypage-login-btn:hover{background:var(--card-soft);border-color:#d8dce2;}
+
+  .mypage-content{display:flex;flex-direction:column;gap:20px;padding-bottom:40px;}
+
+  .mypage-profile-card{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+    background:var(--card);border-radius:var(--radius-lg);padding:24px;
+    box-shadow:var(--shadow-card);
+  }
+  .mypage-profile-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--card-soft);}
+  .mypage-profile-text{flex:1;min-width:160px;}
+  .mypage-profile-name-row{display:flex;align-items:center;gap:4px;}
+  .mypage-profile-name{margin:0 0 4px;font-size:16px;font-weight:800;color:var(--ink-1);letter-spacing:-0.02em;}
+  .mypage-name-edit-btn{
+    display:flex;align-items:center;justify-content:center;
+    width:22px;height:22px;margin-bottom:4px;
+    border-radius:6px;border:none;background:transparent;
+    color:var(--ink-3);cursor:pointer;flex-shrink:0;
+    transition:background .15s ease, color .15s ease;
+  }
+  .mypage-name-edit-btn:hover{background:var(--card-soft);color:var(--brand);}
+  .mypage-name-edit-btn i{font-size:13px;--ph-duotone-secondary-opacity:0;}
+  .mypage-profile-name-input{
+    width:100%;max-width:220px;
+    margin:0 0 4px;
+    padding:5px 10px;
+    border-radius:8px;
+    border:1.5px solid var(--brand);
+    background:var(--card);
+    color:var(--ink-1);
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+    font-family:inherit;
+  }
+  .mypage-profile-email{margin:0;font-size:12.5px;font-weight:600;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mypage-logout-btn{
+    flex-shrink:0;background:var(--card-soft);color:var(--ink-2);border:none;
+    padding:10px 18px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;
+    transition:background .15s ease;
+  }
+  .mypage-logout-btn:hover{background:#e5e8eb;}
+
+  /* 왼쪽: 보유 포인트+히스토리 / 오른쪽: 5년 뒤 목돈·이자 절감 시뮬레이터(.home-sim-section, 그 안에서
+     또 두 칸으로 세로 스택) 두 칸을 한 행에 배치. 좁은 화면에서는 자연스럽게 세로로 쌓인다. */
+  .mypage-split-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-bottom:24px;}
+  .mypage-split-row .home-sim-section{margin-bottom:0;}
+  @media (max-width:640px){
+    .mypage-split-row{grid-template-columns:1fr;}
+  }
+
+  .mypage-points-card{
+    background:linear-gradient(160deg, var(--brand-soft) 0%, var(--card) 70%);
+    border:1px solid rgba(88,92,229,0.14);
+    border-radius:var(--radius-lg);padding:28px 24px;
+  }
+  .mypage-points-label{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--brand);}
+  .mypage-points-value{margin:0 0 18px;font-size:clamp(30px,7vw,40px);font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
+  .mypage-points-value span:last-child{font-size:16px;font-weight:700;color:var(--ink-3);}
+  .mypage-progress-top{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:8px;}
+  .mypage-progress-track{height:8px;background:rgba(255,255,255,0.7);border-radius:999px;overflow:hidden;}
+  .mypage-progress-fill{height:100%;background:var(--brand);border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+  .mypage-points-history-divider{height:1px;background:rgba(88,92,229,0.14);margin:24px 0 18px;}
+  .mypage-points-card .mypage-section-title{margin:0 0 12px;}
+  .mypage-points-card .mypage-history-list{margin:0 -4px;}
+
+  .mypage-section-title{margin:0 0 14px;font-size:15px;font-weight:800;color:var(--ink-1);letter-spacing:-0.03em;}
+
+  /* 관리자 푸시 발송 폼 */
+  .admin-push-label{display:block;margin:16px 0 6px;font-size:12.5px;font-weight:700;color:var(--ink-2);}
+  .admin-push-label:first-child{margin-top:0;}
+  .admin-push-input{
+    width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:12px;
+    padding:12px 14px;font-size:13.5px;font-weight:600;color:var(--ink-1);
+    background:var(--card);font-family:inherit;
+  }
+  .admin-push-input:focus{outline:none;border-color:var(--brand);}
+  .admin-push-textarea{min-height:80px;resize:vertical;}
+  .admin-push-submit-btn{
+    margin-top:20px;width:100%;background:var(--brand);color:#fff;border:none;
+    border-radius:12px;padding:14px;font-size:14px;font-weight:800;cursor:pointer;
+  }
+  .admin-push-submit-btn:disabled{opacity:0.6;cursor:default;}
+  .admin-push-cancel-btn{background:var(--card-soft);color:var(--ink-2);margin-top:8px;}
+  .admin-push-result{margin:12px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-2);white-space:pre-wrap;}
+  .admin-cal-item{
+    display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);
+  }
+  .admin-cal-item:last-child{border-bottom:none;}
+  .admin-cal-item-body{flex:1;min-width:0;}
+  .admin-cal-item-title{margin:0;font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .admin-cal-item-meta{margin:2px 0 0;font-size:11.5px;font-weight:600;color:var(--ink-3);}
+  .admin-cal-item-btn{
+    flex-shrink:0;border:none;background:var(--card-soft);color:var(--ink-2);
+    border-radius:8px;padding:6px 10px;font-size:11.5px;font-weight:700;cursor:pointer;
+  }
+  .admin-cal-item-btn.danger{color:#f04452;}
+
+  .theme-option-group{
+    display:flex;
+    gap:4px;
+    background:var(--card-soft);
+    border-radius:14px;
+    padding:4px;
+  }
+  .theme-option{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:9px 0;
+    border-radius:10px;
+    cursor:pointer;
+    transition:background .15s ease, box-shadow .15s ease;
+  }
+  .theme-option input[type="radio"]{position:absolute;width:0;height:0;opacity:0;pointer-events:none;}
+  .theme-option-label{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--ink-3);white-space:nowrap;}
+  .theme-option-label i{font-size:15px;--ph-duotone-secondary-opacity:0;color:var(--ink-3);}
+  .theme-option:has(input:checked){background:var(--card);box-shadow:0 1px 3px rgba(15,23,42,0.08);}
+  .theme-option:has(input:checked) .theme-option-label{color:var(--ink-1);}
+  .theme-option:has(input:checked) .theme-option-label i{color:var(--brand);--ph-duotone-secondary-opacity:0.16;}
+  @media (max-width:360px){
+    .theme-option-label span{display:none;}
+  }
+
+
+  .mypage-history-list{
+    background:var(--card);border-radius:var(--radius-lg);padding:6px 20px;box-shadow:var(--shadow-card);
+  }
+  .mypage-history-item{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 0;border-bottom:1px solid var(--line);
+  }
+  .mypage-history-item:last-child{border-bottom:none;}
+  .mypage-history-left{display:flex;flex-direction:column;gap:3px;min-width:0;}
+  .mypage-history-reason{font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .mypage-history-date{font-size:11.5px;font-weight:600;color:var(--ink-3);}
+  .mypage-history-amount{flex-shrink:0;font-size:14px;font-weight:800;letter-spacing:-0.02em;white-space:nowrap;}
+  .mypage-history-amount.positive{color:var(--brand);}
+  .mypage-history-amount.negative{color:#f04452;}
+  .mypage-history-empty{padding:36px 0;text-align:center;font-size:13px;font-weight:600;color:var(--ink-3);}
+
+  @media (max-width:560px){
+    .mypage-logout-btn{width:100%;}
+  }
+
+  /* 스플래시 화면 — 네이티브(TWA) 스플래시는 아이콘+배경색만 지원해 텍스트를 못 넣으므로,
+     아이콘+앱이름까지 온전히 보여주는 실제 스플래시는 이 웹 레이어가 담당한다.
+     배경색을 twa-manifest.json의 backgroundColor(#F2F4F6 = --bg)와 동일하게 맞춰서
+     네이티브 스플래시 → 이 화면으로 넘어갈 때 색이 튀지 않고 자연스럽게 이어지게 함. */
+  .app-splash{
+    position:fixed;inset:0;z-index:99999;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;
+    background:var(--bg);
+    overflow:hidden;
+  }
+  /* 아이콘을 배경+원(shell)과 화살표(arrow) 두 레이어로 분리해서, 화살표만 자기가 가리키는
+     대각선(우상단) 방향으로 따로 튀어나가고 나머지는 자리에서 페이드아웃되게 한다 —
+     아이콘 전체가 통째로 확대되는 게 아니라 "화살표가 뚫고 나가며 화면이 열리는" 느낌을 만든다. */
+  .app-splash-icon-wrap{
+    position:relative;
+    width:88px;height:88px;
+    animation:appSplashIconIn .4s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .app-splash-icon-shell,
+  .app-splash-icon-arrow{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    display:block;
+  }
+  .app-splash-icon-shell{
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 10px 28px rgba(88,92,229,0.28);
+    animation:appSplashShellFade 2s cubic-bezier(.45,0,.2,1) forwards;
+  }
+  .app-splash-icon-arrow{
+    transform-origin:50% 50%;
+    animation:appSplashArrowLaunch 2s cubic-bezier(.45,0,.2,1) forwards;
+  }
+  .app-splash-name{
+    margin:0;
+    font-size:17px;
+    font-weight:800;
+    color:var(--ink-1);
+    letter-spacing:-0.02em;
+    animation:appSplashNameInOut 2s ease forwards;
+  }
+  @keyframes appSplashIconIn{
+    0%{opacity:0;transform:scale(.8);}
+    100%{opacity:1;transform:scale(1);}
+  }
+  @keyframes appSplashShellFade{
+    0%, 40% { opacity:1; }
+    100%    { opacity:0; }
+  }
+  @keyframes appSplashArrowLaunch{
+    0%, 28% { opacity:1; transform:translate(0,0) scale(1) rotate(0deg); }
+    42%     { opacity:1; transform:translate(-3px,3px) scale(.9) rotate(-6deg); }   /* 조준 — 반대 방향으로 살짝 웅크림 */
+    100%    { opacity:0; transform:translate(170px,-170px) scale(2.6) rotate(8deg); } /* 화살표 방향(우상단)으로 대각선 발사 */
+  }
+  @keyframes appSplashNameInOut{
+    0%   { opacity:0; transform:translateY(6px); }
+    14%  { opacity:1; transform:translateY(0); }
+    42%  { opacity:1; transform:translateY(0); }
+    58%  { opacity:0; transform:translateY(0); } /* 아이콘이 튀어나가기 전에 먼저 사라짐 */
+    100% { opacity:0; }
+  }
+
+  /* ---------- 설정 ---------- */
+  .settings-head{margin-bottom:18px;}
+  .settings-head h2{margin:4px 0 6px;font-size:20px;font-weight:800;color:var(--ink-1);}
+
+  .settings-section{margin-bottom:24px;}
+  .settings-section-title{margin:0 0 12px;font-size:13px;font-weight:800;color:var(--ink-3);}
+  .settings-logout-btn{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--card);border:none;border-radius:14px;padding:15px;
+    font-size:14px;font-weight:700;color:#f04452;cursor:pointer;font-family:inherit;
+    box-shadow:var(--shadow-card);
+  }
+  .settings-danger-btn{margin-top:10px;color:#fff;background:#f04452;}
+  .settings-link-list{background:var(--card);border-radius:14px;box-shadow:var(--shadow-card);overflow:hidden;}
+  .settings-link-item{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:15px 16px;font-size:14px;font-weight:600;color:var(--ink-1);
+    text-decoration:none;border-bottom:1px solid var(--line);
+  }
+  .settings-link-item:last-child{border-bottom:none;}
+  .settings-link-item i{font-size:15px;color:var(--ink-3);--ph-duotone-secondary-opacity:0;}
+  .settings-version{text-align:center;font-size:12px;font-weight:600;color:var(--ink-3);margin-top:20px;}
