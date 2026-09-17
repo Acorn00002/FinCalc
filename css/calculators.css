@@ -169,3 +169,39 @@
       padding-bottom:env(safe-area-inset-bottom, 0px);
     }
   }
+
+  /* ---------- 계산기 상세 SEO 안내 (검색 유입용 /calculators/{slug}/ 페이지에서만 렌더) ----------
+     계산기 허브 화면(#finpilotGridState)의 기존 .finpilot-seo-guide 바로 아래 붙는, 계산기별
+     설명·체크리스트·FAQ 영역. 접었다 펼 수 있는 <details>로 감싸 계산기 화면 자체는 가리지 않는다. */
+  .calc-page-guide{margin-top:16px;}
+  .calc-page-guide-toggle{border-top:1px solid var(--line);padding-top:16px;}
+  .calc-page-guide-toggle summary{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    cursor:pointer;list-style:none;font-size:14.5px;font-weight:800;color:var(--ink-1);
+    padding:4px 0;
+  }
+  .calc-page-guide-toggle summary::-webkit-details-marker{display:none;}
+  .calc-page-guide-toggle summary .calc-page-guide-eyebrow{
+    font-size:12px;font-weight:600;color:var(--ink-3);margin-left:6px;
+  }
+  .calc-page-guide-toggle summary i{font-size:16px;color:var(--ink-3);transition:transform .2s ease;flex-shrink:0;}
+  .calc-page-guide-toggle[open] summary i{transform:rotate(180deg);}
+  .calc-page-guide-body{padding-top:14px;}
+
+  .cp-eyebrow{font-size:13px;font-weight:700;color:var(--brand);margin:0 0 8px;}
+  .cp-article h2{font-size:17px;font-weight:800;color:var(--ink-1);margin:22px 0 10px;}
+  .cp-article h2:first-child{margin-top:0;}
+  .cp-article h3{font-size:14.5px;font-weight:800;color:var(--ink-1);margin:18px 0 8px;}
+  .cp-article p{font-size:13.5px;line-height:1.8;color:var(--ink-2);margin:0 0 12px;}
+  .cp-article ul,.cp-article ol{margin:0 0 12px;padding-left:20px;color:var(--ink-2);font-size:13.5px;line-height:1.8;}
+  .cp-article li{margin-bottom:6px;}
+  .cp-article a{color:var(--brand);font-weight:700;}
+  .cp-cta{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--card-soft);border-radius:16px;padding:14px 16px;margin:18px 0;
+  }
+  .cp-cta p{margin:0;font-size:13.5px;font-weight:700;color:var(--ink-1);}
+  .cp-cta a{background:var(--brand);color:#fff;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700;white-space:nowrap;}
+  .cp-cta a:hover{opacity:0.92;}
+  .cp-related-links{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;}
+  .cp-related-links a{background:var(--card-soft);border-radius:999px;padding:8px 12px;font-size:12.5px;font-weight:700;color:var(--ink-1);}

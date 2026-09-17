@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- 검색 유입용 계산기 URL(/calculators/{slug}/)은 이 파일을 그대로 복제해 만든 정적 페이지라
+     문서 경로 깊이가 루트(/)와 다르다. "css/tokens.css", "./finpilot/index.html?tab=..." 같은
+     상대경로가 하위 경로에서 잘못된 위치로 풀리지 않도록, 모든 상대경로를 항상 사이트 루트
+     기준으로 고정한다. 루트 index.html 자체는 이미 "/"에 있으므로 동작에 영향이 없다. -->
+<base href="/">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></script>
 <script>
@@ -9735,6 +9740,17 @@ try {
         goHomeFromLogo();
       }
     });
+  }
+
+  // 검색 유입용 계산기 URL(예: /calculators/loan-interest/)은 이 파일(index.html)을 그대로
+  // 복제해 만든 정적 페이지로, <body> 상단에서 window.__CALC_DEEP_LINK__ 에 FINCALC_MAP 키를
+  // 미리 심어둔다. 값이 있고 해시가 비어있는 최초 진입일 때만 계산기 허브로 이동 후 해당
+  // 계산기를 곧바로 연다 — 홈에서 "계산기" 메뉴 → 카드 클릭과 동일한 화면/동작이 된다.
+  // 로그아웃·로고 클릭 등 기존 reload 로직은 reload 전에 location.hash="home"을 먼저 심어두므로
+  // (location.hash가 비어있지 않으면) 아래 조건에 걸리지 않아 정상적으로 홈으로 돌아간다.
+  if (window.__CALC_DEEP_LINK__ && !location.hash && typeof openFinCalc === "function") {
+    activateView("finpilot");
+    openFinCalc(window.__CALC_DEEP_LINK__);
   }
 })();
 </script>
