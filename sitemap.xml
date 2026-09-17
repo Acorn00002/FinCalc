@@ -8,9 +8,39 @@
   </url>
   <url>
     <loc>https://www.gofincalc.com/blog/</loc>
-    <lastmod>2026-09-13</lastmod>
+    <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/salary-net-pay-by-bracket/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/mortgage-monthly-payment-by-amount/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/subscription-score-by-tier-strategy/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/newlywed-first-home-special-supply-guide/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.gofincalc.com/blog/long-term-holding-deduction-guide/</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://www.gofincalc.com/blog/ex-dividend-date-guide/</loc>

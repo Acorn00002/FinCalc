@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주택담보대출 금액별 월 상환액표 — 1억부터 7억까지 금리별 비교</title>
+<meta name="description" content="주택담보대출 1억부터 7억까지, 금리와 상환 방식에 따라 월 상환액이 얼마나 달라지는지 계산 예시로 정리했습니다. 원리금균등·원금균등 차이도 함께 확인하세요.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/mortgage-monthly-payment-by-amount/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="주택담보대출 금액별 월 상환액표 — 1억부터 7억까지 금리별 비교">
+<meta property="og:description" content="대출금액과 금리에 따라 월 상환액이 어떻게 달라지는지 계산 예시로 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/mortgage-monthly-payment-by-amount/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "주택담보대출 금액별 월 상환액표 — 1억부터 7억까지 금리별 비교", "item": "https://www.gofincalc.com/blog/mortgage-monthly-payment-by-amount/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "원리금균등과 원금균등, 표에서 월 상환액이 다른데 어떤 걸 기준으로 봐야 하나요?", "acceptedAnswer": {"@type": "Answer", "text": "초기 상환 부담을 낮추고 싶다면 원리금균등, 총 이자를 줄이고 싶다면 원금균등이 유리한 경향이 있습니다. 다만 원금균등은 초기 월 상환액이 원리금균등보다 훨씬 크기 때문에, 소득 대비 감당 가능한 금액인지 먼저 확인해야 합니다."}}, {"@type": "Question", "name": "금리가 1%만 달라져도 월 상환액이 크게 바뀌나요?", "acceptedAnswer": {"@type": "Answer", "text": "대출금액이 크고 만기가 길수록 금리 1%p 차이가 월 상환액에 미치는 영향도 커집니다. 특히 3억원 이상, 30년 만기 대출에서는 금리 1%p 차이가 월 십만원 단위 이상의 차이로 이어질 수 있어, 금리 비교가 대출금액 비교만큼 중요합니다."}}]}</script></head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><span class="cp-logo-mark">자</span>자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">대출</p>
+  <h1 class="cp-title">주택담보대출 금액별 월 상환액표 — 1억부터 7억까지 금리별 비교</h1>
+  <p class="cp-meta"><span>2026.09.17</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+    <p>"3억원을 30년 만기로 빌리면 한 달에 얼마씩 내야 하지?" 집을 알아보기 시작하면 대출 한도만큼이나 궁금해지는 게 매달 실제로 나가는 상환액입니다. 대출금액, 금리, 상환 기간, 상환 방식 네 가지가 조합되면서 월 상환액이 결정되는데, 이 중 하나만 바뀌어도 결과가 크게 달라집니다. 이 글에서는 이 네 가지 요소가 각각 월 상환액에 어떤 영향을 주는지 예시로 정리하고, 마지막에 직접 계산기로 내 조건을 넣어볼 수 있도록 안내합니다.</p>
+
+    <h2>원리금균등상환 vs 원금균등상환, 계산 구조부터 다릅니다</h2>
+    <p><strong>원리금균등상환</strong>은 만기까지 매달 내는 총액(원금+이자)이 동일하도록 설계된 방식입니다. 초기에는 이자 비중이 크고 원금 비중이 작지만, 시간이 지날수록 원금 비중이 커집니다. 매달 지출 계획을 세우기 쉬워 가장 널리 쓰이는 방식입니다. 반면 <strong>원금균등상환</strong>은 매달 갚는 원금을 동일하게 고정하고, 남은 원금에 대한 이자만 매달 다시 계산해 더합니다. 그래서 초기 상환액이 원리금균등보다 크지만, 시간이 지날수록 상환액이 줄어들고 동일 조건이라면 총 이자 납부액은 원리금균등보다 적습니다.</p>
+
+    <h2>대출금액·금리별 월 상환액, 구조로 이해하기</h2>
+    <p>아래 표는 원리금균등상환·30년 만기를 가정했을 때, 대출금액과 금리에 따라 월 상환액이 어떤 방향으로 움직이는지 보여주는 예시입니다. 실제 금리는 은행·시점·개인 신용도에 따라 다르므로, 표의 값이 아니라 방향성과 구조를 이해하는 용도로 참고하세요.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>대출금액</th><th>금리 변화 영향</th><th>만기 변화 영향</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1억~2억원</td><td>금리 1%p 차이가 월 상환액에 미치는 영향이 상대적으로 작음</td><td>만기를 늘리면 월 부담은 줄지만 총 이자는 늘어남</td></tr>
+          <tr><td>3억~5억원</td><td>금리 1%p 차이가 월 수만~십만원 단위로 확대됨</td><td>만기 5년 차이만으로도 월 상환액 체감 차이가 커짐</td></tr>
+          <tr><td>6억~7억원</td><td>금리 차이의 절대 금액 영향이 가장 큼</td><td>거치기간 유무에 따라 초기 부담이 크게 달라짐</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>거치기간(원금 상환 없이 이자만 내는 기간)을 두면 거치기간 동안의 월 상환액은 낮아지지만, 거치기간이 끝난 뒤 남은 기간 동안 원금을 상환해야 하므로 이후 월 상환액이 오히려 커집니다. 정확한 금액은 대출금액·금리·만기·거치기간을 실제 값으로 넣어 <strong>계산기로 직접 비교</strong>해보는 것이 가장 확실합니다.</p>
+
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">주의 — 표시금리와 실제 적용금리는 다를 수 있습니다</span>
+      <p>은행에서 안내하는 금리는 대부분 우대금리 조건(급여이체, 카드 실적, 자동이체 등)을 모두 충족했을 때 기준입니다. 조건을 충족하지 못하면 기본금리가 적용되어 월 상환액이 예상보다 커질 수 있습니다. 대출 실행 전 본인이 실제로 받을 수 있는 우대금리 조건을 정확히 확인해야 합니다.</p>
+    </div>
+
+    <h2>월 상환액을 낮추는 현실적인 선택지</h2>
+    <ul class="cp-checklist">
+      <li>만기를 늘리면 월 상환액은 줄지만 총 이자 부담이 커진다는 점을 감안했나요?</li>
+      <li>거치기간을 둘 경우, 거치기간 종료 후 상환액이 커진다는 점을 계산에 반영했나요?</li>
+      <li>고정금리와 변동금리(또는 주기형 금리) 중 시장 상황에 맞는 선택을 검토했나요?</li>
+      <li>중도상환 여력이 있다면, 중도상환수수료 면제 구간(통상 대출 실행 후 3년 경과 시점)을 확인했나요?</li>
+    </ul>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 원리금균등과 원금균등, 표에서 월 상환액이 다른데 어떤 걸 기준으로 봐야 하나요?</p>
+      <p class="cp-faq-a">초기 상환 부담을 낮추고 싶다면 원리금균등, 총 이자를 줄이고 싶다면 원금균등이 유리한 경향이 있습니다. 다만 원금균등은 초기 월 상환액이 원리금균등보다 훨씬 크기 때문에, 소득 대비 감당 가능한 금액인지 먼저 확인해야 합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 금리가 1%만 달라져도 월 상환액이 크게 바뀌나요?</p>
+      <p class="cp-faq-a">대출금액이 크고 만기가 길수록 금리 1%p 차이가 월 상환액에 미치는 영향도 커집니다. 특히 3억원 이상, 30년 만기 대출에서는 금리 1%p 차이가 월 십만원 단위 이상의 차이로 이어질 수 있어, 금리 비교가 대출금액 비교만큼 중요합니다.</p>
+    </div>
+
+    <div class="cp-cta">
+      <p>내 대출금액·금리·상환방식으로 정확한 월 상환액을 계산해보세요.</p>
+      <a href="https://www.gofincalc.com/calculators/loan-interest/">대출 이자 계산기 바로가기</a>
+    </div>
+
+    <p class="cp-disclaimer">본 콘텐츠는 일반적인 대출 정보 제공을 목적으로 하며, 대출 상담을 대체하지 않습니다. 실제 대출 금리와 우대 조건은 은행·시점·개인 신용도에 따라 달라지므로, 정확한 월 상환액은 계산기 결과와 함께 대출 실행 은행의 최신 안내를 확인하시기 바랍니다.</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+</body>
+</html>
