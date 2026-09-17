@@ -702,9 +702,12 @@ async function refreshIpoScheduleCache() {
   return schedules;
 }
 
-// 청약홈(한국부동산원) APT 분양정보 — data.go.kr 표준 응답 포맷(response.body.items)을 기본으로 하되,
-// 서비스별로 조금씩 다른 실제 필드명 후보들도 함께 대비해둔다. 활용신청 승인 후 실제 응답을 보고
-// 아래 필드 매핑(houseNm/pblancNo/rceptBgnde 등)을 문서와 대조해 필요시 조정할 것.
+// 청약홈(한국부동산원) APT 분양정보 — 2026-09-17 활용신청 승인 후 실제 응답으로 필드명을 직접 대조
+// 확인했다(이전엔 apis.data.go.kr 계열의 영문 카멜케이스 필드명을 추측해서 썼는데, 이 API는 실제로는
+// "주택명"/"청약접수시작일" 같은 완전한 한글 필드명을 그대로 쓰는 것으로 확인됨 — 라이브 검증 결과:
+// {"주택명":"...", "공고번호":2025820017, "청약접수시작일":"2025-12-08", "청약접수종료일":"2025-12-12",
+//  "공급지역명":"경기", "공급위치":"...", "주택관리번호":2025820017, "모집공고홈페이지주소":"https://...",
+//  "모집공고일":"2025-11-27", "당첨자발표일":"2025-12-24", "계약시작일":"...", "계약종료일":"..."} 형태).
 async function fetchCheongyakhomeSubscriptions() {
   if (!DATA_GO_KR_API_KEY) {
     console.warn("DATA_GO_KR_API_KEY가 설정되지 않아 청약홈 청약 일정 수집을 건너뜁니다.");
@@ -728,9 +731,10 @@ async function fetchCheongyakhomeSubscriptions() {
 
   const events = [];
   items.forEach((item) => {
-    const houseName = item.houseNm || item.HOUSE_NM || item.title;
-    const noticeId = item.pblancNo || item.PBLANC_NO || item.id;
-    const receptionDateRaw = item.rceptBgnde || item.RCEPT_BGNDE || item.date;
+    // 실제 응답이 한글 필드명이라는 걸 확인했지만, 혹시 모를 변형 대비로 영문 후보도 폴백으로 남겨둔다.
+    const houseName = item["주택명"] || item.houseNm || item.HOUSE_NM || item.title;
+    const noticeId = item["공고번호"] || item.pblancNo || item.PBLANC_NO || item.id;
+    const receptionDateRaw = item["청약접수시작일"] || item.rceptBgnde || item.RCEPT_BGNDE || item.date;
     if (!houseName || !receptionDateRaw) return;
 
     const dashedDate = String(receptionDateRaw).length === 8
@@ -738,38 +742,77 @@ async function fetchCheongyakhomeSubscriptions() {
       : String(receptionDateRaw);
     if (!dashedDate) return;
 
-    const region = item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || null;
+    const region = item["공급지역명"] || item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || null;
+    const address = item["공급위치"] || null;
+    const receptionEndDate = item["청약접수종료일"] || null;
+    const announcementDate = item["모집공고일"] || null;
+    const winnerDate = item["당첨자발표일"] || null;
+    const contractStart = item["계약시작일"] || null;
+    const contractEnd = item["계약종료일"] || null;
+    const houseManageNo = item["주택관리번호"] || item.houseManageNo || item.HOUSE_MANAGE_NO || "";
+    const noticeUrl = item["모집공고홈페이지주소"] ||
+      ("https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=" + houseManageNo);
 
     events.push({
       sourceId: String(noticeId || (houseName + receptionDateRaw)),
       date: dashedDate,
+      startDate: dashedDate,
+      endDate: receptionEndDate,
       eventDate: dashedDate,
       category: "realestate",
       type: "청약",
       title: houseName + " 청약",
-      meta: region || "",
+      meta: (region || "") + (address ? " · " + address : ""),
       status: null,
       flag: "kr",
       company: null,
       companyName: houseName,
       logo: null,
       source: "cheongyakhome",
-      sourceUrl: "https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=" +
-        (item.houseManageNo || item.HOUSE_MANAGE_NO || ""),
+      sourceUrl: noticeUrl,
       summary: null,
       region: region,
       leadManager: null,
       offeringPrice: null,
       refundDate: null,
-      listingDate: null,
-      announcementDate: null,
+      listingDate: contractStart,
+      announcementDate: announcementDate,
+      details: {
+        supplyType: "APT 분양",
+        winnerDate: winnerDate || undefined,
+        applyPeriod: receptionEndDate ? (dashedDate + " ~ " + receptionEndDate) : undefined
+      },
       isAutomatic: true,
-      // 활용신청이 아직 응답을 한 번도 준 적이 없어(현재 401) 위 필드 매핑이 실제 응답으로 검증된 적이
-      // 없다 — 키가 정상화된 뒤 첫 실제 데이터가 들어오면 관리자가 한 번 대조 확인하라는 의미로 true.
-      needsReview: true,
+      // 2026-09-17: 실제 승인된 키로 실제 응답을 받아 필드 매핑을 직접 대조 확인함 — 더 이상 미검증 아님.
+      needsReview: false,
       // 청약 접수(마감)도 실제 신청 행동이 걸린 일정이라 "중요"로 분류한다.
       autoImportance: "중요"
     });
+
+    // 당첨자 발표일도 별도 일정으로 하나 더 만든다 — 접수 시작일과는 성격이 다른, 사용자가 따로
+    // 확인해야 하는 날짜라서 같은 이벤트에 details로만 묻어두지 않고 캘린더에도 노출한다.
+    if (winnerDate) {
+      events.push({
+        sourceId: String(noticeId || (houseName + receptionDateRaw)) + "__winner",
+        date: winnerDate,
+        eventDate: winnerDate,
+        category: "realestate",
+        type: "청약",
+        title: houseName + " 당첨자 발표",
+        meta: region || "",
+        status: null,
+        flag: "kr",
+        company: null,
+        companyName: houseName,
+        logo: null,
+        source: "cheongyakhome",
+        sourceUrl: noticeUrl,
+        region: region,
+        isAutomatic: true,
+        needsReview: false,
+        autoImportance: "중요"
+      });
+    }
   });
 
   return events;
@@ -1572,6 +1615,9 @@ exports.syncIpoScheduleCache = onSchedule(
 // 동일한 API를 쓰지만, 이쪽은 이 탭 전용으로 필드를 훨씬 풍부하게(특별공급/1·2순위 접수일,
 // 당첨자발표일, 시공사/시행사, 규제지역 여부 등) 그대로 내려준다. Swagger 문서로 실제 필드명을
 // 전부 확인하고 실 키로 라이브 테스트까지 마쳤다(대구 "달서자이 제니크" 등 실제 매물 확인).
+// 2026-09-17 활용신청 승인 후 실제 응답으로 필드명을 직접 대조 확인했다 — fetchCheongyakhomeSubscriptions()
+// 위쪽 주석에 적어둔 실제 응답 예시 참고. 이전엔 apis.data.go.kr 계열의 영문 스네이크케이스 필드명을
+// 추측해서 썼는데, 이 API는 실제로는 완전한 한글 필드명을 그대로 쓰는 것으로 확인됨.
 async function fetchApartmentSubscriptions() {
   if (!DATA_GO_KR_API_KEY) return [];
 
@@ -1586,7 +1632,7 @@ async function fetchApartmentSubscriptions() {
     const url = CHEONGYAKHOME_API_URL +
       "?page=" + page +
       "&perPage=" + pageSize +
-      "&cond[RCRIT_PBLANC_DE::GTE]=" + bgnDe;
+      "&cond[모집공고일::GTE]=" + bgnDe;
     const res = await fetch(url, { headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY } });
     if (!res.ok) {
       console.error("청약홈 분양정보 API 오류:", res.status);
@@ -1602,27 +1648,27 @@ async function fetchApartmentSubscriptions() {
 
   return rows.map(function (item) {
     return {
-      id: item.HOUSE_MANAGE_NO || item.PBLANC_NO,
-      name: item.HOUSE_NM || "",
-      houseType: item.HOUSE_SECD_NM || "",
-      supplyType: item.HOUSE_DTL_SECD_NM || "",
-      region: item.SUBSCRPT_AREA_CODE_NM || "",
-      address: item.HSSPLY_ADRES || "",
-      totalUnits: item.TOT_SUPLY_HSHLDCO ? parseInt(item.TOT_SUPLY_HSHLDCO, 10) : null,
-      constructor: item.CNSTRCT_ENTRPS_NM || "",
-      developer: item.BSNS_MBY_NM || "",
-      specialSupplyStart: item.SPSPLY_RCEPT_BGNDE || null,
-      specialSupplyEnd: item.SPSPLY_RCEPT_ENDDE || null,
-      subStart: item.RCEPT_BGNDE || null,
-      subEnd: item.RCEPT_ENDDE || null,
-      winnerDate: item.PRZWNER_PRESNATN_DE || null,
-      contractStart: item.CNTRCT_CNCLS_BGNDE || null,
-      contractEnd: item.CNTRCT_CNCLS_ENDDE || null,
-      moveInMonth: item.MVN_PREARNGE_YM || null,
-      speculativeZone: item.SPECLT_RDN_EARTH_AT === "Y",
-      adjustmentZone: item.MDAT_TRGET_AREA_SECD === "Y",
-      priceCapZone: item.PARCPRC_ULS_AT === "Y",
-      sourceUrl: item.PBLANC_URL || "https://www.applyhome.co.kr"
+      id: item["주택관리번호"] || item["공고번호"],
+      name: item["주택명"] || "",
+      houseType: item["주택구분코드명"] || "",
+      supplyType: item["주택상세구분코드명"] || "",
+      region: item["공급지역명"] || "",
+      address: item["공급위치"] || "",
+      totalUnits: item["공급규모"] != null ? parseInt(item["공급규모"], 10) : null,
+      constructor: item["건설업체명_시공사"] || "",
+      developer: item["사업주체명_시행사"] || "",
+      specialSupplyStart: item["특별공급접수시작일"] || null,
+      specialSupplyEnd: item["특별공급접수종료일"] || null,
+      subStart: item["청약접수시작일"] || null,
+      subEnd: item["청약접수종료일"] || null,
+      winnerDate: item["당첨자발표일"] || null,
+      contractStart: item["계약시작일"] || null,
+      contractEnd: item["계약종료일"] || null,
+      moveInMonth: item["입주예정월"] || null,
+      speculativeZone: item["투기과열지구"] === "Y",
+      adjustmentZone: item["조정대상지역"] === "Y",
+      priceCapZone: item["분양가상한제"] === "Y",
+      sourceUrl: item["모집공고홈페이지주소"] || "https://www.applyhome.co.kr"
     };
   }).filter(function (x) { return x.id && x.name && x.subStart && x.subEnd; });
 }
