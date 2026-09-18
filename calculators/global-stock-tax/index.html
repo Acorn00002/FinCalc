@@ -91,6 +91,22 @@ try {
     document.documentElement.classList.add("native-embed-skip-splash");
   }
 } catch (e) {}
+
+// 일반 브라우저에서도, 계산기 카드·"관련 계산기" 링크처럼 우리 사이트 안의 다른 페이지로
+// 이동해 들어온 경우(예: /calculators/a/ → /calculators/b/)에는 스플래시를 건너뛴다.
+// index.html이 검색용 계산기 페이지마다 독립된 <base href="/">... 셸로 복제되어 있어서,
+// 이런 이동도 매번 "새 페이지 로드"라 그냥 두면 클릭할 때마다 스플래시가 다시 재생된다.
+// 실제 새로고침(F5)과 사이트 밖에서의 최초 진입(주소 직접 입력·북마크·외부 링크)만 스플래시를
+// 보여주고, 우리 사이트 안에서의 이동은 건너뛰도록 두 조건을 함께 확인한다.
+try {
+  var __navEntries = performance.getEntriesByType && performance.getEntriesByType("navigation");
+  var __navType = (__navEntries && __navEntries[0]) ? __navEntries[0].type : null;
+  var __isReload = __navType === "reload";
+  var __sameSiteReferrer = document.referrer && document.referrer.indexOf(location.origin + "/") === 0;
+  if (!__isReload && __sameSiteReferrer) {
+    document.documentElement.classList.add("native-embed-skip-splash");
+  }
+} catch (e) {}
 </script>
 <title>해외주식 양도소득세 계산기 | 250만원 공제 후 세금 계산 | 자산 파일럿</title>
 <meta name="description" content="해외주식 양도차익과 250만원 기본공제를 반영해 양도소득세를 계산하세요.">
