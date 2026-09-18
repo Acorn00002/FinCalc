@@ -108,17 +108,17 @@ try {
   }
 } catch (e) {}
 </script>
-<title>연봉 실수령액 계산기 | 월급·4대보험 예상 계산 | 자산 파일럿</title>
-<meta name="description" content="연봉과 부양가족 조건을 입력해 월 예상 실수령액과 공제액을 계산하세요. 실제 급여 명세서는 회사와 공단 기준을 확인해야 합니다.">
+<title>청약·공모주 캘린더 | 이번 주 공모주 청약·아파트 청약 일정 | 자산 파일럿</title>
+<meta name="description" content="이번 주 공모주 청약 일정과 아파트 청약(APT·민간사전청약·신혼희망타운) 정보를 한눈에 확인하세요. 청약가점 계산기와 함께 준비하세요.">
 <meta name="keywords" content="자산관리, 자산관리 앱, 주식 계산기, 물타기 계산기, 평단가 계산기, 복리 계산기, 세금 계산기, 절세 계산기, 양도소득세 계산기, 금융 계산기, 재테크 커뮤니티">
-<link rel="canonical" href="https://www.gofincalc.com/calculators/salary/">
+<link rel="canonical" href="https://www.gofincalc.com/ipo-calendar/">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="자산 파일럿">
-<meta property="og:title" content="연봉 실수령액 계산기 | 자산 파일럿">
-<meta property="og:description" content="월 예상 실수령액과 공제액을 계산하세요.">
-<meta property="og:url" content="https://www.gofincalc.com/calculators/salary/">
+<meta property="og:title" content="청약·공모주 캘린더 | 자산 파일럿">
+<meta property="og:description" content="이번 주 공모주 청약 일정과 아파트 청약 정보를 한눈에 확인하세요.">
+<meta property="og:url" content="https://www.gofincalc.com/ipo-calendar/">
 <meta property="og:locale" content="ko_KR">
 <meta property="og:image" content="https://www.gofincalc.com/icons/icon-512.png">
 <meta property="og:image:width" content="512">
@@ -127,8 +127,8 @@ try {
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="연봉 실수령액 계산기 | 자산 파일럿">
-<meta name="twitter:description" content="월 예상 실수령액과 공제액을 계산하세요.">
+<meta name="twitter:title" content="청약·공모주 캘린더 | 자산 파일럿">
+<meta name="twitter:description" content="이번 주 공모주 청약 일정과 아파트 청약 정보를 한눈에 확인하세요.">
 <meta name="twitter:image" content="https://www.gofincalc.com/icons/icon-512.png">
 
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -161,8 +161,8 @@ try {
   "logo": "https://www.gofincalc.com/icons/icon-512.png"
 }
 </script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"연봉 실수령액 계산기","url":"https://www.gofincalc.com/calculators/salary/","applicationCategory":"FinanceApplication","operatingSystem":"Web","isAccessibleForFree":true}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"홈","item":"https://www.gofincalc.com/"},{"@type":"ListItem","position":2,"name":"계산기","item":"https://www.gofincalc.com/calculators/"},{"@type":"ListItem","position":3,"name":"연봉 실수령액 계산기","item":"https://www.gofincalc.com/calculators/salary/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"CollectionPage","name":"청약·공모주 캘린더","description":"이번 주 공모주 청약 일정과 아파트 청약 정보를 모아 보여주는 페이지입니다.","url":"https://www.gofincalc.com/ipo-calendar/"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"홈","item":"https://www.gofincalc.com/"},{"@type":"ListItem","position":2,"name":"청약·공모주","item":"https://www.gofincalc.com/ipo-calendar/"}]}</script>
 
 <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -223,9 +223,9 @@ try {
 <link rel="stylesheet" href="css/responsive-native.css">
 </head>
 <body>
-<script>window.__CALC_DEEP_LINK__ = "salary";</script>
+<script>window.__VIEW_DEEP_LINK__ = "ipo";</script>
 
-<h1 class="sr-only">연봉 실수령액 계산기 | 자산 파일럿</h1>
+<h1 class="sr-only">청약·공모주 | 자산 파일럿</h1>
 
 <div class="app-splash" id="appSplash" aria-hidden="true">
   <div class="app-splash-icon-wrap">
@@ -832,13 +832,6 @@ try {
     <p>같은 연 3% 금리라도 예금과 적금의 실제 이자는 크게 다릅니다. <strong>정기예금</strong>은 목돈을 한 번에 예치하기 때문에 원금 전체에 약정 기간 동안 이자가 붙어 계산이 단순합니다. 반면 <strong>정기적금</strong>은 매달 납입한 금액마다 남은 개월 수만큼만 이자가 붙는 <strong>선입선출식 부분이자</strong> 방식이라, 표면금리가 같아도 실제 수령하는 이자는 예금의 절반 수준에 그치는 경우가 많습니다. 또한 은행이 광고하는 금리는 대부분 <strong>세전 금리</strong>이며, 이자소득세 15.4%(소득세 14% + 지방소득세 1.4%)를 차감한 <strong>세후 실수령액</strong>을 기준으로 비교해야 정확합니다. 우대금리 조건(급여이체, 카드 실적, 자동이체 등)을 충족했을 때의 최종 금리와, 조건 미충족 시 기본금리 차이도 반드시 확인하세요. 만기를 채우지 못하고 중도해지하면 약정금리 대신 훨씬 낮은 중도해지 금리가 적용되므로, 가입 전 자금 계획을 세워 만기까지 유지할 수 있는 상품을 고르는 것이 핵심입니다. 자산 파일럿의 예적금 계산기를 활용하면 세전·세후 이자와 만기 수령액을 한눈에 비교해 나에게 맞는 상품을 빠르게 찾을 수 있습니다.</p>
 
     <p class="finpilot-seo-guide-disclaimer">본 콘텐츠는 일반적인 금융 정보 제공을 목적으로 하며, 투자 자문이나 대출 상담을 대체하지 않습니다. 실제 상품 가입 및 대출 실행 전에는 반드시 금융회사의 최신 약관과 금리를 확인하고 전문가와 상담하시기 바랍니다.</p>
-  </section>
-
-  <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
-      <summary><span>연봉 실수령액 계산기 가이드<span class="calc-page-guide-eyebrow"> · 마지막 업데이트 2026년 9월 15일</span></span><i class="ph-duotone ph-caret-down"></i></summary>
-      <div class="calc-page-guide-body"><h2>실수령액은 왜 사람마다 다른가요?</h2><p>실수령액은 소득세·지방소득세·4대보험뿐 아니라 부양가족, 비과세 수당, 상여금 지급 방식, 회사의 급여 정책에 따라 달라집니다. 계산 결과는 대략적인 계획 수립에 활용하세요.</p><h2>확인할 점</h2><ul><li>비과세 식대 등 수당 반영 여부를 확인합니다.</li><li>성과급·상여금의 지급 시점에 따라 월별 실수령액은 달라질 수 있습니다.</li><li>최종 금액은 급여 명세서와 관련 기관의 최신 기준을 우선합니다.</li></ul><p><a href="/taxpilot/salary.html">4대보험·소득세 구간별 상세 계산은 연봉 실수령액 상세 계산기에서 확인하세요 →</a></p><h2>관련 계산기</h2><div class="cp-related-links cp-related-calcs"><a href="/calculators/apt-buy/">취득세 계산기</a><a href="/calculators/retirement/">은퇴자금 계산기</a><a href="/calculators/goal-planner/">목표 자산 계산기</a></div></div>
-    </details>
   </section>
   </div>
 

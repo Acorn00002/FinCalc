@@ -28,6 +28,10 @@ for (const slug of Object.keys(manifest)) {
   let out = rootHtml;
 
   out = out.replace(/<title>[^<]*<\/title>/, "<title>" + entry.title + "</title>");
+  // 루트 셸의 sr-only H1("자산 파일럿 | ...")은 앱 전체용 제목이라, 계산기 페이지에서는
+  // 이 페이지의 실제 주제("대출 이자 계산기" 등)로 바꾼다. 시각적으로는 그대로 숨김 처리라
+  // 디자인에는 영향이 없다.
+  out = out.replace('<h1 class="sr-only">자산 파일럿 | 쉽게 빠르게 끝내는 자산관리 & 금융계산기</h1>', '<h1 class="sr-only">' + entry.title.split("|")[0].trim() + ' | 자산 파일럿</h1>');
   out = out.replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="' + entry.description + '">');
   out = out.replace(/<link rel="canonical" href="[^"]*">/, '<link rel="canonical" href="' + entry.canonical + '">');
   out = out.replace(/<meta property="og:title" content="[^"]*">/, '<meta property="og:title" content="' + entry.ogTitle + '">');
