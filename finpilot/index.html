@@ -12,6 +12,11 @@ try {
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 이 페이지는 /calculators/*/ 안의 fincalc 모달·app-view 안에서만 iframe(?tab=...)으로 열리도록
+         만든 계산 엔진이라, 검색 결과에는 /calculators/average-stock-price/ 같은 전용 SEO 페이지가
+         노출되어야 한다. 이 페이지 자체가 색인되면 같은 키워드를 두 페이지가 나눠 갖게 되어
+         (키워드 카니발라이제이션) 오히려 노출에 불리해지므로 색인은 막고 링크만 따라가게 한다. -->
+    <meta name="robots" content="noindex, follow">
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></script>
     <script>
