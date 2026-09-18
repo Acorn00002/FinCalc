@@ -1,0 +1,12 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "gofincalc.com" }
+      ],
+      "destination": "https://www.gofincalc.com/:path*",
+      "statusCode": 301
+    }
+  ]
+}
