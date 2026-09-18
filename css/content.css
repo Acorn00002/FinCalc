@@ -70,8 +70,8 @@ img{max-width:100%;}
 }
 .cp-logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:var(--ink-1);}
 .cp-logo-mark{
-  width:32px;height:32px;border-radius:10px;background:var(--brand);
-  display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex:none;
+  width:32px;height:32px;border-radius:10px;
+  display:block;object-fit:cover;flex:none;
 }
 .cp-header-nav{display:flex;gap:16px;font-size:13.5px;font-weight:700;color:var(--ink-2);}
 .cp-header-nav a{color:var(--ink-2);}
