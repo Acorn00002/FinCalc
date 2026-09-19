@@ -371,6 +371,13 @@ function dartDateCompact(offsetDays) {
   return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate());
 }
 
+// 청약홈 등 대시 포함 날짜(YYYY-MM-DD)를 요구하는 API용 (오늘 기준 offsetDays만큼 이동)
+function dartDateDashed(offsetDays) {
+  const d = new Date();
+  d.setDate(d.getDate() + (offsetDays || 0));
+  return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+}
+
 // "20260722" → "2026-07-22" (캘린더 표준 스키마는 대시 포함 형식을 쓴다)
 function toDashedDate(yyyymmdd) {
   if (!yyyymmdd || String(yyyymmdd).length !== 8) return null;
@@ -717,15 +724,20 @@ async function fetchCheongyakhomeSubscriptions() {
   // odcloud.kr(공공데이터포털 신규 표준) 계열 API는 apis.data.go.kr과 달리 serviceKey 쿼리 파라미터가 아니라
   // "Authorization: Infuser {키}" 헤더로 인증한다 — 실제 호출로 두 방식을 직접 대조해 확인했다.
   //
-  // 버그 수정(2026-09): page=1 한 번만 호출하고 끝냈었다 — 이 API가 등록순(오래된 공고부터)으로
-  // 내려주기 때문에, 매일 재수집해도 항상 같은 첫 페이지(2025년 공고들)만 계속 갱신되고 최신
-  // 청약은 영원히 반영되지 않았다(실측: calendarEvents의 realestate 200건이 전부 2025-09~12월).
-  // DART 함수들과 동일한 페이지네이션 루프로 끝까지 순회한다.
+  // 버그 수정(2026-09): 기존엔 page=1 한 번만 호출하고 끝냈다 — calendarEvents의 realestate 200건이
+  // 전부 2025-09~12월에 멈춰있던 원인. page=1을 여러 번 별도 호출해보면 그때마다 다른 하위집합이
+  // 돌아와(정렬 순서가 안정적이지 않음을 실측 확인) 페이지 번호만으로 전체를 순회해도 최신 청약을
+  // 놓칠 수 있다 — 그래서 페이지네이션 대신 이 API가 지원하는 cond[FIELD::OP] 서버 필터로 "최근
+  // 접수시작일" 구간만 명시적으로 요청한다(실측: cond[RCEPT_BGNDE::GTE]=2026-01-01 → matchCount
+  // 262/totalCount 2884, 필터가 정상 동작함을 확인). DART 롤링 윈도우와 같은 전략 — upsert가
+  // 멱등이라 매일 재수집해도 안전하다.
   const perPage = 100;
   const items = [];
   let page = 1;
+  const filterFromDate = dartDateDashed(-30);
   for (;;) {
-    const url = CHEONGYAKHOME_API_URL + "?page=" + page + "&perPage=" + perPage;
+    const url = CHEONGYAKHOME_API_URL + "?page=" + page + "&perPage=" + perPage +
+      "&cond%5BRCEPT_BGNDE%3A%3AGTE%5D=" + encodeURIComponent(filterFromDate);
     const res = await fetch(url, {
       headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY }
     });
@@ -740,12 +752,16 @@ async function fetchCheongyakhomeSubscriptions() {
 
     if (pageItems.length < perPage) break; // 마지막 페이지
     page += 1;
-    if (page > 50) break; // 안전장치 — 전국 APT 분양 공고가 5000건(누적)을 넘는 경우는 사실상 없음
+    if (page > 20) break; // 안전장치 — 최근 구간 필터를 걸었으니 2000건을 넘는 경우는 사실상 없음
   }
 
   const events = [];
   items.forEach((item) => {
-    // 실제 응답이 한글 필드명이라는 걸 확인했지만, 혹시 모를 변형 대비로 영문 후보도 폴백으로 남겨둔다.
+    // CHEONGYAKHOME_API_URL이 가리키는 엔드포인트에 따라 필드명이 완전히 달라진다 — 원래 .env에
+    // 설정돼 있던 uddi: 상세 URL은 한글 필드명(주택명·청약접수시작일 등)을 쓰지만 갱신이 멈춰있었고,
+    // 지금 쓰는 ApplyhomeInfoDetailSvc(getAPTLttotPblancDetail)는 영문 코드(HOUSE_NM·RCEPT_BGNDE
+    // 등)를 쓰는 대신 최신 데이터를 제공한다(2026-09 실측 확인). 두 응답 모두 지원하도록 한글 키를
+    // 우선 확인하고 영문 코드로 폴백한다 — 나중에 엔드포인트가 다시 바뀌어도 코드 수정 없이 동작한다.
     const houseName = item["주택명"] || item.houseNm || item.HOUSE_NM || item.title;
     const noticeId = item["공고번호"] || item.pblancNo || item.PBLANC_NO || item.id;
     const receptionDateRaw = item["청약접수시작일"] || item.rceptBgnde || item.RCEPT_BGNDE || item.date;
@@ -757,12 +773,12 @@ async function fetchCheongyakhomeSubscriptions() {
     if (!dashedDate) return;
 
     const region = item["공급지역명"] || item.subscrptAreaCodeNm || item.SUBSCRPT_AREA_CODE_NM || null;
-    const address = item["공급위치"] || null;
-    const receptionEndDate = item["청약접수종료일"] || null;
-    const announcementDate = item["모집공고일"] || null;
-    const winnerDate = item["당첨자발표일"] || null;
-    const contractStart = item["계약시작일"] || null;
-    const contractEnd = item["계약종료일"] || null;
+    const address = item["공급위치"] || item.HSSPLY_ADRES || null;
+    const receptionEndDate = item["청약접수종료일"] || item.RCEPT_ENDDE || null;
+    const announcementDate = item["모집공고일"] || item.RCRIT_PBLANC_DE || null;
+    const winnerDate = item["당첨자발표일"] || item.PRZWNER_PRESNATN_DE || null;
+    const contractStart = item["계약시작일"] || item.CNTRCT_CNCLS_BGNDE || null;
+    const contractEnd = item["계약종료일"] || item.CNTRCT_CNCLS_ENDDE || null;
     const houseManageNo = item["주택관리번호"] || item.houseManageNo || item.HOUSE_MANAGE_NO || "";
     const noticeUrl = item["모집공고홈페이지주소"] ||
       ("https://www.applyhome.co.kr/ai/aia/selectAPTLttotPblancDetail.do?houseManageNo=" + houseManageNo);
