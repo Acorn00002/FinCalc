@@ -716,18 +716,32 @@ async function fetchCheongyakhomeSubscriptions() {
 
   // odcloud.kr(공공데이터포털 신규 표준) 계열 API는 apis.data.go.kr과 달리 serviceKey 쿼리 파라미터가 아니라
   // "Authorization: Infuser {키}" 헤더로 인증한다 — 실제 호출로 두 방식을 직접 대조해 확인했다.
-  const url = CHEONGYAKHOME_API_URL + "?page=1&perPage=100";
+  //
+  // 버그 수정(2026-09): page=1 한 번만 호출하고 끝냈었다 — 이 API가 등록순(오래된 공고부터)으로
+  // 내려주기 때문에, 매일 재수집해도 항상 같은 첫 페이지(2025년 공고들)만 계속 갱신되고 최신
+  // 청약은 영원히 반영되지 않았다(실측: calendarEvents의 realestate 200건이 전부 2025-09~12월).
+  // DART 함수들과 동일한 페이지네이션 루프로 끝까지 순회한다.
+  const perPage = 100;
+  const items = [];
+  let page = 1;
+  for (;;) {
+    const url = CHEONGYAKHOME_API_URL + "?page=" + page + "&perPage=" + perPage;
+    const res = await fetch(url, {
+      headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY }
+    });
+    if (!res.ok) {
+      console.error("청약홈 API 응답 오류:", res.status, await res.text());
+      break;
+    }
+    const data = await res.json();
+    const pageItems = data.data || (data.response && data.response.body && data.response.body.items) ||
+      data.items || [];
+    items.push.apply(items, pageItems);
 
-  const res = await fetch(url, {
-    headers: { Authorization: "Infuser " + DATA_GO_KR_API_KEY }
-  });
-  if (!res.ok) {
-    console.error("청약홈 API 응답 오류:", res.status, await res.text());
-    return [];
+    if (pageItems.length < perPage) break; // 마지막 페이지
+    page += 1;
+    if (page > 50) break; // 안전장치 — 전국 APT 분양 공고가 5000건(누적)을 넘는 경우는 사실상 없음
   }
-  const data = await res.json();
-  const items = data.data || (data.response && data.response.body && data.response.body.items) ||
-    data.items || [];
 
   const events = [];
   items.forEach((item) => {
@@ -941,8 +955,10 @@ async function runCalendarSync() {
 }
 
 // 매일 새벽 2시(KST) 자동 실행
+// timeoutSeconds: 청약홈 페이지네이션 수정으로 최대 50페이지까지 순회할 수 있어(기존엔 1페이지뿐이라
+// 기본 60초로 충분했음) 기본 타임아웃보다 여유를 둔다.
 exports.syncFinancialCalendar = onSchedule(
-  { schedule: "0 2 * * *", timeZone: "Asia/Seoul", region: "asia-northeast3" },
+  { schedule: "0 2 * * *", timeZone: "Asia/Seoul", region: "asia-northeast3", timeoutSeconds: 300 },
   async () => {
     await runCalendarSync();
   }
@@ -951,7 +967,7 @@ exports.syncFinancialCalendar = onSchedule(
 // 수동 실행용 — API 키를 새로 넣은 뒤 새벽 2시까지 기다리지 않고 바로 테스트하고 싶을 때 사용.
 // ?secret=CALENDAR_SYNC_SECRET 쿼리 파라미터로 보호한다 (공개 엔드포인트를 무단으로 반복 호출하면
 // DART/공공데이터포털의 일일 호출 한도를 낭비할 수 있어 반드시 비밀값 없이는 실행되지 않게 막아둠).
-exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 300 }, async (req, res) => {
   if (!CALENDAR_SYNC_SECRET || req.query.secret !== CALENDAR_SYNC_SECRET) {
     res.status(403).json({ error: "권한이 없습니다." });
     return;
