@@ -5,11 +5,17 @@
 const AI_API_URL = 'https://www.gofincalc.com/api/ask-ai';
 export const AI_CALL_COST = 50;
 
+export type AssetUpdateProposal = { cash?: number; stock?: number; realestate?: number };
+
 export type AiAssistResult =
-  | { ok: true; reply: string; remainingPoints: number | null }
+  | { ok: true; reply: string; remainingPoints: number | null; assetUpdateProposal: AssetUpdateProposal | null }
   | { ok: false; code: 'unauthenticated' | 'insufficient-points' | 'unknown'; message: string };
 
-export async function requestAiAssist(prompt: string, idToken: string | null): Promise<AiAssistResult> {
+export async function requestAiAssist(
+  prompt: string,
+  idToken: string | null,
+  currentAssets?: { cash: number; stock: number; realestate: number }
+): Promise<AiAssistResult> {
   if (!idToken) {
     return { ok: false, code: 'unauthenticated', message: '로그인 후 이용할 수 있어요' };
   }
@@ -17,7 +23,7 @@ export async function requestAiAssist(prompt: string, idToken: string | null): P
     const res = await fetch(AI_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
-      body: JSON.stringify({ prompt }),
+      body: JSON.stringify(currentAssets ? { prompt, currentAssets } : { prompt }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -30,6 +36,7 @@ export async function requestAiAssist(prompt: string, idToken: string | null): P
       ok: true,
       reply: typeof data.reply === 'string' ? data.reply : '',
       remainingPoints: typeof data.remainingPoints === 'number' ? data.remainingPoints : null,
+      assetUpdateProposal: data.assetUpdateProposal && typeof data.assetUpdateProposal === 'object' ? data.assetUpdateProposal : null,
     };
   } catch (error) {
     return { ok: false, code: 'unknown', message: error instanceof Error ? error.message : String(error) };

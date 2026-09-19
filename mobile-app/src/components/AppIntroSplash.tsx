@@ -13,7 +13,7 @@ type Props = { onDone: () => void };
 // 네이티브(Animated)로 옮겼다.
 export default function AppIntroSplash({ onDone }: Props) {
   const { colors } = useAppTheme();
-  // 아이콘 자체(셸+링)는 등장 애니메이션 없이 처음부터 완전히 보이는 상태로 그린다 — 네이티브 OS
+  // 아이콘 자체(셸)는 등장 애니메이션 없이 처음부터 완전히 보이는 상태로 그린다 — 네이티브 OS
   // 스플래시가 마지막으로 보여준 정지 아이콘과 그대로 이어지도록. 페이드인/스케일인을 넣으면 그
   // 자체가 "가만히 있다가" 처럼 보여서(사용자 피드백) 아예 없앴다.
   const shellOpacity = useRef(new Animated.Value(1)).current;
@@ -48,9 +48,7 @@ export default function AppIntroSplash({ onDone }: Props) {
   return (
     <View style={[styles.wrap, { backgroundColor: colors.bg }]} pointerEvents="none">
       <View style={styles.stack}>
-        <Animated.View style={[styles.shell, { opacity: shellOpacity }]}>
-          <View style={styles.ring} />
-        </Animated.View>
+        <Animated.View style={[styles.shell, { opacity: shellOpacity }]} />
         <Animated.View
           style={{
             opacity: arrowOpacity,
@@ -88,14 +86,11 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 22,
-    backgroundColor: '#585CE5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#585CE5',
+    backgroundColor: '#5055FF',
+    shadowColor: '#5055FF',
     shadowOpacity: 0.28,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 10 },
     elevation: 8,
   },
-  ring: { width: 62, height: 62, borderRadius: 31, borderWidth: 5, borderColor: '#ffffff' },
 });

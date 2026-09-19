@@ -1,10 +1,11 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../ui/Card';
 import { useAppTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
-import { requestAiAssist } from '../../lib/aiAssist';
+import { requestAiAssist, type AssetUpdateProposal } from '../../lib/aiAssist';
+import { fetchUserAssets, saveUserAssetBreakdown } from '../../lib/userAssets';
 import type { ThemeColors } from '../../constants/theme';
 
 type PromptChip = { label: string; prompt: string; mode: 'ask' | 'fill' };
@@ -41,6 +42,15 @@ export default function HomeAiCard() {
   // 가이드 카드와 동일한 의도) — 처음 쓰는 사람도 예시만 보고 바로 감을 잡을 수 있게.
   const [showGuide, setShowGuide] = useState(false);
 
+  // AI가 "자산이 이렇게 바뀌었다"는 말을 이해하면 곧바로 저장하지 않고 제안(proposal)만 돌려준다.
+  // 사용자가 아래 승인 버튼을 눌러야만 Firestore에 실제로 써진다(마이페이지 저장 로직 재사용).
+  // proposalBaseRef는 제안을 계산할 때 쓴 "그 시점의" 현재 자산값 — 값이 일부 항목만 온 제안(예:
+  // 주식만 변경)을 승인할 때 언급 안 된 항목을 덮어쓰지 않고 이 기준값으로 채워 저장하기 위함이다.
+  const [proposal, setProposal] = useState<AssetUpdateProposal | null>(null);
+  const proposalBaseRef = useRef<{ cash: number; stock: number; realestate: number }>({ cash: 0, stock: 0, realestate: 0 });
+  const [savingProposal, setSavingProposal] = useState(false);
+  const [proposalSaved, setProposalSaved] = useState(false);
+
   const ask = async (prompt: string) => {
     const trimmed = prompt.trim();
     if (!trimmed || loading) return;
@@ -53,17 +63,62 @@ export default function HomeAiCard() {
     setLoading(true);
     setError(null);
     setAnswer(null);
+    setProposal(null);
+    setProposalSaved(false);
     const idToken = await getFreshIdToken();
-    const result = await requestAiAssist(trimmed, idToken);
+
+    // 자산 제안을 정확히 계산하려면(예: "주식만 50만원 늘었어") 서버가 현재 자산을 알아야 하므로,
+    // 매 질문마다 최신값을 가져와 함께 보낸다 — 로그인된 상태에서만 의미가 있고 실패해도 일반
+    // 질문 자체는 계속 동작해야 하므로 실패를 조용히 무시한다.
+    let currentAssets: { cash: number; stock: number; realestate: number } | undefined;
+    if (idToken && user) {
+      try {
+        const doc = await fetchUserAssets(user.uid, idToken);
+        currentAssets = { cash: doc.cash, stock: doc.stock, realestate: doc.realestate };
+        proposalBaseRef.current = currentAssets;
+      } catch {
+        // 조회 실패해도 질문 자체는 계속 진행 — 이 경우 자산 제안 정확도만 낮아질 수 있음
+      }
+    }
+
+    const result = await requestAiAssist(trimmed, idToken, currentAssets);
     setLoading(false);
     if (result.ok) {
       setAnswer(result.reply);
+      setProposal(result.assetUpdateProposal);
       setInput('');
       setShowGuide(false);
     } else if (result.code !== 'unauthenticated') {
       setError(result.message);
     }
   };
+
+  const confirmProposal = async () => {
+    if (!proposal || !user) return;
+    const idToken = await getFreshIdToken();
+    if (!idToken) {
+      Alert.alert('로그인이 필요해요', '로그인 후 저장할 수 있어요.');
+      return;
+    }
+    const base = proposalBaseRef.current;
+    const next = {
+      cash: typeof proposal.cash === 'number' ? proposal.cash : base.cash,
+      stock: typeof proposal.stock === 'number' ? proposal.stock : base.stock,
+      realestate: typeof proposal.realestate === 'number' ? proposal.realestate : base.realestate,
+    };
+    setSavingProposal(true);
+    try {
+      await saveUserAssetBreakdown(user.uid, idToken, next);
+      setProposal(null);
+      setProposalSaved(true);
+    } catch {
+      Alert.alert('저장에 실패했어요', '다시 시도해주세요.');
+    } finally {
+      setSavingProposal(false);
+    }
+  };
+
+  const dismissProposal = () => setProposal(null);
 
   const applyPortfolioTemplate = () => {
     if (!PORTFOLIO_CHIP) return;
@@ -152,6 +207,31 @@ export default function HomeAiCard() {
           <Text style={styles.answerText}>{answer}</Text>
         </View>
       ) : null}
+
+      {proposal ? (
+        <View style={styles.proposalBox}>
+          <View style={styles.proposalRows}>
+            {typeof proposal.cash === 'number' ? (
+              <Text style={styles.proposalRow}>현금/예적금 → {proposal.cash.toLocaleString('ko-KR')}원</Text>
+            ) : null}
+            {typeof proposal.stock === 'number' ? (
+              <Text style={styles.proposalRow}>주식/투자금 → {proposal.stock.toLocaleString('ko-KR')}원</Text>
+            ) : null}
+            {typeof proposal.realestate === 'number' ? (
+              <Text style={styles.proposalRow}>부동산/기타 → {proposal.realestate.toLocaleString('ko-KR')}원</Text>
+            ) : null}
+          </View>
+          <View style={styles.proposalBtnRow}>
+            <Pressable style={styles.proposalCancelBtn} onPress={dismissProposal} disabled={savingProposal}>
+              <Text style={styles.proposalCancelBtnText}>취소</Text>
+            </Pressable>
+            <Pressable style={styles.proposalConfirmBtn} onPress={confirmProposal} disabled={savingProposal}>
+              {savingProposal ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.proposalConfirmBtnText}>승인하고 저장</Text>}
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
+      {proposalSaved ? <Text style={styles.proposalSavedText}>마이페이지 자산 현황에 반영했어요.</Text> : null}
     </Card>
   );
 }
@@ -209,5 +289,31 @@ function createStyles(colors: ThemeColors) {
     error: { fontSize: 12, color: colors.loss, marginTop: 10 },
     answerBox: { marginTop: 14, backgroundColor: colors.cardSoft, borderRadius: 14, padding: 14 },
     answerText: { fontSize: 13.5, color: colors.ink1, lineHeight: 20 },
+    proposalBox: {
+      marginTop: 14,
+      backgroundColor: colors.brandSoft,
+      borderRadius: 14,
+      padding: 14,
+    },
+    proposalRows: { gap: 4, marginBottom: 12 },
+    proposalRow: { fontSize: 13, fontWeight: '700', color: colors.ink1 },
+    proposalBtnRow: { flexDirection: 'row', gap: 8 },
+    proposalCancelBtn: {
+      flex: 1,
+      backgroundColor: colors.card,
+      borderRadius: 999,
+      paddingVertical: 11,
+      alignItems: 'center',
+    },
+    proposalCancelBtnText: { fontSize: 13, fontWeight: '700', color: colors.ink2 },
+    proposalConfirmBtn: {
+      flex: 1,
+      backgroundColor: colors.brand,
+      borderRadius: 999,
+      paddingVertical: 11,
+      alignItems: 'center',
+    },
+    proposalConfirmBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
+    proposalSavedText: { fontSize: 12, fontWeight: '600', color: colors.brand, marginTop: 10 },
   });
 }

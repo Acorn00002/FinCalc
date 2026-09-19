@@ -15,7 +15,7 @@
       "package": "com.gofincalc.app",
       "versionCode": 20,
       "adaptiveIcon": {
-        "backgroundColor": "#6266F5",
+        "backgroundColor": "#5055FF",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false

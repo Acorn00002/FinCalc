@@ -69,11 +69,12 @@ export const SIDEBAR_MENU: MenuEntry[] = [
 ];
 
 // 기존 웹 하단바(index.html .bottom-nav)와 동일한 5개 핵심 메뉴 — 네이티브 하단 탭 행에 그대로 사용.
+// 4번째 탭은 화면(LoungeScreen, 자산 라운지 기능)은 그대로 두고 라벨만 "커뮤니티"로 표시한다.
 export const BOTTOM_TABS: MenuLeaf[] = [
   { label: '홈', icon: 'home-outline', url: `${SITE_ORIGIN}/#home`, screen: 'Home' },
   { label: '계산기', icon: 'calculator-outline', url: `${SITE_ORIGIN}/#finpilot`, screen: 'CalculatorList' },
   { label: '캘린더', icon: 'calendar-outline', url: `${SITE_ORIGIN}/#calendar`, screen: 'Calendar' },
-  { label: '자산 라운지', icon: 'chatbubbles-outline', url: `${SITE_ORIGIN}/#lounge`, screen: 'Lounge' },
+  { label: '커뮤니티', icon: 'chatbubbles-outline', url: `${SITE_ORIGIN}/#lounge`, screen: 'Lounge' },
   { label: '마이페이지', icon: 'person-circle-outline', url: `${SITE_ORIGIN}/#mypage`, screen: 'Mypage' },
 ];
 

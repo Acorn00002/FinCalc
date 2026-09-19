@@ -140,10 +140,16 @@ export async function addFirestoreDocument(
 
 export type OrderDirection = 'ASCENDING' | 'DESCENDING';
 
+export type QueryFilterOp = 'EQUAL' | 'GREATER_THAN_OR_EQUAL' | 'LESS_THAN_OR_EQUAL' | 'GREATER_THAN' | 'LESS_THAN';
+export type QueryFilter = { field: string; op: QueryFilterOp; value: string };
+
 // db.collection(x).where(...).orderBy(...) 대응 — 단순 GET으론 정렬/필터가 안 돼서 runQuery를 쓴다.
+// whereFilters를 2개 이상 넘기면 AND로 묶은 compositeFilter를 만든다(예: date >= start AND date <= end
+// 같은 날짜 범위 쿼리). whereEquals는 기존 호출부(라운지 글 목록 등) 호환을 위해 그대로 둔다.
 export async function runFirestoreQuery(params: {
   collection: string;
   whereEquals?: { field: string; value: string };
+  whereFilters?: QueryFilter[];
   orderByField: string;
   orderDirection?: OrderDirection;
   idToken?: string;
@@ -152,12 +158,20 @@ export async function runFirestoreQuery(params: {
     from: [{ collectionId: params.collection }],
     orderBy: [{ field: { fieldPath: params.orderByField }, direction: params.orderDirection ?? 'DESCENDING' }],
   };
-  if (params.whereEquals) {
+  const filters: QueryFilter[] =
+    params.whereFilters ?? (params.whereEquals ? [{ field: params.whereEquals.field, op: 'EQUAL', value: params.whereEquals.value }] : []);
+  if (filters.length === 1) {
+    const f = filters[0];
     structuredQuery.where = {
-      fieldFilter: {
-        field: { fieldPath: params.whereEquals.field },
-        op: 'EQUAL',
-        value: { stringValue: params.whereEquals.value },
+      fieldFilter: { field: { fieldPath: f.field }, op: f.op, value: { stringValue: f.value } },
+    };
+  } else if (filters.length > 1) {
+    structuredQuery.where = {
+      compositeFilter: {
+        op: 'AND',
+        filters: filters.map((f) => ({
+          fieldFilter: { field: { fieldPath: f.field }, op: f.op, value: { stringValue: f.value } },
+        })),
       },
     };
   }
