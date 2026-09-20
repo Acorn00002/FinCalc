@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>고정금리 vs 변동금리 대출, 지금 시점엔 뭐가 유리할까 (계산 예시)</title>
+<meta name="description" content="고정금리와 변동금리 주택담보대출의 구조적 차이를 원리금균등상환 계산 예시로 비교했습니다. 금리가 오를 때 월 상환액과 총 상환액이 각각 어떻게 달라지는지 확인하세요.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/fixed-vs-variable-rate-loan-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="고정금리 vs 변동금리 대출, 지금 시점엔 뭐가 유리할까">
+<meta property="og:description" content="원리금균등상환 계산 예시로 고정금리와 변동금리의 월 상환액·총 상환액 차이를 비교했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/fixed-vs-variable-rate-loan-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "고정금리 vs 변동금리 대출, 지금 시점엔 뭐가 유리할까 (계산 예시)", "item": "https://www.gofincalc.com/blog/fixed-vs-variable-rate-loan-guide/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "고정금리가 항상 더 안전한가요?", "acceptedAnswer": {"@type": "Answer", "text": "안전하다기보다 '예측 가능성'을 사는 것에 가깝습니다. 앞으로 금리가 계속 내려가는 시기라면 오히려 고정금리 대출자가 변동금리 대출자보다 더 많은 이자를 내는 결과가 될 수 있습니다."}}, {"@type": "Question", "name": "혼합형 금리는 무엇인가요?", "acceptedAnswer": {"@type": "Answer", "text": "일정 기간(흔히 3~5년) 동안은 고정금리로 운영되다가, 그 이후부터 변동금리로 전환되는 방식입니다. 초기 몇 년간 상환 계획을 안정적으로 세우면서도 고정금리 대출보다 초기 금리가 낮은 경우가 많아 절충안으로 선택되곤 합니다."}}, {"@type": "Question", "name": "지금 변동금리 대출이 있는데 고정금리로 갈아타도 될까요?", "acceptedAnswer": {"@type": "Answer", "text": "중도상환수수료, 잔여 만기, 현재 금리와의 차이를 함께 계산해야 손해를 피할 수 있습니다. 대환 시점의 손익분기점 계산 방법은 중도상환수수료 가이드 글에서 자세히 다루고 있습니다."}}]}</script></head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">대출</p>
+  <h1 class="cp-title">고정금리 vs 변동금리 대출, 지금 시점엔 뭐가 유리할까</h1>
+  <p class="cp-meta"><span>2026.09.20</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+    <p>정답부터 말하면 "무조건 유리한 쪽"은 없습니다. 고정금리는 상환 기간 내내 금리가 오르지 않는다는 확신을 사는 대신 초기 금리가 대체로 더 높고, 변동금리는 초기 금리가 낮은 대신 기준금리가 오르면 상환 부담이 함께 커질 수 있습니다. 어느 쪽이 유리한지는 앞으로 금리가 오를지 내릴지, 그리고 본인이 상환액 변동을 감당할 자금 여력이 있는지에 따라 달라집니다. 이 글에서는 두 방식의 구조 차이를 원리금균등상환 계산 예시로 직접 비교해보겠습니다.</p>
+
+    <h2>고정금리와 변동금리, 구조부터 다릅니다</h2>
+    <p><strong>고정금리</strong>는 대출을 실행하는 시점의 금리가 만기까지 그대로 유지되는 방식입니다. 시장금리가 올라도 내려도 내가 내는 이자율은 바뀌지 않습니다. <strong>변동금리</strong>는 코픽스(COFIX)나 금융채 금리 같은 기준지표에 은행 가산금리를 더해 산정되며, 통상 3개월 또는 6개월 단위로 재산정됩니다. 이 둘을 절충한 <strong>혼합형(혼합금리)</strong>도 있는데, 일정 기간(흔히 3~5년)은 고정금리로 운영되다가 이후 변동금리로 전환됩니다.</p>
+
+    <h2>월 상환액이 어떻게 달라지는지, 계산 예시로 보겠습니다</h2>
+    <p>대출원금 3억 원, 만기 30년, 원리금균등상환 방식을 기준으로 두 가지 가상의 시나리오를 비교해보겠습니다. 아래 금리는 계산 방식을 설명하기 위한 예시 수치이며 실제 시중은행 금리가 아닙니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>구분</th><th>최초 월 상환액</th><th>3년 후(금리 변동 시) 월 상환액</th><th>30년 총 상환액(예시)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>고정금리 4.5% (변동 없음)</td><td>152.0만 원</td><td>152.0만 원 (동일)</td><td>5억 4,722만 원</td></tr>
+          <tr><td>변동금리 (최초 3.8% → 3년 후 5.0%로 상승 가정)</td><td>139.8만 원</td><td>159.3만 원</td><td>5억 6,649만 원</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cp-formula">월 상환액 = 대출원금 × 월이자율 × (1+월이자율)<sup>개월수</sup> ÷ {(1+월이자율)<sup>개월수</sup> − 1} — 자산 파일럿 대출 이자 계산기와 동일한 원리금균등상환 산식입니다.</p>
+    <p>변동금리 시나리오는 처음 3년(36회차)을 3.8% 기준 월 상환액으로 납입한 뒤, 남은 잔액을 기준으로 5.0% 금리에서 잔여 27년(324개월) 상환액을 다시 계산한 결과입니다. 처음에는 변동금리가 매달 12.2만 원 더 저렴했지만, 3년 뒤 금리가 1.2%p 오르자 오히려 고정금리보다 매달 7.3만 원을 더 내야 했고, 30년 총 상환액으로는 약 1,927만 원을 더 부담하게 됩니다. 반대로 이 기간 동안 금리가 오르지 않거나 내려갔다면 변동금리가 끝까지 유리했을 것입니다.</p>
+
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">주의 — 변동금리는 금리가 내려갈 때도 똑같이 작동합니다</span>
+      <p>위 예시는 금리가 오르는 상황만 가정했지만, 변동금리는 기준금리가 내려가면 상환 부담도 함께 줄어드는 구조입니다. 즉 변동금리가 "불리한 선택"이 아니라 "금리 방향에 따라 결과가 달라지는 선택"이라는 점을 이해하고 접근해야 합니다. 또한 초기 우대금리 조건(급여이체, 카드 실적 등)이 일정 기간 후 사라지면 표면 금리보다 실제 적용 금리가 높아질 수 있다는 점도 함께 확인해야 합니다.</p>
+    </div>
+
+    <h2>그래서 언제 고정, 언제 변동이 유리할까</h2>
+    <ul class="cp-checklist">
+      <li>상환 기간이 길고(20년 이상) 금리 상승 국면이 우려된다면 → 고정금리로 상환액을 미리 확정하는 편이 안전합니다.</li>
+      <li>몇 년 내 상환하거나 갈아탈 계획이 있다면 → 초기 금리가 낮은 변동금리가 총비용 측면에서 유리할 수 있습니다.</li>
+      <li>방향을 확신하기 어렵다면 → 일정 기간 고정 후 변동으로 전환되는 혼합형으로 절충할 수 있습니다.</li>
+      <li>이미 변동금리 대출이 있다면 → 중도상환수수료와 잔여 만기를 계산해 갈아탈 실익이 있는지 먼저 따져봐야 합니다.</li>
+    </ul>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 고정금리가 항상 더 안전한가요?</p>
+      <p class="cp-faq-a">안전하다기보다 '예측 가능성'을 사는 것에 가깝습니다. 앞으로 금리가 계속 내려가는 시기라면 오히려 고정금리 대출자가 변동금리 대출자보다 더 많은 이자를 내는 결과가 될 수 있습니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 혼합형 금리는 무엇인가요?</p>
+      <p class="cp-faq-a">일정 기간(흔히 3~5년) 동안은 고정금리로 운영되다가, 그 이후부터 변동금리로 전환되는 방식입니다. 초기 몇 년간 상환 계획을 안정적으로 세우면서도 고정금리 대출보다 초기 금리가 낮은 경우가 많아 절충안으로 선택되곤 합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 지금 변동금리 대출이 있는데 고정금리로 갈아타도 될까요?</p>
+      <p class="cp-faq-a">중도상환수수료, 잔여 만기, 현재 금리와의 차이를 함께 계산해야 손해를 피할 수 있습니다. 대환 시점의 손익분기점 계산 방법은 <a href="/blog/loan-prepayment-fee/">중도상환수수료 가이드</a> 글에서 자세히 다루고 있습니다.</p>
+    </div>
+
+    <h2>지금 바로 해볼 2단계</h2>
+    <ol>
+      <li><strong>내 대출 조건(원금·기간·금리)을 대출 이자 계산기에 넣어 월 상환액을 확인합니다.</strong> 금리를 바꿔가며 시나리오별로 비교해볼 수 있습니다.</li>
+      <li><strong>DSR 기준 대출한도도 함께 확인합니다.</strong> 금리 유형과 별개로, 갈아타거나 추가 대출을 받을 때 한도 자체가 걸림돌이 될 수 있습니다.</li>
+    </ol>
+
+    <div class="cp-cta">
+      <p>내 대출 조건으로 월 상환액을 직접 계산해보세요.</p>
+      <a href="https://www.gofincalc.com/calculators/loan-interest/">대출 이자 계산기 바로가기</a>
+    </div>
+
+    <p>관련 계산과 정보는 <a href="/calculators/loan-limit/">대출한도 계산기</a>, <a href="/blog/dsr-dti-loan-limit/">스트레스 DSR 3단계 이후 대출 한도 가이드</a>에서 더 확인할 수 있습니다.</p>
+
+    <p class="cp-disclaimer">본 콘텐츠에 사용된 금리(4.5%, 3.8%, 5.0%)는 계산 방식을 설명하기 위한 가상의 예시이며 실제 시중은행 금리가 아닙니다. 실제 고정·변동금리 수준과 우대조건은 전국은행연합회 소비자포털의 대출금리 비교공시 또는 각 금융회사 홈페이지에서 반드시 확인하시기 바랍니다. 코픽스·금융채 등 기준지표와 가산금리는 은행·상품별로 다르게 적용됩니다. (기준일: 2026년 9월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+</body>
+</html>
