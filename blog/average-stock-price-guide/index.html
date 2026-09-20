@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 평단가 계산법, 물타기 전 꼭 확인해야 할 것</title>
+<meta name="description" content="물타기(추가매수)로 평단가를 낮추면 손실률이 줄어드는 이유와, 그만큼 투입 자금과 절대 손실액이 커지는 이유를 계산 예시로 정리했습니다.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/average-stock-price-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="주식 평단가 계산법, 물타기 전 꼭 확인해야 할 것">
+<meta property="og:description" content="물타기로 평단가와 손실률이 어떻게 바뀌는지 계산 예시로 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/average-stock-price-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "주식 평단가 계산법, 물타기 전 꼭 확인해야 할 것", "item": "https://www.gofincalc.com/blog/average-stock-price-guide/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "물타기를 하면 손실을 줄일 수 있나요?", "acceptedAnswer": {"@type": "Answer", "text": "현재가 기준 평가손실률은 낮아지지만, 이는 투입 자금이 늘었기 때문입니다. 주가가 추가로 하락하면 절대 손실 금액은 물타기를 하지 않았을 때보다 더 커질 수 있습니다."}}, {"@type": "Question", "name": "평단가를 낮추면 본전 회복이 더 쉬워지나요?", "acceptedAnswer": {"@type": "Answer", "text": "본전에 필요한 주가 상승률(%) 기준으로는 더 쉬워집니다. 다만 그만큼 더 많은 자금이 그 종목에 묶이게 되므로, 다른 투자 기회를 포기하는 기회비용도 함께 고려해야 합니다."}}, {"@type": "Question", "name": "물타기와 불타기는 뭐가 다른가요?", "acceptedAnswer": {"@type": "Answer", "text": "물타기는 주가가 하락했을 때 추가 매수해 평단가를 낮추는 전략이고, 불타기는 반대로 주가가 상승하는 추세에서 추가 매수해 수익을 극대화하려는 전략입니다. 둘 다 추가 매수라는 점은 같지만 진입 시점과 목적이 반대입니다."}}]}</script></head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">주식</p>
+  <h1 class="cp-title">주식 평단가 계산법, 물타기 전 꼭 확인해야 할 것</h1>
+  <p class="cp-meta"><span>2026.09.20</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+    <p>보유 주식이 하락했을 때 추가로 매수해 평단가(평균 매입단가)를 낮추는 것을 흔히 "물타기"라고 부릅니다. 평단가를 낮추면 현재가 기준 손실률(%)은 확실히 줄어듭니다. 하지만 그만큼 그 종목에 묶이는 돈이 늘어나고, 주가가 더 떨어지면 절대 손실 금액은 오히려 커질 수 있습니다. 숫자로 직접 확인해보겠습니다.</p>
+
+    <h2>평단가는 이렇게 계산됩니다</h2>
+    <p class="cp-formula">새 평단가 = (기존 평단가 × 기존 보유수량 + 추가 매수금액) ÷ (기존 보유수량 + 추가 매수수량)</p>
+    <p>10만 원에 10주를 매수해 보유하고 있었는데, 주가가 5만 원으로 떨어졌다고 가정해보겠습니다. 이때 100만 원어치(20주)를 추가로 매수하면 어떻게 될까요.</p>
+
+    <h2>물타기 전후, 손실률이 이렇게 달라집니다</h2>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>상태</th><th>보유수량</th><th>평단가</th><th>투자원금</th><th>현재가 5만원 기준 평가손익</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>물타기 전</td><td>10주</td><td>10만 원</td><td>100만 원</td><td>−50만 원 (−50.0%)</td></tr>
+          <tr><td>물타기 후</td><td>30주</td><td>6만 6,667원</td><td>200만 원</td><td>−50만 원 (−25.0%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>평단가가 10만 원에서 6만 6,667원으로 낮아지면서 손실률은 −50%에서 −25%로 절반이 됩니다. 그런데 평가손실 금액 자체는 여전히 50만 원으로 동일합니다. 손실률이 줄어든 것처럼 보이지만, 그 이유는 손실이 회복된 게 아니라 투자원금이 100만 원에서 200만 원으로 늘어났기 때문입니다.</p>
+
+    <h2>만약 주가가 더 떨어진다면?</h2>
+    <p>물타기 이후 주가가 3만 원까지 추가로 하락한다고 가정하고, 물타기를 한 경우와 하지 않은 경우를 비교해보겠습니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>시나리오</th><th>보유수량</th><th>평가금액(3만원 기준)</th><th>투자원금</th><th>평가손익</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>물타기 안 함 (10주 그대로 보유)</td><td>10주</td><td>30만 원</td><td>100만 원</td><td>−70만 원 (−70.0%)</td></tr>
+          <tr><td>물타기 함 (30주 보유)</td><td>30주</td><td>90만 원</td><td>200만 원</td><td>−110만 원 (−55.0%)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>손실률(%)만 보면 물타기를 한 쪽(−55.0%)이 안 한 쪽(−70.0%)보다 낫습니다. 하지만 절대 손실 금액은 물타기를 한 쪽이 110만 원으로, 하지 않은 쪽(70만 원)보다 40만 원 더 큽니다. 물타기는 "회복에 필요한 상승률"을 낮춰주는 대신, 그 종목이 계속 하락할 경우의 위험 노출(투입 자금)을 늘리는 선택이라는 점을 함께 봐야 합니다.</p>
+
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">주의 — 물타기는 "왜 떨어졌는지"부터 확인한 뒤에</span>
+      <p>일시적인 시장 전체 조정으로 하락했다면 물타기가 회복 시점을 앞당기는 선택이 될 수 있습니다. 하지만 기업 실적 악화나 구조적인 문제로 하락했다면, 추가 매수는 손실을 더 키우는 결과로 이어질 수 있습니다. 평단가 계산에 앞서 하락 원인을 먼저 점검하는 것이 순서입니다.</p>
+    </div>
+
+    <h2>확인할 점</h2>
+    <ul class="cp-checklist">
+      <li>추가 매수에 쓰는 자금이 이미 이 종목 하나에 얼마나 집중되어 있는지 확인했나요?</li>
+      <li>하락 원인이 일시적(시장 전체 조정)인지, 구조적(실적·업황 악화)인지 구분했나요?</li>
+      <li>물타기 대신 다른 종목·자산에 분산 투자했을 때의 기대수익과 비교해봤나요?</li>
+      <li>추가 매수 후에도 감당 가능한 손실 범위(손절 기준)를 정해뒀나요?</li>
+    </ul>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 물타기를 하면 손실을 줄일 수 있나요?</p>
+      <p class="cp-faq-a">현재가 기준 평가손실률은 낮아지지만, 이는 투입 자금이 늘었기 때문입니다. 주가가 추가로 하락하면 절대 손실 금액은 물타기를 하지 않았을 때보다 더 커질 수 있습니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 평단가를 낮추면 본전 회복이 더 쉬워지나요?</p>
+      <p class="cp-faq-a">본전에 필요한 주가 상승률(%) 기준으로는 더 쉬워집니다. 다만 그만큼 더 많은 자금이 그 종목에 묶이게 되므로, 다른 투자 기회를 포기하는 기회비용도 함께 고려해야 합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 물타기와 불타기는 뭐가 다른가요?</p>
+      <p class="cp-faq-a">물타기는 주가가 하락했을 때 추가 매수해 평단가를 낮추는 전략이고, 불타기는 반대로 주가가 상승하는 추세에서 추가 매수해 수익을 극대화하려는 전략입니다. 둘 다 추가 매수라는 점은 같지만 진입 시점과 목적이 반대입니다.</p>
+    </div>
+
+    <div class="cp-cta">
+      <p>내 보유수량과 추가 매수 계획으로 평단가를 직접 계산해보세요.</p>
+      <a href="https://www.gofincalc.com/calculators/average-stock-price/">주식 평단가 계산기 바로가기</a>
+    </div>
+
+    <p>무리한 추가 매수(몰빵)의 위험성은 <a href="/blog/kelly-criterion-investing-guide/">켈리 공식으로 본 몰빵 투자 위험 가이드</a>에서, 신규 상장 종목 투자는 <a href="/ipo-calendar/">청약·공모주 일정</a>과 <a href="/blog/ipo-vs-stock-investing/">공모주 청약 수익률 가이드</a>에서 함께 확인할 수 있습니다.</p>
+
+    <p class="cp-disclaimer">본 콘텐츠는 일반적인 계산 방법 설명을 목적으로 하며, 특정 종목에 대한 투자 자문이 아닙니다. 예시에 사용된 주가와 수량은 계산 방식을 보여주기 위한 가정이며 실제 투자 결과를 보장하지 않습니다. (기준일: 2026년 9월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상속세 얼마나 나올까, 배우자 상속공제 계산법</title>
+<meta name="description" content="배우자와 자녀가 있으면 10억원까지 상속세가 없을 수 있는 이유를 계산 예시로 정리했습니다. 일괄공제·배우자상속공제·금융재산상속공제 구조와 실제 세액 계산법을 확인하세요.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/inheritance-tax-spouse-deduction-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="상속세 얼마나 나올까, 배우자 상속공제 계산법">
+<meta property="og:description" content="일괄공제·배우자상속공제 구조와 실제 상속세 계산 예시를 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/inheritance-tax-spouse-deduction-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "상속세 얼마나 나올까, 배우자 상속공제 계산법", "item": "https://www.gofincalc.com/blog/inheritance-tax-spouse-deduction-guide/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "정말 10억원까지 상속세가 없나요?", "acceptedAnswer": {"@type": "Answer", "text": "배우자와 자녀가 함께 상속받는 일반적인 경우, 일괄공제 5억원과 배우자상속공제 최소 5억원을 더하면 기본적으로 10억원까지는 공제로 상쇄되어 상속세가 없는 경우가 많습니다. 다만 채무·금융재산 등 구체적인 재산 구성에 따라 결과는 달라질 수 있습니다."}}, {"@type": "Question", "name": "배우자가 없으면 공제가 많이 줄어드나요?", "acceptedAnswer": {"@type": "Answer", "text": "네, 배우자상속공제 자체가 배우자가 있을 때만 적용되므로, 배우자 없이 자녀만 상속받는 경우 기본 공제선이 5억원(일괄공제)으로 낮아집니다."}}, {"@type": "Question", "name": "상속세와 증여세 중 뭐가 더 유리한가요?", "acceptedAnswer": {"@type": "Answer", "text": "일괄적으로 말하기 어렵습니다. 증여는 생전에 미리 나눠주는 대신 10년 합산과세가 적용되고, 상속은 사망 시점에 한 번에 과세되지만 배우자상속공제 등 공제 규모가 더 큽니다. 재산 규모와 시기에 따라 유불리가 달라지므로 세무 전문가와 함께 시뮬레이션해보는 것이 안전합니다."}}]}</script></head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">세금</p>
+  <h1 class="cp-title">상속세 얼마나 나올까, 배우자 상속공제 계산법</h1>
+  <p class="cp-meta"><span>2026.09.20</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+    <p>결론부터 말하면, 배우자와 자녀가 함께 상속받는 일반적인 가정에서는 상속재산이 <strong>10억 원</strong>이어도 상속세가 0원일 수 있습니다. 기본 공제(일괄공제 5억 원)와 배우자상속공제(최소 5억 원)를 더하면 기본적으로 10억 원까지는 공제로 상쇄되기 때문입니다. 다만 이 공제선을 넘어가는 순간부터는 누진세율이 적용되어 세액이 빠르게 커집니다. 계산으로 직접 확인해보겠습니다.</p>
+
+    <h2>상속공제, 이렇게 구성됩니다</h2>
+    <ul class="cp-checklist">
+      <li><strong>일괄공제 5억 원</strong> — 기초공제(2억 원) + 자녀 등 인적공제를 합한 금액과 5억 원 중 더 큰 금액이 자동으로 적용됩니다.</li>
+      <li><strong>배우자상속공제 최소 5억 원, 최대 30억 원</strong> — 배우자가 있으면 실제 상속받은 금액과 법정상속분 중 적은 금액을 기준으로, 최소 5억 원은 공제가 보장됩니다.</li>
+      <li><strong>금융재산상속공제</strong> — 금융재산 순액에 따라 최대 2억 원까지 추가로 공제됩니다.</li>
+    </ul>
+
+    <h2>계산 예시 1 — 상속재산 10억 원, 배우자 + 자녀 2명</h2>
+    <p>채무·장례비 등을 단순화하고 상속재산 10억 원, 배우자와 자녀 2명이 상속받는 경우를 계산해보겠습니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>계산 단계</th><th>금액</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>상속세 과세가액 (장례비공제 500만 원 반영)</td><td>9억 9,500만 원</td></tr>
+          <tr><td>− 일괄공제</td><td>5억 원</td></tr>
+          <tr><td>− 배우자상속공제 (법정상속분 4.29억 원 → 최소 보장 5억 원 적용)</td><td>5억 원</td></tr>
+          <tr><td>= 과세표준</td><td>0원</td></tr>
+          <tr><td><strong>납부세액</strong></td><td><strong>0원</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>공제 합계(10억 원)가 과세가액을 넘어서기 때문에 상속세가 발생하지 않습니다. "배우자와 자녀가 있으면 10억 원까지는 상속세 걱정을 크게 안 해도 된다"는 말이 여기서 나온 것입니다.</p>
+
+    <h2>계산 예시 2 — 상속재산 20억 원, 배우자 + 자녀 2명, 금융재산 1억 원 포함</h2>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>계산 단계</th><th>금액</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>상속세 과세가액</td><td>19억 9,500만 원</td></tr>
+          <tr><td>− 일괄공제</td><td>5억 원</td></tr>
+          <tr><td>− 배우자상속공제 (법정상속분 8억 5,714만 원)</td><td>8억 5,714만 원</td></tr>
+          <tr><td>− 금융재산상속공제</td><td>2,000만 원</td></tr>
+          <tr><td>= 과세표준</td><td>6억 1,786만 원</td></tr>
+          <tr><td>산출세액 (10억 이하 구간, 세율 30%, 누진공제 6,000만 원)</td><td>1억 2,536만 원</td></tr>
+          <tr><td>− 신고세액공제(3%)</td><td>376만 원</td></tr>
+          <tr><td><strong>납부세액</strong></td><td><strong>약 1억 2,160만 원</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="cp-formula">배우자상속공제 = min(max(법정상속분, 5억 원), 30억 원), 법정상속분 = 상속재산 × 1.5 ÷ (자녀 수 + 1.5) — 자산 파일럿 상속세 계산기와 동일한 산식입니다.</p>
+    <p>상속재산이 10억 원에서 20억 원으로 늘었을 뿐인데, 배우자상속공제가 정률로 커지는데도 과세표준이 0원에서 약 6.2억 원으로 뛰면서 납부세액이 약 1억 2,160만 원까지 발생합니다. 공제선을 넘는 구간부터는 재산 증가 속도보다 세금 증가 속도가 빨라진다는 점을 확인할 수 있습니다.</p>
+
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">주의 — 10년 이내 사전증여가 있으면 상속재산에 합산됩니다</span>
+      <p>상속개시 전 10년 이내에 미리 증여한 재산은 상속세 계산 시 다시 합산됩니다. <a href="/blog/family-gift-tax-exemption-guide/">가족간 증여세 면제한도</a>를 활용해 미리 나눠 증여했더라도, 상속이 그 10년 이내에 발생하면 합산 과세되고 기납부 증여세액만 공제받는 구조라는 점을 알아둬야 합니다.</p>
+    </div>
+
+    <h2>확인할 점</h2>
+    <ul class="cp-checklist">
+      <li>배우자상속공제를 받으려면 상속세 신고기한(사망일이 속한 달의 말일로부터 6개월 이내) 내에 배우자 상속재산을 분할 등기해야 한다는 점을 알고 있나요?</li>
+      <li>금융재산(예금·보험 등)의 순액을 정확히 파악했나요? 채무는 차감한 순액 기준입니다.</li>
+      <li>10년 이내 사전증여 이력이 있다면 합산 신고 대상인지 확인했나요?</li>
+      <li>상속재산에 부동산이 포함되어 있다면 평가액(시가 또는 공시가격) 기준을 세무 전문가와 확인했나요?</li>
+    </ul>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 정말 10억원까지 상속세가 없나요?</p>
+      <p class="cp-faq-a">배우자와 자녀가 함께 상속받는 일반적인 경우, 일괄공제 5억원과 배우자상속공제 최소 5억원을 더하면 기본적으로 10억원까지는 공제로 상쇄되어 상속세가 없는 경우가 많습니다. 다만 채무·금융재산 등 구체적인 재산 구성에 따라 결과는 달라질 수 있습니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 배우자가 없으면 공제가 많이 줄어드나요?</p>
+      <p class="cp-faq-a">네, 배우자상속공제 자체가 배우자가 있을 때만 적용되므로, 배우자 없이 자녀만 상속받는 경우 기본 공제선이 5억원(일괄공제)으로 낮아집니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 상속세와 증여세 중 뭐가 더 유리한가요?</p>
+      <p class="cp-faq-a">일괄적으로 말하기 어렵습니다. 증여는 생전에 미리 나눠주는 대신 10년 합산과세가 적용되고, 상속은 사망 시점에 한 번에 과세되지만 배우자상속공제 등 공제 규모가 더 큽니다. 재산 규모와 시기에 따라 유불리가 달라지므로 세무 전문가와 함께 시뮬레이션해보는 것이 안전합니다.</p>
+    </div>
+
+    <div class="cp-cta">
+      <p>내 가족 구성과 재산으로 예상 상속세를 계산해보세요.</p>
+      <a href="https://www.gofincalc.com/taxpilot/inheritance-tax.html">상속세 계산기 바로가기</a>
+    </div>
+
+    <p>생전 증여를 함께 고려한다면 <a href="/blog/family-gift-tax-exemption-guide/">가족간 증여세 면제한도</a>를, 상속·증여세 신고기한 등 세무 일정은 <a href="/financial-calendar/">금융 캘린더의 세무 카테고리</a>에서 확인할 수 있습니다.</p>
+
+    <p class="cp-disclaimer">본 콘텐츠의 상속공제 한도와 세율은 상속세 및 증여세법 제18조·제19조·제68조 기준이며, 법 개정에 따라 변경될 수 있습니다. 실제 재산 평가와 공제 적용은 상속재산 구성에 따라 복잡해질 수 있으므로, 정확한 세액은 국세청 홈택스 또는 세무 전문가를 통해 확인하시기 바랍니다. (기준일: 2026년 9월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+</body>
+</html>
