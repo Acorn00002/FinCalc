@@ -221,6 +221,7 @@ try {
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/calculators.css">
 <link rel="stylesheet" href="css/responsive-native.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "화면 환율과 은행 환율이 왜 다른가요?", "acceptedAnswer": {"@type": "Answer", "text": "화면은 참고용 기준 환율이고 은행은 여기에 환전 수수료(스프레드)를 더한 현찰·송금 환율을 적용하기 때문입니다."}}, {"@type": "Question", "name": "환율을 직접 입력하면 어떻게 되나요?", "acceptedAnswer": {"@type": "Answer", "text": "불러온 환율 대신 입력한 값으로 환산합니다. 환전소에서 받은 견적으로 실제 필요 금액을 계산할 때 유용합니다."}}, {"@type": "Question", "name": "환율 데이터는 얼마나 자주 갱신되나요?", "acceptedAnswer": {"@type": "Answer", "text": "페이지를 열 때 최신 값을 불러옵니다. 제공처 사정으로 실패하면 안내 문구가 표시되고 직접 입력으로 전환됩니다."}}]}</script>
 </head>
 <body>
 <script>window.__CALC_DEEP_LINK__ = "exchange";</script>
@@ -835,9 +836,9 @@ try {
   </section>
 
   <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
-      <summary><span>환율 계산기 가이드<span class="calc-page-guide-eyebrow"> · 마지막 업데이트 2026년 9월 15일</span></span><i class="ph-duotone ph-caret-down"></i></summary>
-      <div class="calc-page-guide-body"><h2>환전 시 실제 금액이 다른 이유</h2><p>화면에 표시되는 환율은 매매기준율이며, 실제 은행·환전소에서 적용하는 환율은 우대율과 수수료에 따라 달라집니다. 계산 결과는 대략적인 참고용으로 활용하세요.</p><h2>확인할 점</h2><ul><li>온라인 환전 신청 시 우대율을 은행별로 비교합니다.</li><li>환전 금액이 클수록 은행별 수수료 차이가 커질 수 있습니다.</li><li>실제 적용 환율은 환전 신청 시점의 고시환율을 기준으로 확인합니다.</li></ul><p><a href="/blog/exchange-rate-preferential-guide/">우대율 90% vs 50%, 실제 환전 금액 차이 계산 예시 더 보기 →</a></p><h2>관련 계산기</h2><div class="cp-related-links cp-related-calcs"><a href="/calculators/global-stock-tax/">해외주식 양도소득세 계산기</a><a href="/calculators/global-net/">해외주식 실수령액 계산기</a><a href="/calculators/deposit/">정기예금 이자 계산기</a></div></div>
+    <details class="calc-page-guide-toggle" open>
+      <summary><span>환율 계산기 가이드<span class="calc-page-guide-eyebrow"> · 마지막 업데이트 2026년 9월 21일</span></span><i class="ph-duotone ph-caret-down"></i></summary>
+      <div class="calc-page-guide-body"><h2>어떤 상황에서 쓰나요</h2><p>해외여행이나 해외 결제·송금 전에 원화로 얼마가 필요한지, 외화가 원화로 얼마인지를 빠르게 확인할 때 씁니다. 원화·달러·유로·엔 등 통화 간 환산을 지원합니다.</p><h2>계산 원리</h2><p class="cp-formula">환산 금액 = 입력 금액 × (대상 통화 환율 ÷ 기준 통화 환율)</p><p>환율은 페이지를 열 때 외부 환율 정보를 불러와 사용하고, 불러오지 못하면 직접 입력할 수 있습니다. 표시되는 환율은 참고용 기준환율이며 은행 창구의 실제 적용 환율과 다릅니다.</p><h2>입력 방법</h2><p>금액, 기준 통화와 대상 통화를 고릅니다. 특정 환율로 계산하고 싶으면 "직접 입력"을 켜고 환율을 넣으세요. 통화쌍이 바뀌면 최근 추이 차트도 함께 바뀝니다.</p><h2>결과 해석과 실제 예시</h2><p>예시는 1달러=1,400원이라고 가정한 값입니다(실제 환율이 아닙니다).</p><div class="cp-table-wrap"><table class="cp-table"><thead><tr><th>입력</th><th>환산 결과</th></tr></thead><tbody><tr><td>1,000달러 → 원화</td><td>1,400,000원</td></tr><tr><td>300만 원 → 달러</td><td>약 2,142.86달러</td></tr><tr><td>환율이 1% 높게 적용될 때 1,000달러 환전</td><td>14,000원 추가 부담</td></tr></tbody></table></div><p>은행에서 외화를 살 때는 매매기준율에 환전 수수료(스프레드)가 더해져 적용되므로 화면에 나온 환산액보다 더 많은 원화가 필요합니다. 우대율이 높을수록 이 차이가 줄어듭니다.</p><h2>주의사항</h2><ul><li>실시간 환율은 조회 시점과 제공처에 따라 다르며 실제 거래 환율과 차이가 납니다.</li><li>카드 해외결제는 카드사 수수료와 국제브랜드 수수료가 추가로 붙습니다.</li><li>최종 금액은 환전·결제하는 금융회사의 고시 환율과 수수료로 확인하세요.</li></ul><h2>자주 묻는 질문</h2><h3>화면 환율과 은행 환율이 왜 다른가요?</h3><p>화면은 참고용 기준 환율이고, 은행은 여기에 환전 수수료(스프레드)를 더한 현찰·송금 환율을 적용하기 때문입니다.</p><h3>환율을 직접 입력하면 어떻게 되나요?</h3><p>불러온 환율 대신 입력한 값으로 환산합니다. 환전소에서 받은 견적으로 실제 필요 금액을 계산할 때 유용합니다.</p><h3>환율 데이터는 얼마나 자주 갱신되나요?</h3><p>페이지를 열 때 최신 값을 불러옵니다. 제공처 사정으로 실패하면 안내 문구가 표시되고 직접 입력으로 전환됩니다.</p><h2>함께 보면 좋은 글과 계산기</h2><p><a href="/blog/exchange-rate-preferential-guide/">환전 우대율과 스프레드를 함께 보는 법 자세히 보기 →</a></p><div class="cp-related-links cp-related-calcs"><a href="/calculators/global-stock-tax/">해외주식 양도소득세 계산기</a><a href="/calculators/global-net/">해외주식 실수령액 계산기</a><a href="/calculators/deposit/">정기예금 이자 계산기</a></div><p class="cp-source">기준일: 2026년 9월 21일 · 작성: 자산 파일럿 편집팀 · 환율은 외부 환율 정보 제공처의 기준환율을 조회 시점에 불러온 참고값이며 금융회사 고시 환율과 다릅니다. 이 안내는 일반적인 정보 제공을 목적으로 하며 금융·세무·법률 자문이 아닙니다. 세율·금리·규정은 바뀔 수 있으니 결정 전 공식 기관에서 최신 내용을 확인하세요.</p></div>
     </details>
   </section>
   </div>

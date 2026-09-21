@@ -57,6 +57,26 @@ service cloud.firestore {
         || request.time > get(/databases/$(database)/documents/users/$(request.auth.uid)).data.lastActivityAt + duration.value(60, 's');
     }
 
+    // 신고/블라인드 필드 검증 — 신고 1건은 reportCount +1, reportedBy에 본인 uid 1개 추가로만 표현된다.
+    // blinded는 false→true 로만, 그리고 신고 누적이 5건 이상일 때만 바뀔 수 있다(클라이언트 임계값과 동일).
+    // 이 필드들을 건드리지 않는 업데이트(좋아요·투표·댓글수)는 영향받지 않는다.
+    function loungeReportFieldsValid() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let touches = after.diff(before).affectedKeys().hasAny(['reportCount', 'reportedBy', 'blinded']);
+      let oldCount = before.get('reportCount', 0);
+      let oldBy = before.get('reportedBy', []);
+      return !touches || (
+        after.get('reportCount', 0) == oldCount + 1
+        && after.get('reportedBy', []).size() == oldBy.size() + 1
+        && after.get('reportedBy', []).hasAll(oldBy)
+        && request.auth.uid in after.get('reportedBy', [])
+        && !(request.auth.uid in oldBy)
+        && (after.get('blinded', false) == before.get('blinded', false)
+            || (before.get('blinded', false) == false && after.get('blinded', false) == true && after.get('reportCount', 0) >= 5))
+      );
+    }
+
     // 자산 라운지 게시글 — 로그인 없이도 피드는 보이게(공개), 작성은 로그인 + 본인 uid + 쿨타임 통과 시에만.
     // update는 다른 로그인 사용자도 필요하지만(좋아요/투표/신고/댓글수), title·content·uid 등 본문 필드까지
     // 아무나 고칠 수 있으면 안 되므로 실제로 클라이언트가 쓰는 필드만 정확히 열어준다:
@@ -68,7 +88,7 @@ service cloud.firestore {
       allow update: if request.auth != null &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly(
           ['likedUsers', 'likesCount', 'poll', 'reportCount', 'reportedBy', 'blinded', 'commentsCount']
-        );
+        ) && loungeReportFieldsValid();
       allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
     }
 
@@ -79,7 +99,7 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null && request.resource.data.uid == request.auth.uid && loungeNotRateLimited();
       allow update: if request.auth != null &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount', 'reportedBy', 'blinded']);
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reportCount', 'reportedBy', 'blinded']) && loungeReportFieldsValid();
       allow delete: if request.auth != null && resource.data.uid == request.auth.uid;
     }
 
