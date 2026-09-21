@@ -1890,8 +1890,8 @@
 
   .fincalc-modal{
     width:100%;
-    max-width:800px;
-    height:min(720px, 88vh);
+    max-width:1600px;
+    height:min(1440px, 94vh);
     background:var(--card);
     border-radius:28px;
     box-shadow:0 24px 70px -20px rgba(15,23,42,0.35);
