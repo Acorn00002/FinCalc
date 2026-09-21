@@ -1847,3 +1847,32 @@ exports.syncEconomicIndicatorsManual = onRequest({ cors: true, region: "asia-nor
     res.status(500).json({ error: "동기화 중 오류가 발생했습니다." });
   }
 });
+
+// ---------- 자산 라운지 관리자 조치 (삭제·신고 해제·차단) ----------
+// 기존 관리자 엔드포인트와 같은 비밀값(SEND_PUSH_SECRET)으로 보호하되, 로그에 남는 쿼리스트링 대신
+// x-admin-secret 헤더로 받고 상수 시간 비교를 쓴다. 실제 조치는 Admin SDK로 실행되어 클라이언트가 규칙을 우회할 여지가 없다.
+const { moderate: moderateLoungeAction } = require("./helpers/loungeModeration");
+
+function secretsMatch(provided, expected) {
+  const a = crypto.createHash("sha256").update(String(provided || "")).digest();
+  const b = crypto.createHash("sha256").update(String(expected || "")).digest();
+  return crypto.timingSafeEqual(a, b);
+}
+
+exports.moderateLounge = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "POST 요청만 지원합니다." });
+    return;
+  }
+  if (!SEND_PUSH_SECRET || !secretsMatch(req.get("x-admin-secret"), SEND_PUSH_SECRET)) {
+    res.status(401).json({ error: "인증에 실패했습니다." });
+    return;
+  }
+  try {
+    const out = await moderateLoungeAction(db, admin.firestore.FieldValue, req.body);
+    res.status(out.status).json(out.json);
+  } catch (error) {
+    console.error("라운지 관리자 조치 실패:", error);
+    res.status(500).json({ error: "처리 중 오류가 발생했습니다." });
+  }
+});

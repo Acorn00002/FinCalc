@@ -31,6 +31,11 @@ try {
   .adm-item-title { font-weight: 700; font-size: 14.5px; margin: 0 0 6px; }
   .adm-item-meta { font-size: 13.5px; color: #6b7280; margin: 0 0 4px; white-space: pre-wrap; }
   .adm-item-time { font-size: 12.5px; color: #9aa1ac; margin: 0; }
+  .adm-section { margin-top: 44px; padding-top: 24px; border-top: 1px solid #e2e5ea; }
+  .adm-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .adm-btn-sm { padding: 7px 12px; border-radius: 10px; border: 1px solid #e2e5ea; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .adm-btn-danger { color: #d1242f; border-color: #f0b8bc; }
+  .adm-btn-sm:disabled { opacity: .6; cursor: default; }
 </style>
 </head>
 <body>
@@ -51,6 +56,21 @@ try {
   <p class="adm-result" id="admResult"></p>
 
   <div id="admList" style="margin-top:18px;"></div>
+  <section class="adm-section">
+    <p class="cp-eyebrow">ADMIN</p>
+    <h2 class="cp-title" style="font-size:22px;">자산 라운지 관리</h2>
+    <p class="cp-meta">신고된 글·댓글을 확인하고 삭제하거나 작성자를 차단합니다. 위에 입력한 비밀값을 사용합니다(서버에서 검증).</p>
+    <div class="adm-form">
+      <button type="button" class="adm-btn" id="loungeLoadBtn">신고된 글·댓글 불러오기</button>
+    </div>
+    <p class="adm-result" id="loungeResult"></p>
+    <div id="loungeList" style="margin-top:14px;"></div>
+    <div class="adm-form">
+      <input type="text" class="adm-input" id="loungeUid" placeholder="사용자 uid" autocomplete="off">
+      <button type="button" class="adm-btn" id="loungeBanBtn">차단</button>
+      <button type="button" class="adm-btn" id="loungeUnbanBtn" style="background:#6b7280;">차단 해제</button>
+    </div>
+  </section>
 </main>
 
 <script>
@@ -110,6 +130,84 @@ try {
         btn.disabled = false;
       });
   });
+  // ---------- 자산 라운지 관리 ----------
+  var MOD_ENDPOINT = "https://asia-northeast3-asset-filot.cloudfunctions.net/moderateLounge";
+
+  function modCall(payload){
+    var secret = document.getElementById("admSecret").value.trim();
+    if (!secret) return Promise.reject(new Error("위 칸에 비밀값을 먼저 입력하세요."));
+    return fetch(MOD_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-secret": secret },
+      body: JSON.stringify(payload)
+    }).then(function(res){
+      return res.json().then(function(data){
+        if (!res.ok) throw new Error(data.error || ("오류 " + res.status));
+        return data;
+      });
+    });
+  }
+
+  function loadLoungeReports(){
+    var resultEl = document.getElementById("loungeResult");
+    var listEl = document.getElementById("loungeList");
+    resultEl.textContent = "불러오는 중...";
+    listEl.innerHTML = "";
+    modCall({ action: "list" }).then(function(data){
+      var items = data.items || [];
+      resultEl.textContent = "신고된 항목 " + items.length + "건";
+      listEl.innerHTML = items.map(function(it){
+        var label = it.type === "post" ? "글" : "댓글";
+        return '' +
+          '<div class="adm-item" data-type="' + escapeAdmHtml(it.type) + '" data-id="' + escapeAdmHtml(it.id) + '" data-uid="' + escapeAdmHtml(it.uid) + '">' +
+            '<p class="adm-item-title">[' + label + '] ' + escapeAdmHtml(it.title || it.content) + (it.blinded ? ' (블라인드됨)' : '') + '</p>' +
+            '<p class="adm-item-meta">' + escapeAdmHtml(it.title ? it.content : "") + '</p>' +
+            '<p class="adm-item-time">신고 ' + it.reportCount + '건 · 작성자 ' + escapeAdmHtml(it.uid) + '</p>' +
+            '<div class="adm-actions">' +
+              '<button type="button" class="adm-btn-sm adm-btn-danger" data-act="delete">삭제</button>' +
+              '<button type="button" class="adm-btn-sm" data-act="dismiss">신고 해제</button>' +
+              '<button type="button" class="adm-btn-sm adm-btn-danger" data-act="ban">작성자 차단(+글 삭제)</button>' +
+            '</div>' +
+          '</div>';
+      }).join("");
+    }).catch(function(err){
+      resultEl.textContent = "실패: " + err.message;
+    });
+  }
+
+  document.getElementById("loungeLoadBtn").addEventListener("click", loadLoungeReports);
+
+  document.getElementById("loungeList").addEventListener("click", function(e){
+    var btn = e.target.closest("button[data-act]");
+    if (!btn) return;
+    var item = btn.closest(".adm-item");
+    var act = btn.getAttribute("data-act");
+    var type = item.getAttribute("data-type");
+    var id = item.getAttribute("data-id");
+    var uid = item.getAttribute("data-uid");
+    var msg = act === "delete" ? "이 항목을 삭제할까요? (글이면 댓글도 함께 삭제됩니다)"
+      : act === "ban" ? "작성자를 차단하고 작성한 글·댓글을 모두 삭제할까요?"
+      : "신고를 해제할까요?";
+    if (!window.confirm(msg)) return;
+    var payload = act === "ban" ? { action: "ban", uid: uid, reason: "신고 누적", deleteContent: true } : { action: act, type: type, id: id };
+    btn.disabled = true;
+    modCall(payload).then(function(){ loadLoungeReports(); }).catch(function(err){
+      document.getElementById("loungeResult").textContent = "실패: " + err.message;
+      btn.disabled = false;
+    });
+  });
+
+  function manualBan(action){
+    var uid = document.getElementById("loungeUid").value.trim();
+    var resultEl = document.getElementById("loungeResult");
+    if (!uid) { resultEl.textContent = "uid를 입력하세요."; return; }
+    if (!window.confirm(uid + " 계정을 " + (action === "ban" ? "차단" : "차단 해제") + "할까요?")) return;
+    modCall({ action: action, uid: uid, reason: "관리자 수동 처리" }).then(function(){
+      resultEl.textContent = (action === "ban" ? "차단" : "차단 해제") + " 완료: " + uid;
+    }).catch(function(err){ resultEl.textContent = "실패: " + err.message; });
+  }
+  document.getElementById("loungeBanBtn").addEventListener("click", function(){ manualBan("ban"); });
+  document.getElementById("loungeUnbanBtn").addEventListener("click", function(){ manualBan("unban"); });
 </script>
 
 </body>

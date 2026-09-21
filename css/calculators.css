@@ -195,13 +195,24 @@
   .calc-page-guide-body li{margin-bottom:5px;}
   .calc-page-guide-body a{color:var(--brand);font-weight:700;}
   .calc-page-guide-body .cp-table-wrap{overflow-x:auto;margin:0 0 14px;border-radius:12px;border:1px solid var(--line);}
-  .calc-page-guide-body .cp-table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap;}
+  .calc-page-guide-body .cp-table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:normal;word-break:keep-all;}
   .calc-page-guide-body .cp-table th,.calc-page-guide-body .cp-table td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);}
   .calc-page-guide-body .cp-table th:first-child,.calc-page-guide-body .cp-table td:first-child{text-align:left;}
   .calc-page-guide-body .cp-table thead th{background:var(--card-soft);color:var(--ink-1);font-weight:800;}
   .calc-page-guide-body .cp-table tbody tr:last-child td{border-bottom:none;}
   .calc-page-guide-body .cp-formula{background:var(--card-soft);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.7;color:var(--ink-1);}
   .calc-page-guide-body .cp-source{font-size:12px;color:var(--ink-3);line-height:1.6;}
+  /* 좁은 화면에서는 표를 가로 스크롤 없이 카드형(행 단위 블록)으로 바꿔 보여준다 */
+  @media (max-width:600px){
+    .calc-page-guide-body .cp-table-wrap{overflow:visible;border:none;border-radius:0;}
+    .calc-page-guide-body .cp-table,.calc-page-guide-body .cp-table tbody,.calc-page-guide-body .cp-table tr,.calc-page-guide-body .cp-table td{display:block;width:100%;}
+    .calc-page-guide-body .cp-table thead{display:none;}
+    .calc-page-guide-body .cp-table tr{border:1px solid var(--line);border-radius:12px;background:var(--card-soft);margin-bottom:8px;padding:8px 12px;}
+    .calc-page-guide-body .cp-table td{display:flex;justify-content:space-between;align-items:baseline;gap:14px;text-align:right;border:none;padding:4px 0;}
+    .calc-page-guide-body .cp-table td::before{content:attr(data-label);flex:none;font-weight:700;color:var(--ink-3);text-align:left;}
+    .calc-page-guide-body .cp-table td:first-child{justify-content:flex-start;text-align:left;font-weight:800;color:var(--ink-1);padding-bottom:6px;}
+    .calc-page-guide-body .cp-table td:first-child::before{display:none;}
+  }
 
   .cp-eyebrow{font-size:13px;font-weight:700;color:var(--brand);margin:0 0 8px;}
   .cp-article h2{font-size:17px;font-weight:800;color:var(--ink-1);margin:22px 0 10px;}

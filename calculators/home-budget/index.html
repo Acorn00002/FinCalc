@@ -221,6 +221,7 @@ try {
 <link rel="stylesheet" href="css/calendar.css">
 <link rel="stylesheet" href="css/calculators.css">
 <link rel="stylesheet" href="css/responsive-native.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "소득이 없으면 어떻게 계산되나요?", "acceptedAnswer": {"@type": "Answer", "text": "소득 기준 대출 여력이 0이 되어 매수 가능 가격이 보유 현금과 같게 나옵니다."}}, {"@type": "Question", "name": "보유 현금에 전세보증금도 넣나요?", "acceptedAnswer": {"@type": "Answer", "text": "집을 사서 입주할 때 실제로 쓸 수 있는 현금만 넣으세요. 회수 시점이 정해지지 않은 자금은 제외하는 것이 안전합니다."}}, {"@type": "Question", "name": "금리를 바꾸면 결과가 얼마나 달라지나요?", "acceptedAnswer": {"@type": "Answer", "text": "금리가 오르면 같은 소득으로 감당할 수 있는 대출이 줄어 DSR 기준 가격이 낮아집니다. 보수적으로 여러 값을 넣어 비교해 보세요."}}]}</script>
 </head>
 <body>
 <script>window.__CALC_DEEP_LINK__ = "home-budget";</script>
@@ -819,25 +820,11 @@ try {
     </div>
   </section>
 
-  <section class="finpilot-seo-guide">
-    <h2>스마트한 자산관리를 위한 금융 가이드</h2>
-
-    <h3>원리금균등상환 vs 원금균등상환, 어떤 방식이 유리할까?</h3>
-    <p>주택담보대출이나 전세자금대출을 받을 때 가장 먼저 마주치는 선택이 바로 상환 방식입니다. <strong>원리금균등상환</strong>은 매달 갚는 총액(원금+이자)이 만기까지 동일한 방식으로, 초기에는 이자 비중이 크고 시간이 지날수록 원금 비중이 커집니다. 매달 지출 계획을 세우기 쉬워 사회초년생이나 첫 내 집 마련을 하는 분들이 선호하는 방식입니다. 반면 <strong>원금균등상환</strong>은 매달 갚는 원금을 동일하게 고정하고, 남은 원금에 대한 이자만 매달 계산해 더하는 방식입니다. 초기 상환액이 크지만 시간이 지날수록 이자 부담이 빠르게 줄어들어, 동일 조건이라면 원리금균등 대비 총 이자 납부액이 더 적습니다. 소득이 안정적이고 초기에 여유 자금이 있다면 원금균등이 총 이자 측면에서 유리하고, 초기 상환 부담을 낮추고 싶다면 원리금균등이 현실적인 선택입니다. 자산 파일럿의 대출 계산기로 두 방식의 월 상환액과 총 이자를 나란히 비교해보고 본인의 현금흐름에 맞는 방식을 선택하는 것을 권장합니다.</p>
-
-    <h3>2026년 대출 이자, 이렇게 아끼세요</h3>
-    <p>기준금리 변동기에는 대출 이자를 조금만 신경 써도 수백만 원을 아낄 수 있습니다. 첫째, <strong>금리인하요구권</strong>을 적극 활용하세요. 취업, 승진, 신용점수 상승 등 신용 상태가 개선되었다면 대출 은행에 금리 인하를 요구할 수 있는 법적 권리가 있습니다. 둘째, 여러 은행의 대출 조건을 비교하는 <strong>대환대출</strong>을 정기적으로 검토하세요. 특히 고금리로 대출을 받았다면 온라인 대환대출 플랫폼을 통해 더 낮은 금리로 갈아탈 수 있는지 확인하는 것만으로도 이자 부담을 줄일 수 있습니다. 셋째, 여윳돈이 생겼을 때 <strong>중도상환</strong>을 활용하되, 중도상환수수료 면제 구간(통상 대출 실행 후 3년 경과 시점)을 확인하고 수수료와 절감되는 이자를 비교해 실익을 따져야 합니다. 넷째, 고정금리와 변동금리 중 시장 상황에 맞는 선택도 중요합니다. 금리 상승기에는 고정금리가, 하락기에는 변동금리(또는 주기형 금리)가 유리할 수 있으므로 한국은행 기준금리 발표 일정을 참고해 갈아타기 시점을 계획하는 것이 좋습니다. 자산 파일럿의 대출 이자 계산기와 중도상환 시뮬레이터로 나에게 맞는 절약 전략을 미리 확인해보세요.</p>
-
-    <h3>예금·적금 금리 계산법, 제대로 알고 가입하기</h3>
-    <p>같은 연 3% 금리라도 예금과 적금의 실제 이자는 크게 다릅니다. <strong>정기예금</strong>은 목돈을 한 번에 예치하기 때문에 원금 전체에 약정 기간 동안 이자가 붙어 계산이 단순합니다. 반면 <strong>정기적금</strong>은 매달 납입한 금액마다 남은 개월 수만큼만 이자가 붙는 <strong>선입선출식 부분이자</strong> 방식이라, 표면금리가 같아도 실제 수령하는 이자는 예금의 절반 수준에 그치는 경우가 많습니다. 또한 은행이 광고하는 금리는 대부분 <strong>세전 금리</strong>이며, 이자소득세 15.4%(소득세 14% + 지방소득세 1.4%)를 차감한 <strong>세후 실수령액</strong>을 기준으로 비교해야 정확합니다. 우대금리 조건(급여이체, 카드 실적, 자동이체 등)을 충족했을 때의 최종 금리와, 조건 미충족 시 기본금리 차이도 반드시 확인하세요. 만기를 채우지 못하고 중도해지하면 약정금리 대신 훨씬 낮은 중도해지 금리가 적용되므로, 가입 전 자금 계획을 세워 만기까지 유지할 수 있는 상품을 고르는 것이 핵심입니다. 자산 파일럿의 예적금 계산기를 활용하면 세전·세후 이자와 만기 수령액을 한눈에 비교해 나에게 맞는 상품을 빠르게 찾을 수 있습니다.</p>
-
-    <p class="finpilot-seo-guide-disclaimer">본 콘텐츠는 일반적인 금융 정보 제공을 목적으로 하며, 투자 자문이나 대출 상담을 대체하지 않습니다. 실제 상품 가입 및 대출 실행 전에는 반드시 금융회사의 최신 약관과 금리를 확인하고 전문가와 상담하시기 바랍니다.</p>
-  </section>
 
   <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
-      <summary><span>내집마련 계산기 가이드<span class="calc-page-guide-eyebrow"> · 마지막 업데이트 2026년 9월 15일</span></span><i class="ph-duotone ph-caret-down"></i></summary>
-      <div class="calc-page-guide-body"><h2>내집마련 계획은 무엇을 함께 고려해야 하나요?</h2><p>목표 주택가격, 보유 자금, 대출 계획을 함께 넣으면 부족한 자금과 필요한 저축 기간을 가늠할 수 있습니다. 실제 대출 가능 금액은 DSR·LTV 등 규제에 따라 달라집니다. <a href="/calculators/loan-limit/">대출한도 계산기에서 DSR 한도도 함께 확인해보세요 →</a></p><h2>확인할 점</h2><ul><li>대출한도는 소득과 기존 대출에 따른 DSR 규제의 영향을 받습니다.</li><li>취득세·중개수수료 등 부대비용도 별도로 준비해야 합니다.</li><li>지역별 LTV·DTI 한도는 규제 지역 여부에 따라 다릅니다.</li></ul><p><a href="/blog/home-buying-budget-guide/">LTV·DSR 중 무엇이 한도를 결정하는지 계산 예시 더 보기 →</a></p><h2>관련 계산기</h2><div class="cp-related-links cp-related-calcs"><a href="/calculators/loan-limit/">대출한도 계산기</a><a href="/calculators/apt-buy/">취득세 계산기</a><a href="/calculators/subscription-score/">청약가점 계산기</a></div></div>
+    <details class="calc-page-guide-toggle" open>
+      <summary><span>내집마련 계산기 가이드<span class="calc-page-guide-eyebrow"> · 마지막 업데이트 2026년 9월 21일</span></span><i class="ph-duotone ph-caret-down"></i></summary>
+      <div class="calc-page-guide-body"><h2>어떤 상황에서 쓰나요</h2><p>가진 현금과 연소득으로 최대 얼마짜리 집까지 살 수 있는지 알아보는 계산기입니다. "집값의 몇 %까지 대출"(LTV)과 "소득 대비 상환 부담"(DSR) 두 기준을 함께 보고 더 낮은 쪽을 매수 가능 가격으로 안내합니다.</p><h2>계산 원리</h2><p class="cp-formula">LTV 기준 가격 = 보유 현금 ÷ (1 − LTV) (계산기 기준: 규제지역 60%, 비규제지역 70%)<br>DSR 기준 가격 = 보유 현금 + 감당 가능한 대출 ((연소득 × 40% − 기존 연 상환액)을 12로 나눈 금액을 원리금균등 월 상환액으로 계산)<br>매수 가능 가격 = min(LTV 기준, DSR 기준) · 필요 대출 = 매수 가능 가격 − 현금</p><h2>입력 방법</h2><p>지역 구분, 보유 현금, 연소득, 기존 대출의 연간 원리금 상환액, 예상 금리(기본 4.5%), 대출 기간(기본 30년)을 입력합니다. 기존 대출 상환액은 1년 동안 갚는 원금과 이자 합계입니다.</p><h2>결과 해석과 실제 예시</h2><div class="cp-table-wrap"><table class="cp-table"><thead><tr><th>조건</th><th>LTV 기준</th><th>DSR 기준</th><th>매수 가능 가격</th><th>필요 대출</th></tr></thead><tbody><tr><td data-label="조건">현금 2억 · 소득 6천만 · 기존 0 · 규제지역 · 4.5% · 30년</td><td data-label="LTV 기준">5억 원</td><td data-label="DSR 기준">약 5.95억 원</td><td data-label="매수 가능 가격">5억 원 (LTV 적용)</td><td data-label="필요 대출">3억 원</td></tr><tr><td data-label="조건">현금 3억 · 소득 8천만 · 기존 연 1천만 · 비규제 · 4.5% · 30년</td><td data-label="LTV 기준">10억 원</td><td data-label="DSR 기준">약 6.62억 원</td><td data-label="매수 가능 가격">약 6.62억 원 (DSR 적용)</td><td data-label="필요 대출">약 3.62억 원</td></tr></tbody></table></div><p>첫 예시는 소득으로는 약 6억 원까지 가능하지만 담보 비율이 5억 원에서 막힙니다. 두 번째는 담보 여력은 충분한데 소득 대비 상환 부담이 한도를 정합니다. 어느 쪽이 막히는지에 따라 현금을 늘릴지 소득을 늘릴지 전략이 달라집니다.</p><h2>주의사항</h2><ul><li>LTV와 DSR 비율은 계산기 단순화 값입니다. 실제로는 지역, 주택 가격, 생애최초 여부, 스트레스 DSR에 따라 달라지며 정책이 자주 바뀝니다. 대출 상담 전 금융당국·은행 안내를 확인하세요.</li><li>취득세, 중개수수료, 이사비 등 부대 비용은 포함하지 않습니다. 이 비용은 취득세·중개수수료 계산기에서 따로 확인하세요.</li><li>대출 상환 방식은 원리금균등만 가정합니다.</li></ul><h2>자주 묻는 질문</h2><h3>소득이 없으면 어떻게 계산되나요?</h3><p>소득 기준 대출 여력이 0이 되어 매수 가능 가격이 보유 현금과 같게 나옵니다.</p><h3>보유 현금에 전세보증금도 넣나요?</h3><p>집을 사서 입주할 때 실제로 쓸 수 있는 현금만 넣으세요. 회수 시점이 정해지지 않은 자금은 제외하는 것이 안전합니다.</p><h3>금리를 바꾸면 결과가 얼마나 달라지나요?</h3><p>금리가 오르면 같은 소득으로 감당할 수 있는 대출이 줄어 DSR 기준 가격이 낮아집니다. 보수적으로 여러 값을 넣어 비교해 보세요.</p><h2>함께 보면 좋은 글과 계산기</h2><p><a href="/blog/home-buying-budget-guide/">LTV와 DSR 중 무엇이 한도를 정하는지 자세히 보기 →</a></p><div class="cp-related-links cp-related-calcs"><a href="/calculators/loan-limit/">대출한도 계산기</a><a href="/calculators/apt-buy/">취득세 계산기</a><a href="/calculators/subscription-score/">청약가점 계산기</a></div><p class="cp-source">기준일: 2026년 9월 21일 · 작성: 자산 파일럿 편집팀 · LTV·DSR 비율은 계산기 단순화 기준입니다. 실제 규제는 금융위원회·금융감독원 발표와 각 금융회사 심사 기준을 확인하세요. 이 안내는 일반적인 정보 제공을 목적으로 하며 금융·세무·법률 자문이 아닙니다. 세율·금리·규정은 바뀔 수 있으니 결정 전 공식 기관에서 최신 내용을 확인하세요.</p></div>
     </details>
   </section>
   </div>
