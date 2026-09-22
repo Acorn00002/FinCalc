@@ -25,9 +25,94 @@ const PROMPT_CHIPS: PromptChip[] = [
   { label: '주요 세계 뉴스 요약', prompt: '오늘 주요 세계 뉴스를 요약해줘', mode: 'ask' },
 ];
 
-// index.html의 "AI 자산파일럿 서포터" 카드를 그대로 이식 — 마크다운 렌더링 라이브러리를 새로
-// 추가하지 않고 우선 일반 텍스트로 답변을 보여준다(v1 단순화).
+// index.html의 "AI 자산파일럿 서포터" 카드를 그대로 이식.
 const PORTFOLIO_CHIP = PROMPT_CHIPS.filter((c) => c.mode === 'fill')[0];
+
+// 서버(GEMINI_SYSTEM_INSTRUCTION)가 답변을 마크다운(##/### 헤딩, "1. " 번호목록, "- " 불릿,
+// **볼드**)으로 만들도록 지시해두므로, 웹은 marked+DOMPurify로 HTML 렌더링한다. RN에는 DOM이
+// 없어 같은 라이브러리를 쓸 수 없고, 무거운 마크다운 렌더러 의존성을 새로 넣는 대신 이 화면에
+// 실제로 나오는 문법(헤딩/번호목록/불릿/볼드)만 직접 파싱해 웹과 같은 위계로 보여준다.
+type AnswerBlock =
+  | { kind: 'heading'; text: string }
+  | { kind: 'numbered'; index: string; text: string }
+  | { kind: 'bullet'; text: string }
+  | { kind: 'paragraph'; text: string };
+
+function parseAnswerBlocks(raw: string): AnswerBlock[] {
+  const blocks: AnswerBlock[] = [];
+  raw.split('\n').forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) return;
+    const heading = line.match(/^#{2,3}\s+(.*)$/);
+    if (heading) {
+      blocks.push({ kind: 'heading', text: heading[1] });
+      return;
+    }
+    const numbered = line.match(/^(\d+)[.)]\s+(.*)$/);
+    if (numbered) {
+      blocks.push({ kind: 'numbered', index: numbered[1], text: numbered[2] });
+      return;
+    }
+    const bullet = line.match(/^[-*•]\s+(.*)$/);
+    if (bullet) {
+      blocks.push({ kind: 'bullet', text: bullet[1] });
+      return;
+    }
+    blocks.push({ kind: 'paragraph', text: line });
+  });
+  return blocks;
+}
+
+// "**굵게**" 구간만 나눠서 굵은 span으로 바꾼다. 그 외 마크다운 기호는 이 화면에서 쓰이지 않아
+// 다루지 않는다.
+function renderInline(text: string, keyPrefix: string, boldStyle: object) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g).filter((p) => p.length > 0);
+  return parts.map((part, i) => {
+    const boldMatch = part.match(/^\*\*([^*]+)\*\*$/);
+    if (boldMatch) {
+      return (
+        <Text key={`${keyPrefix}-${i}`} style={boldStyle}>
+          {boldMatch[1]}
+        </Text>
+      );
+    }
+    return <React.Fragment key={`${keyPrefix}-${i}`}>{part}</React.Fragment>;
+  });
+}
+
+function renderAnswer(raw: string, styles: ReturnType<typeof createStyles>) {
+  return parseAnswerBlocks(raw).map((block, i) => {
+    const key = `ans-${i}`;
+    if (block.kind === 'heading') {
+      return (
+        <Text key={key} style={styles.answerHeading}>
+          {renderInline(block.text, key, styles.answerHeadingBold)}
+        </Text>
+      );
+    }
+    if (block.kind === 'numbered') {
+      return (
+        <View key={key} style={styles.answerNumberedRow}>
+          <Text style={styles.answerNumberedIndex}>{block.index}.</Text>
+          <Text style={styles.answerNumberedText}>{renderInline(block.text, key, styles.answerBold)}</Text>
+        </View>
+      );
+    }
+    if (block.kind === 'bullet') {
+      return (
+        <View key={key} style={styles.answerBulletRow}>
+          <Text style={styles.answerBulletDot}>{'•'}</Text>
+          <Text style={styles.answerBulletText}>{renderInline(block.text, key, styles.answerBold)}</Text>
+        </View>
+      );
+    }
+    return (
+      <Text key={key} style={styles.answerParagraph}>
+        {renderInline(block.text, key, styles.answerBold)}
+      </Text>
+    );
+  });
+}
 
 export default function HomeAiCard() {
   const { colors } = useAppTheme();
@@ -196,17 +281,20 @@ export default function HomeAiCard() {
           multiline
           textAlignVertical="top"
         />
-        <Pressable style={styles.submitBtn} onPress={() => ask(input)} disabled={loading}>
-          {loading ? <ActivityIndicator size="small" color="#fff" /> : <Text style={styles.submitBtnText}>질문하기</Text>}
+        <Pressable
+          style={[styles.submitBtn, (loading || !input.trim()) && styles.submitBtnDisabled]}
+          onPress={() => ask(input)}
+          disabled={loading || !input.trim()}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel="질문하기"
+        >
+          {loading ? <ActivityIndicator size="small" color="#fff" /> : <Ionicons name="arrow-up" size={20} color="#fff" />}
         </Pressable>
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      {answer ? (
-        <View style={styles.answerBox}>
-          <Text style={styles.answerText}>{answer}</Text>
-        </View>
-      ) : null}
+      {answer ? <View style={styles.answerBox}>{renderAnswer(answer, styles)}</View> : null}
 
       {proposal ? (
         <View style={styles.proposalBox}>
@@ -273,22 +361,44 @@ function createStyles(colors: ThemeColors) {
       paddingVertical: 11,
     },
     guideApplyBtnText: { fontSize: 12, fontWeight: '700', color: colors.brand },
-    inputRow: { gap: 10 },
+    // 입력창과 버튼을 한 줄에 놓고 아래쪽 기준으로 맞춘다 — 여러 줄로 늘어나도(최대 140) 버튼은
+    // 항상 마지막 줄과 같은 높이에 붙어있어(메신저 앱들의 흔한 패턴) 어색하게 붕 뜨지 않는다.
+    inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
     input: {
+      flex: 1,
       backgroundColor: colors.cardSoft,
       borderRadius: 20,
       paddingHorizontal: 16,
       paddingVertical: 13,
       fontSize: 13.5,
       color: colors.ink1,
-      minHeight: 46,
+      minHeight: 48,
       maxHeight: 140,
     },
-    submitBtn: { backgroundColor: colors.brand, borderRadius: 999, paddingVertical: 13, alignItems: 'center' },
-    submitBtnText: { fontSize: 13.5, fontWeight: '700', color: '#fff' },
+    // 입력창의 기본(한 줄) 높이(48)와 정확히 맞춘 정사각형 버튼 — 시스템 글자 크기를 키워도
+    // 아이콘 크기는 고정이라 버튼 자체가 밀리거나 커지지 않는다.
+    submitBtn: {
+      width: 48,
+      height: 48,
+      borderRadius: 16,
+      backgroundColor: colors.brand,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    submitBtnDisabled: { backgroundColor: colors.ink3, opacity: 0.5 },
     error: { fontSize: 12, color: colors.loss, marginTop: 10 },
-    answerBox: { marginTop: 14, backgroundColor: colors.cardSoft, borderRadius: 14, padding: 14 },
-    answerText: { fontSize: 13.5, color: colors.ink1, lineHeight: 20 },
+    answerBox: { marginTop: 14, backgroundColor: colors.cardSoft, borderRadius: 14, padding: 14, gap: 8 },
+    answerHeading: { fontSize: 14.5, fontWeight: '800', color: colors.ink1, lineHeight: 20, marginTop: 4 },
+    answerHeadingBold: { fontWeight: '800', color: colors.ink1 },
+    answerParagraph: { fontSize: 13.5, color: colors.ink1, lineHeight: 21 },
+    answerBold: { fontWeight: '800', color: colors.ink1 },
+    answerNumberedRow: { flexDirection: 'row', gap: 6, marginTop: 6 },
+    answerNumberedIndex: { fontSize: 14, fontWeight: '800', color: colors.brand },
+    answerNumberedText: { flex: 1, fontSize: 14, fontWeight: '800', color: colors.ink1, lineHeight: 20 },
+    answerBulletRow: { flexDirection: 'row', gap: 8, paddingLeft: 4 },
+    answerBulletDot: { fontSize: 13.5, color: colors.ink3, lineHeight: 21 },
+    answerBulletText: { flex: 1, fontSize: 13.5, color: colors.ink1, lineHeight: 21 },
     proposalBox: {
       marginTop: 14,
       backgroundColor: colors.brandSoft,

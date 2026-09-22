@@ -2,7 +2,7 @@
   "expo": {
     "name": "자산 파일럿",
     "slug": "asset-pilot",
-    "version": "1.0.16",
+    "version": "1.0.18",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -13,7 +13,7 @@
     },
     "android": {
       "package": "com.gofincalc.app",
-      "versionCode": 20,
+      "versionCode": 22,
       "adaptiveIcon": {
         "backgroundColor": "#5055FF",
         "foregroundImage": "./assets/android-icon-foreground.png"
