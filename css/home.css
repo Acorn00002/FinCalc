@@ -1680,6 +1680,9 @@
   }
   .news-category-chip.is-active{background:var(--brand);color:#fff;}
 
+  .news-category-intro{margin:0 0 16px;}
+  .news-category-intro p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2);}
+
   /* 실시간 트렌드 — 라벨은 고정하고 칩 트랙만 가로로 흐른다(JS가 자동으로 왕복 스크롤).
      스크롤바는 시각적으로만 숨기고(overflow는 유지) 터치/드래그로 직접 넘기는 것도 그대로 된다. */
   .news-trend-row{display:flex;align-items:center;gap:11px;margin-bottom:16px;}

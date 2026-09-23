@@ -2073,11 +2073,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 15. 연봉 실수령액 계산기 — 4대보험 + 근로소득공제 + 8단계 누진세율 + 근로소득세액공제 + 자녀세액공제
 (function () {
-    var NATIONAL_PENSION_RATE = 0.045;
-    var NATIONAL_PENSION_FLOOR = 400000;
-    var NATIONAL_PENSION_CEIL = 6370000;
-    var HEALTH_INSURANCE_RATE = 0.03545;
-    var LONG_TERM_CARE_RATE = 0.1295;
+    // 2026년 기준(국민연금 요율은 2026년부터 매년 0.5%p씩 8년간 단계 인상되는 연금개혁 첫해 적용분,
+    // 기준소득월액 상하한액은 2026-07-01 조정분, 건강보험·장기요양은 2026-01-01 고시분) — 보건복지부
+    // 2026-11-04 보도자료("2026년도 장기요양보험료율 0.9448%") 및 국민연금공단 2026년도 기준소득월액
+    // 상·하한액 조정 안내로 확인.
+    var NATIONAL_PENSION_RATE = 0.0475;
+    var NATIONAL_PENSION_FLOOR = 410000;
+    var NATIONAL_PENSION_CEIL = 6590000;
+    var HEALTH_INSURANCE_RATE = 0.03595;
+    var LONG_TERM_CARE_RATE = 0.1314;
     var EMPLOYMENT_INSURANCE_RATE = 0.009;
 
     var SALARY_TAX_BRACKETS = [
@@ -3646,6 +3650,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (marriageDate < age30) startDate = marriageDate;
             }
         }
+
+        // 아직 무주택기간 기산일(만 30세, 또는 그 전 혼인일)에 이르지 않았다면 무주택기간 점수는
+        // 0점이다(국토교통부 주택공급에 관한 규칙 — 만 30세 미만 미혼 무주택자는 0점). yearsBetween은
+        // 이 경우 음수 차이를 0년으로 반환해 버려서, 보정 없이 그대로 넘기면 "1년 미만" 구간의 2점이
+        // 잘못 부여된다(실제 버그였음).
+        if (new Date() < startDate) return 0;
 
         var years = yearsBetween(startDate, new Date());
         if (years === null) return null;

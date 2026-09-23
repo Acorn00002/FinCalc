@@ -1494,7 +1494,7 @@ try {
   </div>
 
   <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
+    <details class="calc-page-guide-toggle" open>
       <summary><span>금융 캘린더 안내<span class="calc-page-guide-eyebrow"> · 실시간 업데이트</span></span><i class="ph-duotone ph-caret-down"></i></summary>
       <div class="calc-page-guide-body">
         <h2>금융 캘린더에서 확인할 수 있는 일정</h2>
@@ -1628,7 +1628,7 @@ try {
   </div>
 
   <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
+    <details class="calc-page-guide-toggle" open>
       <summary><span>청약·공모주 캘린더 안내<span class="calc-page-guide-eyebrow"> · 실시간 업데이트</span></span><i class="ph-duotone ph-caret-down"></i></summary>
       <div class="calc-page-guide-body">
         <h2>이번 주 공모주 청약 일정</h2>
@@ -1894,6 +1894,16 @@ try {
     <button type="button" class="news-category-chip" data-category="life">생활</button>
   </div>
 
+  <!-- 카테고리별 고정 안내문 — 자산 파일럿이 왜 이 카테고리를 큐레이션하는지 설명하는 정적 텍스트.
+       JS가 실패해도(또는 크롤러가 JS를 안 돌려도) 기본 활성 카테고리(경제)의 안내문은 그대로 보인다. -->
+  <div class="news-category-intro" id="newsCategoryIntro">
+    <p data-category="headline" hidden>그날 가장 많이 읽힌 주요 뉴스만 모아 빠르게 훑어보고 싶을 때 보는 카테고리입니다.</p>
+    <p data-category="economy">금리·물가·환율처럼 자산관리에 직접 영향을 주는 경제 소식을 우선적으로 모았습니다.</p>
+    <p data-category="world" hidden>국내 자산에도 영향을 주는 미국 증시·연준 정책 등 해외 경제 이슈를 모았습니다.</p>
+    <p data-category="society" hidden>세금·제도 변화처럼 자산관리에 영향을 줄 수 있는 정책·시사 소식을 모았습니다.</p>
+    <p data-category="life" hidden>생활물가, 소비 트렌드 등 가계와 밀접한 실생활 금융 소식을 모았습니다.</p>
+  </div>
+
   <!-- 실시간 트렌드 — 현재 불러온 뉴스 제목들에서 자주 등장하는 키워드를 뽑아 보여준다(새 API 없이
        기존 뉴스 데이터만으로 계산). 클릭하면 그 키워드가 포함된 기사만 아래 목록에 필터링된다. -->
   <div class="news-trend-row" id="newsTrendRow" hidden>
@@ -1916,7 +1926,7 @@ try {
   </div>
 
   <section class="finpilot-seo-guide calc-page-guide">
-    <details class="calc-page-guide-toggle">
+    <details class="calc-page-guide-toggle" open>
       <summary><span>실시간 금융 뉴스 안내<span class="calc-page-guide-eyebrow"> · 실시간 업데이트</span></span><i class="ph-duotone ph-caret-down"></i></summary>
       <div class="calc-page-guide-body">
         <h2>어떤 뉴스를 모아 보여주나요</h2>
@@ -5429,6 +5439,9 @@ try {
       newsActiveTrend = null;
       document.querySelectorAll("#newsCategoryFilter .news-category-chip").forEach(function(c){
         c.classList.toggle("is-active", c === chip);
+      });
+      document.querySelectorAll("#newsCategoryIntro p").forEach(function(p){
+        p.hidden = p.getAttribute("data-category") !== category;
       });
       loadNewsCategory(category);
     });
