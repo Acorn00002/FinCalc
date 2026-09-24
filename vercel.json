@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/taxpilot/salary.html",
+      "destination": "https://www.gofincalc.com/calculators/salary/",
+      "statusCode": 301
+    },
+    {
       "source": "/:path*",
       "has": [
         { "type": "host", "value": "gofincalc.com" }
