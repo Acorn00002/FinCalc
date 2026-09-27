@@ -61,233 +61,244 @@ try {
     </div>
   </section>
 
-  <div class="cp-grid">
-    <a class="cp-post-card" href="/blog/newborn-special-loan-guide/">
+  <div class="cp-cat-filter" role="group" aria-label="카테고리 필터" id="blogCatFilter">
+    <button type="button" class="cp-cat-chip is-active" data-cat="전체" aria-pressed="true">전체</button>
+    <button type="button" class="cp-cat-chip" data-cat="금융·예적금" aria-pressed="false">금융·예적금</button>
+    <button type="button" class="cp-cat-chip" data-cat="대출·신용" aria-pressed="false">대출·신용</button>
+    <button type="button" class="cp-cat-chip" data-cat="투자" aria-pressed="false">투자</button>
+    <button type="button" class="cp-cat-chip" data-cat="부동산·청약" aria-pressed="false">부동산·청약</button>
+    <button type="button" class="cp-cat-chip" data-cat="세금" aria-pressed="false">세금</button>
+    <button type="button" class="cp-cat-chip" data-cat="소득·노후" aria-pressed="false">소득·노후</button>
+    <button type="button" class="cp-cat-chip" data-cat="정부지원" aria-pressed="false">정부지원</button>
+  </div>
+
+  <div class="cp-grid" id="blogPostGrid">
+    <a class="cp-post-card" href="/blog/newborn-special-loan-guide/" data-category="대출·신용">
       <p class="cp-post-card-cat">정부지원금·대출</p>
       <h3>신생아특례대출 자격조건과 한도, 2026년 기준</h3>
       <p>신생아특례 디딤돌·버팀목 대출의 소득·자산 기준, 한도, 금리를 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/inheritance-tax-spouse-deduction-guide/">
+    <a class="cp-post-card" href="/blog/inheritance-tax-spouse-deduction-guide/" data-category="세금">
       <p class="cp-post-card-cat">세금</p>
       <h3>상속세 얼마나 나올까, 배우자 상속공제 계산법</h3>
       <p>일괄공제·배우자상속공제 구조와 실제 상속세 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/property-holding-tax-guide/">
+    <a class="cp-post-card" href="/blog/property-holding-tax-guide/" data-category="세금">
       <p class="cp-post-card-cat">세금</p>
       <h3>재산세·종합부동산세 계산법, 공시가격 12억이 갈림길인 이유</h3>
       <p>공시가격 구간별 재산세·종부세 계산 예시와 1주택자 세액공제 구조를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/average-stock-price-guide/">
+    <a class="cp-post-card" href="/blog/average-stock-price-guide/" data-category="투자">
       <p class="cp-post-card-cat">주식</p>
       <h3>주식 평단가 계산법, 물타기 전 꼭 확인해야 할 것</h3>
       <p>물타기로 평단가와 손실률이 어떻게 바뀌는지 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/pyeong-area-conversion-guide/">
+    <a class="cp-post-card" href="/blog/pyeong-area-conversion-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">부동산</p>
       <h3>평수 계산법, 전용면적과 공급면적을 헷갈리면 분양가 계산이 틀립니다</h3>
       <p>전용면적 84㎡가 왜 '34평형'인지, 제곱미터-평 변환과 분양가 계산 시 주의할 점을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/fixed-vs-variable-rate-loan-guide/">
+    <a class="cp-post-card" href="/blog/fixed-vs-variable-rate-loan-guide/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>고정금리 vs 변동금리 대출, 지금 시점엔 뭐가 유리할까</h3>
       <p>원리금균등상환 계산 예시로 고정금리와 변동금리의 월 상환액·총 상환액 차이를 비교했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/severance-pay-tax-calculation-guide/">
+    <a class="cp-post-card" href="/blog/severance-pay-tax-calculation-guide/" data-category="소득·노후">
       <p class="cp-post-card-cat">퇴직·급여</p>
       <h3>퇴직금 계산법, 세전세후 실수령액은 얼마나 차이날까</h3>
       <p>근속연수별 퇴직소득세 계산 예시로 세전 퇴직금과 실수령액 차이를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/unranked-subscription-guide/">
+    <a class="cp-post-card" href="/blog/unranked-subscription-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>무순위 청약(줍줍) 자격 조건과 신청 방법, 2026년 기준</h3>
       <p>2025년 개정으로 무주택세대구성원으로 다시 제한된 무순위 청약 자격과 신청 절차를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/deposit-vs-savings-comparison-guide/">
+    <a class="cp-post-card" href="/blog/deposit-vs-savings-comparison-guide/" data-category="금융·예적금">
       <p class="cp-post-card-cat">예적금</p>
       <h3>예금 vs 적금, 같은 돈이면 뭐가 더 유리할까</h3>
       <p>같은 총액·같은 금리 기준으로 정기예금과 정기적금의 실제 이자를 계산해 비교했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/family-gift-tax-exemption-guide/">
+    <a class="cp-post-card" href="/blog/family-gift-tax-exemption-guide/" data-category="세금">
       <p class="cp-post-card-cat">세금</p>
       <h3>가족간 증여세 면제한도, 2026년 기준 정리</h3>
       <p>관계별 증여재산공제 한도와 10년 합산과세 원칙을 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/salary-net-pay-by-bracket/">
+    <a class="cp-post-card" href="/blog/salary-net-pay-by-bracket/" data-category="소득·노후">
       <p class="cp-post-card-cat">월급</p>
       <h3>연봉 실수령액표 2026 — 3000만원부터 1억까지 구간별 정리</h3>
       <p>연봉 구간별로 실수령액 비중이 왜 다르게 나오는지 4대보험·소득세 공제 구조로 설명합니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/mortgage-monthly-payment-by-amount/">
+    <a class="cp-post-card" href="/blog/mortgage-monthly-payment-by-amount/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>주택담보대출 금액별 월 상환액표 — 1억부터 7억까지 금리별 비교</h3>
       <p>대출금액·금리·상환방식에 따라 월 상환액이 어떻게 달라지는지 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/subscription-score-by-tier-strategy/">
+    <a class="cp-post-card" href="/blog/subscription-score-by-tier-strategy/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>청약가점 30점대·40점대·50점대, 점수별로 뭘 준비해야 할까</h3>
       <p>가점 구간별로 노려볼 수 있는 추첨제·특별공급·무순위 청약 전략을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/newlywed-first-home-special-supply-guide/">
+    <a class="cp-post-card" href="/blog/newlywed-first-home-special-supply-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>신혼부부·생애최초 특별공급, 우선공급과 일반공급은 어떻게 다를까</h3>
       <p>소득기준 구조와 우선공급·일반공급 배정 방식, 중복 지원 가능 여부를 자세히 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/long-term-holding-deduction-guide/">
+    <a class="cp-post-card" href="/blog/long-term-holding-deduction-guide/" data-category="세금">
       <p class="cp-post-card-cat">세금</p>
       <h3>1주택자 장기보유특별공제, 몇 년 살아야 양도세가 얼마나 줄어들까</h3>
       <p>보유기간·거주기간 기준 공제 구조와 비과세와 헷갈리지 않는 법을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ex-dividend-date-guide/">
+    <a class="cp-post-card" href="/blog/ex-dividend-date-guide/" data-category="투자">
       <p class="cp-post-card-cat">주식</p>
       <h3>배당락일이란? 배당 못 받고 세금만 내는 실수 피하는 법</h3>
       <p>배당락일과 배당기준일 차이, 배당을 받으려면 언제까지 매수해야 하는지 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/home-buying-budget-guide/">
+    <a class="cp-post-card" href="/blog/home-buying-budget-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">부동산</p>
       <h3>내 집 마련, LTV·DSR 중 뭐가 발목 잡는지 미리 알아야 하는 이유</h3>
       <p>보유 현금·소득 기준 매수 가능 가격 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/commercial-lease-converted-deposit-guide/">
+    <a class="cp-post-card" href="/blog/commercial-lease-converted-deposit-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">부동산</p>
       <h3>상가 임대차, 환산보증금 기준 넘으면 보호 못 받는 이유</h3>
       <p>지역별 환산보증금 기준과 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/kelly-criterion-investing-guide/">
+    <a class="cp-post-card" href="/blog/kelly-criterion-investing-guide/" data-category="투자">
       <p class="cp-post-card-cat">투자전략</p>
       <h3>켈리 공식으로 본 "몰빵 투자"가 위험한 이유</h3>
       <p>승률·손익비 기준 켈리 공식 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/retirement-fund-reality-check/">
+    <a class="cp-post-card" href="/blog/retirement-fund-reality-check/" data-category="소득·노후">
       <p class="cp-post-card-cat">노후준비</p>
       <h3>은퇴자금 30억이 필요하다는데, 지금부터 매달 얼마씩 모아야 할까</h3>
       <p>희망 은퇴 생활비 기준 필요 은퇴자금과 매월 저축액 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/dividend-tax-guide/">
+    <a class="cp-post-card" href="/blog/dividend-tax-guide/" data-category="투자">
       <p class="cp-post-card-cat">주식</p>
       <h3>배당주 투자, 배당소득세부터 계산 안 하면 세후 수익률에 실망하는 이유</h3>
       <p>배당소득세 15.4% 반영 세후 배당금 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/first-home-acquisition-tax-guide/">
+    <a class="cp-post-card" href="/blog/first-home-acquisition-tax-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">부동산</p>
       <h3>취득세, 집이 1채냐 2채냐에 따라 세금이 8배까지 차이나는 이유</h3>
       <p>주택 수와 조정대상지역 여부에 따른 취득세율 차이를 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/brokerage-fee-guide/">
+    <a class="cp-post-card" href="/blog/brokerage-fee-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">부동산</p>
       <h3>부동산 중개수수료, 상한요율만 알아도 흥정 가능한 이유</h3>
       <p>거래금액 구간별 중개수수료 상한요율 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/global-stock-tax-guide/">
+    <a class="cp-post-card" href="/blog/global-stock-tax-guide/" data-category="투자">
       <p class="cp-post-card-cat">해외주식</p>
       <h3>해외주식 양도소득세, 250만원 공제만 믿고 안심하면 안 되는 이유</h3>
       <p>250만원 공제 후 22% 세율 계산 예시와 신고 시 놓치기 쉬운 부분을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/exchange-rate-preferential-guide/">
+    <a class="cp-post-card" href="/blog/exchange-rate-preferential-guide/" data-category="금융·예적금">
       <p class="cp-post-card-cat">환율</p>
       <h3>환전 우대율 90%, 숫자만 보고 환전소 고르면 손해 보는 이유</h3>
       <p>우대율과 스프레드를 함께 계산해야 실제 환전 금액 차이를 알 수 있습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/compound-vs-simple-savings/">
+    <a class="cp-post-card" href="/blog/compound-vs-simple-savings/" data-category="금융·예적금">
       <p class="cp-post-card-cat">예적금</p>
       <h3>예적금 복리 vs 단리, 5년·10년 후 실제로 얼마나 차이날까?</h3>
       <p>연 4% 상품 기준 단리·연복리·월복리 실수령 이자를 구간별로 직접 계산해 비교했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/loan-prepayment-fee/">
+    <a class="cp-post-card" href="/blog/loan-prepayment-fee/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>중도상환수수료, 계산 안 하고 대환했다간 오히려 손해 보는 이유</h3>
       <p>금리가 낮아졌다고 무조건 대환하면 손해일 수 있습니다. 손익분기 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/yearend-tax-settlement-deduction/">
+    <a class="cp-post-card" href="/blog/yearend-tax-settlement-deduction/" data-category="세금">
       <p class="cp-post-card-cat">세금</p>
       <h3>2025년 귀속 연말정산, 작년과 달라진 공제 항목 놓치면 손해</h3>
       <p>주택청약저축 공제 한도 인상, 6세 이하 의료비 공제 한도 폐지 등 달라진 점을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/first-mortgage-checklist/">
+    <a class="cp-post-card" href="/blog/first-mortgage-checklist/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>생애 첫 주택담보대출, 계약금 넣기 전 반드시 확인할 체크리스트</h3>
       <p>디딤돌대출·보금자리론 조건 비교와 중도상환수수료·부대비용 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/dsr-dti-loan-limit/">
+    <a class="cp-post-card" href="/blog/dsr-dti-loan-limit/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>스트레스 DSR 3단계 이후 대출 한도, 왜 이렇게 줄었을까?</h3>
       <p>2025년 7월 시행된 스트레스 DSR 3단계로 대출 한도가 얼마나 줄었는지 예시로 확인해보세요.</p>
     </a>
-    <a class="cp-post-card" href="/blog/parking-account-interest/">
+    <a class="cp-post-card" href="/blog/parking-account-interest/" data-category="금융·예적금">
       <p class="cp-post-card-cat">예적금</p>
       <h3>파킹통장 "최고 연 3%"의 함정, 실제 받는 이자는 얼마일까</h3>
       <p>구간별 금리 구조 때문에 광고 금리와 실제 이자가 다른 이유를 계산 예시로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/deposit-protection-limit/">
+    <a class="cp-post-card" href="/blog/deposit-protection-limit/" data-category="금융·예적금">
       <p class="cp-post-card-cat">예적금</p>
       <h3>예금자보호 한도 1억원, 저축은행 고금리 특판 안전하게 담는 법</h3>
       <p>2025년 9월부터 1억원으로 상향된 예금자보호 한도의 적용 원리와 분산예치 전략을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/retirement-pension-irp-dc-db/">
+    <a class="cp-post-card" href="/blog/retirement-pension-irp-dc-db/" data-category="소득·노후">
       <p class="cp-post-card-cat">노후준비</p>
       <h3>IRP·연금저축 세액공제, 900만원 한도의 함정</h3>
       <p>연금저축에만 900만원 넣었다가 한도 초과로 손해 보는 경우가 있습니다. DB·DC형 차이도 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/credit-score-boost-tips/">
+    <a class="cp-post-card" href="/blog/credit-score-boost-tips/" data-category="대출·신용">
       <p class="cp-post-card-cat">신용관리</p>
       <h3>신용점수 관리, 대출 금리를 실제로 낮추는 방법과 흔한 오해</h3>
       <p>점수 구간별 금리 차이, 신용카드 해지·다중조회에 대한 오해와 실전 관리법을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/debt-restructuring-refinancing/">
+    <a class="cp-post-card" href="/blog/debt-restructuring-refinancing/" data-category="대출·신용">
       <p class="cp-post-card-cat">대출</p>
       <h3>다중채무 정리, 2026년 개편된 햇살론과 채무조정 실전 가이드</h3>
       <p>2026년 통합 개편된 햇살론 일반·특례보증 조건과 개인워크아웃·개인회생 선택 기준을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/youth-subsidy-conditions/">
+    <a class="cp-post-card" href="/blog/youth-subsidy-conditions/" data-category="정부지원">
       <p class="cp-post-card-cat">정부 지원금</p>
       <h3>청년도약계좌 신규가입 종료, 2026년엔 뭘 알아봐야 할까</h3>
       <p>후속 상품 청년미래적금과 청년내일저축계좌·청년월세지원까지 2026년 기준으로 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-subscription-terms-guide/">
+    <a class="cp-post-card" href="/blog/ipo-subscription-terms-guide/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 첫 청약, 신청 버튼 누르기 전에 몰랐던 것들</h3>
       <p>공모가·희망밴드·의무보유확약 등 핵심 용어와 첫 청약 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-allocation-methods/">
+    <a class="cp-post-card" href="/blog/ipo-allocation-methods/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 경쟁률 1000:1인데 왜 한 주도 못 받았을까</h3>
       <p>비례배정은 경쟁률이 높으면 소수점 배정으로 0주가 되기도 합니다. 계산 예시로 확인해보세요.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-deposit-calculation/">
+    <a class="cp-post-card" href="/blog/ipo-deposit-calculation/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 청약증거금, 증거금율 50%만 믿고 계산하면 안 되는 이유</h3>
       <p>일부 종목은 증거금율이 100%라 신청 가능 수량이 절반으로 줄어듭니다. 계산 예시를 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-listing-day-strategy/">
+    <a class="cp-post-card" href="/blog/ipo-listing-day-strategy/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 따상만 기대하고 상장일 매도 전략 없이 들어가면 안 되는 이유</h3>
       <p>따상은 예외적인 결과입니다. 시나리오별 수익률 계산 예시와 상장일 매도 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/housing-subscription-score-guide/">
+    <a class="cp-post-card" href="/blog/housing-subscription-score-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>청약가점 84점 만점 계산법, 부모님 세대편입 전에 확인할 것</h3>
       <p>부양가족 점수를 올리려다 무주택 자격 자체를 잃는 경우가 있습니다. 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/subscription-account-priority/">
+    <a class="cp-post-card" href="/blog/subscription-account-priority/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>청약 예치금, 신청 전날까지 채워야 인정됩니다 — 1순위 조건 정리</h3>
       <p>청약통장 1순위 조건과 예치금 관련 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/special-supply-guide/">
+    <a class="cp-post-card" href="/blog/special-supply-guide/" data-category="부동산·청약">
       <p class="cp-post-card-cat">청약</p>
       <h3>신생아 특별공급까지, 5가지 특별공급 중 나에게 맞는 유형은</h3>
       <p>2026년 6월 신설된 신생아 특별공급을 포함해 유형별 자격 요건을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-vs-stock-investing/">
+    <a class="cp-post-card" href="/blog/ipo-vs-stock-investing/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 청약, 자금 회전율까지 계산하면 생각보다 수익률이 낮은 이유</h3>
       <p>증거금이 묶이는 기간의 기회비용까지 계산하면 실제 수익률은 낮아질 수 있습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/kospi-kosdaq-listing-process/">
+    <a class="cp-post-card" href="/blog/kospi-kosdaq-listing-process/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>기술특례상장 기업, 보호예수 해제일을 모르고 장기 보유하면 안 되는 이유</h3>
       <p>코스피·코스닥 상장 절차와 기술특례상장·스팩 투자 시 실무 함정을 정리했습니다.</p>
     </a>
-    <a class="cp-post-card" href="/blog/ipo-competition-rate-guide/">
+    <a class="cp-post-card" href="/blog/ipo-competition-rate-guide/" data-category="투자">
       <p class="cp-post-card-cat">공모주</p>
       <h3>공모주 경쟁률만 보고 투자했다가 상장일 급락하는 이유</h3>
       <p>경쟁률과 함께 확인해야 할 의무보유확약 비율, 유통가능물량을 계산 예시로 정리했습니다.</p>
@@ -305,6 +316,33 @@ try {
   <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
   </div>
 </footer>
+
+<script>
+(function () {
+  var filter = document.getElementById("blogCatFilter");
+  var grid = document.getElementById("blogPostGrid");
+  if (!filter || !grid) return;
+  var chips = filter.querySelectorAll(".cp-cat-chip");
+  var cards = grid.querySelectorAll(".cp-post-card");
+
+  filter.addEventListener("click", function (e) {
+    var chip = e.target.closest(".cp-cat-chip");
+    if (!chip) return;
+    var cat = chip.getAttribute("data-cat");
+
+    chips.forEach(function (c) {
+      var active = c === chip;
+      c.classList.toggle("is-active", active);
+      c.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    cards.forEach(function (card) {
+      var show = cat === "전체" || card.getAttribute("data-category") === cat;
+      card.classList.toggle("cp-post-card--hidden", !show);
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
