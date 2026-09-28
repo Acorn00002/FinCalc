@@ -1022,11 +1022,11 @@
 
     if (isNaN(joinDate.getTime()) || isNaN(leaveDate.getTime())) {
       showToast("ph-warning-circle", "입사일자와 퇴사일자를 입력해주세요");
-      return;
+      return false;
     }
     if (leaveDate <= joinDate) {
       showToast("ph-warning-circle", "퇴사일자는 입사일자보다 뒤여야 해요");
-      return;
+      return false;
     }
 
     var baseWage3m = Number(digitsOnly(baseWage3mInput.value)) || 0;
@@ -1042,7 +1042,7 @@
     /* 재직일수가 365일 미만이면 법정 퇴직금 지급 대상이 아님 */
     if (D < 365) {
       renderIneligible(D);
-      return;
+      return true;
     }
 
     /* 퇴사일 기준 직전 3개월의 실제 총 일수 M (달력 기준 자동 연산) */
@@ -1071,6 +1071,7 @@
     });
 
     showToast("ph-check-circle", "퇴직금 계산이 완료됐어요");
+    return baseWage3m > 0;
   }
 
   /* ---------- Render: 1년 미만 근속 — 지급 대상 아님 ---------- */
@@ -1143,11 +1144,14 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", function(){
+  function runTrackedCalculation(){
     try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "severance" }); } catch (e) {}
-    calculateSeverancePay();
-    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "severance" }); } catch (e) {}
-  });
+    if (calculateSeverancePay() === true) {
+      try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "severance" }); } catch (e) {}
+    }
+  }
+
+  calcBtn.addEventListener("click", runTrackedCalculation);
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");

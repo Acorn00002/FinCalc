@@ -1022,7 +1022,7 @@
   liveFormat(nonTaxableInput, null);
   liveFormat(priorGiftAmountInput, null);
   liveFormat(priorGiftTaxPaidInput, null);
-  giftAmountInput.addEventListener("keydown", function(e){ if (e.key === "Enter") calculateGiftTax(); });
+  giftAmountInput.addEventListener("keydown", function(e){ if (e.key === "Enter") runTrackedCalculation(); });
 
   /* ---------- Quick add buttons ---------- */
   document.querySelectorAll(".quick-btn").forEach(function(btn){
@@ -1060,7 +1060,7 @@
     if (giftAmount <= 0) {
       showToast("ph-warning-circle", "증여 금액을 입력해주세요");
       giftAmountInput.focus();
-      return;
+      return false;
     }
 
     /* 1) 10년 합산: 과거 동일인 증여액을 현재 증여액에 합산 */
@@ -1108,6 +1108,7 @@
     });
 
     showToast("ph-check-circle", "증여세 계산이 완료됐어요");
+    return true;
   }
 
   /* ---------- Render receipt-style breakdown ---------- */
@@ -1165,11 +1166,14 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", function(){
+  function runTrackedCalculation(){
     try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "gift-tax" }); } catch (e) {}
-    calculateGiftTax();
-    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "gift-tax" }); } catch (e) {}
-  });
+    if (calculateGiftTax() === true) {
+      try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "gift-tax" }); } catch (e) {}
+    }
+  }
+
+  calcBtn.addEventListener("click", runTrackedCalculation);
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");

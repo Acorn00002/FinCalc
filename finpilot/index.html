@@ -24,7 +24,11 @@ try {
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      gtag('config', 'G-HWY33CNTB1');
+      // The searchable /calculators/* landing page owns the page_view when this
+      // app is embedded. Direct visits to /finpilot/ still record normally.
+      gtag('config', 'G-HWY33CNTB1', {
+        send_page_view: window.self === window.top
+      });
     </script>
     <title>주식 물타기 계산기 & 평단가 계산기 | FinCalc Pro 실시간 평균단가 시뮬레이터</title>
     <meta name="description" content="주식 물타기 및 평단가 계산기 원탑! 토스 스타일의 직관적인 UI로 실시간 평균단가와 예상 수익률을 시뮬레이션해 보세요. 복리, 켈리 공식, 환율 계산기도 함께 제공합니다.">

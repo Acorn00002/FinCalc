@@ -1077,11 +1077,11 @@
     if (transferValue <= 0) {
       showToast("ph-warning-circle", "양도가액을 입력해주세요");
       transferValueInput.focus();
-      return;
+      return false;
     }
     if (isNaN(acquisitionDate.getTime()) || isNaN(transferDate.getTime())) {
       showToast("ph-warning-circle", "취득일자와 양도일자를 입력해주세요");
-      return;
+      return false;
     }
 
     /* 보유기간(년) — 취득일자와 양도일자의 차이 */
@@ -1102,7 +1102,7 @@
       // 양도가액 12억 이하는 전액 비과세
       renderExemptResult();
       showToast("ph-check-circle", "1세대 1주택 비과세 대상이에요");
-      return;
+      return true;
     }
 
     /* 12억 초과분만 과세 대상으로 안분, 비과세 요건 미충족 시에는 전체 양도차익이 과세대상 */
@@ -1137,6 +1137,7 @@
     });
 
     showToast("ph-check-circle", "양도소득세 계산이 완료됐어요");
+    return true;
   }
 
   /* ---------- Render: 1세대 1주택 완전 비과세 ---------- */
@@ -1218,11 +1219,14 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", function(){
+  function runTrackedCalculation(){
     try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "gains-tax" }); } catch (e) {}
-    calculateCapitalGainsTax();
-    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "gains-tax" }); } catch (e) {}
-  });
+    if (calculateCapitalGainsTax() === true) {
+      try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "gains-tax" }); } catch (e) {}
+    }
+  }
+
+  calcBtn.addEventListener("click", runTrackedCalculation);
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");

@@ -1138,7 +1138,7 @@
   liveFormat(otherDeductionInput, null);
   liveFormat(priorGiftAmountInput, null);
   liveFormat(priorGiftTaxPaidInput, null);
-  totalEstateInput.addEventListener("keydown", function(e){ if (e.key === "Enter") calculateInheritanceTax(); });
+  totalEstateInput.addEventListener("keydown", function(e){ if (e.key === "Enter") runTrackedCalculation(); });
 
   /* ---------- Quick add buttons ---------- */
   document.querySelectorAll(".quick-btn").forEach(function(btn){
@@ -1180,7 +1180,7 @@
     if (totalEstate <= 0) {
       showToast("ph-warning-circle", "상속재산가액을 입력해주세요");
       totalEstateInput.focus();
-      return;
+      return false;
     }
 
     /* 10년 이내 사전증여재산 합산 시, 법정상속분 계산의 기준이 되는 총 상속재산도 함께 늘어남 */
@@ -1244,6 +1244,7 @@
     });
 
     showToast("ph-check-circle", "상속세 계산이 완료됐어요");
+    return true;
   }
 
   /* ---------- Render: financial flow strip ---------- */
@@ -1320,11 +1321,14 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", function(){
+  function runTrackedCalculation(){
     try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "inheritance-tax" }); } catch (e) {}
-    calculateInheritanceTax();
-    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "inheritance-tax" }); } catch (e) {}
-  });
+    if (calculateInheritanceTax() === true) {
+      try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "inheritance-tax" }); } catch (e) {}
+    }
+  }
+
+  calcBtn.addEventListener("click", runTrackedCalculation);
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");

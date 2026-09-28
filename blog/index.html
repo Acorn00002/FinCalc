@@ -348,6 +348,12 @@ try {
       var show = cat === "전체" || card.getAttribute("data-category") === cat;
       card.classList.toggle("cp-post-card--hidden", !show);
     });
+
+    try {
+      if (typeof gtag === "function") {
+        gtag("event", "blog_category_click", { category: cat });
+      }
+    } catch (err) {}
   });
 })();
 </script>

@@ -12,6 +12,14 @@ function getCurrencySymbol() {
     return document.getElementById('currency-select').value === 'USD' ? '$ ' : '₩ ';
 }
 
+function trackCalculatorEvent(calculatorId, eventName) {
+    try {
+        if (typeof gtag === 'function') {
+            gtag('event', eventName, { calculator_id: calculatorId });
+        }
+    } catch (e) {}
+}
+
 // Table Generator Helper
 function generateTableHtml(years, principalData, profitData, taxRate = 0) {
     const tt = typeof t === 'function' ? t : (key) => key;
@@ -316,6 +324,8 @@ function calculateKelly(skipHistory = false) {
 
 // 4. 평단가(물타기) 계산기 - 인라인 양방향 듀얼 인풋 실시간 시뮬레이터
 (function () {
+    var averagePriceTracked = false;
+
     function getAvgEls() {
         const currentPrice = document.getElementById('avg-current-price');
         if (!currentPrice) return null;
@@ -429,6 +439,12 @@ function calculateKelly(skipHistory = false) {
                 'avg-add-qty': els.addQty.value
             };
             addHistoryRecord('average-price', '평단가(물타기)', title, params);
+        }
+
+        if (!averagePriceTracked) {
+            averagePriceTracked = true;
+            trackCalculatorEvent('average-price', 'calc_start');
+            trackCalculatorEvent('average-price', 'calc_complete');
         }
     }
 
@@ -3478,12 +3494,12 @@ document.addEventListener('DOMContentLoaded', () => {
         var resultEl = document.getElementById("pyeongResultValue");
         if (!resultEl) return;
         resultEl.innerText = formatResult(Math.round(sqm * 100) / 100) + "㎡ = " + formatResult(Math.round(pyeong * 100) / 100) + "평";
-        // pyeong has no discrete calculate button (converts live on input), so we
-        // fire a single calc_complete the first time a real conversion renders,
-        // instead of once per keystroke.
-        if (!pyeongTracked && sqm > 0 && typeof gtag === "function") {
+        // pyeong has no discrete calculate button (converts live on input), so
+        // start/complete fire once, in order, on the first valid conversion.
+        if (!pyeongTracked && sqm > 0) {
             pyeongTracked = true;
-            try { gtag("event", "calc_complete", { calculator_id: "pyeong" }); } catch (e) {}
+            trackCalculatorEvent('pyeong', 'calc_start');
+            trackCalculatorEvent('pyeong', 'calc_complete');
         }
     }
 
@@ -4080,24 +4096,15 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 // ---------- Calculator usage tracking (GA4) ----------
-// Wraps each calculate function to fire calc_start/calc_complete without touching
-// the calculation logic itself. calc_complete fires whenever the wrapped function
-// returns (including early-return validation failures), so it measures "the
-// calculate action ran" rather than strictly "a valid result was shown".
+// Wraps button-based calculators without changing their calculation logic.
+// calc_complete is emitted only when a successful calculation writes a history
+// record (the common success path). Programmatic history restores pass true as
+// the first argument and are intentionally excluded from usage tracking.
 (function () {
-    function trackCalcEvent(calculatorId, eventName) {
-        try {
-            if (typeof gtag === "function") {
-                gtag("event", eventName, { calculator_id: calculatorId });
-            }
-        } catch (e) {}
-    }
-
     var CALC_FN_TO_ID = {
         calculateSimpleCompound: "compound-simple",
         calculatePeriodicCompound: "compound-periodic",
         calculateGoalPlanner: "goal-planner",
-        calculateAveragePrice: "water-ratio",
         calculateKelly: "kelly",
         calculateROI: "roi",
         calculatePercentage: "roi",
@@ -4131,13 +4138,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof original !== "function") return;
         var calculatorId = CALC_FN_TO_ID[fnName];
         window[fnName] = function () {
-            trackCalcEvent(calculatorId, "calc_start");
+            if (arguments[0] === true) {
+                return original.apply(this, arguments);
+            }
+
+            trackCalculatorEvent(calculatorId, "calc_start");
+
+            var completed = false;
+            var originalAddHistory = window.addHistoryRecord;
+            if (typeof originalAddHistory === "function") {
+                window.addHistoryRecord = function () {
+                    completed = true;
+                    return originalAddHistory.apply(this, arguments);
+                };
+            }
+
             var result;
             try {
                 result = original.apply(this, arguments);
             } finally {
-                trackCalcEvent(calculatorId, "calc_complete");
+                if (typeof originalAddHistory === "function") {
+                    window.addHistoryRecord = originalAddHistory;
+                }
             }
+
+            // The percentage helper has no history record. Count it only when
+            // both user inputs are present; blank fields must never complete.
+            if (fnName === "calculatePercentage") {
+                var pctBase = document.getElementById("pct-base");
+                var pctRate = document.getElementById("pct-rate");
+                completed = !!(pctBase && pctRate && pctBase.value.trim() && pctRate.value.trim());
+            }
+
+            // A sub-365-day severance result is a legitimate rendered outcome
+            // even though it is not saved. For a normal result, base wage is a
+            // required user input for analytics completion purposes.
+            if (fnName === "calculateSeverance") {
+                var joinInput = document.getElementById("sevJoinDate");
+                var leaveInput = document.getElementById("sevLeaveDate");
+                var baseWageInput = document.getElementById("sevBaseWage3m");
+                var joinDate = new Date(joinInput ? joinInput.value : "");
+                var leaveDate = new Date(leaveInput ? leaveInput.value : "");
+                var validDates = !isNaN(joinDate.getTime()) && !isNaN(leaveDate.getTime()) && leaveDate > joinDate;
+                if (!validDates) {
+                    completed = false;
+                } else if (Math.round((leaveDate - joinDate) / (24 * 60 * 60 * 1000)) < 365) {
+                    completed = true;
+                } else if (!baseWageInput || !baseWageInput.value.trim()) {
+                    completed = false;
+                }
+            }
+
+            if (completed) trackCalculatorEvent(calculatorId, "calc_complete");
             return result;
         };
     });
