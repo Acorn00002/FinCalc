@@ -25,15 +25,53 @@
     return null;
   }
 
+  // calculator_id/article_slug are derived from the internal path only — never
+  // from link text — so no free-text ever reaches analytics.
+  function extractCalculatorId(path) {
+    var m = path.match(/^\/calculators\/([a-z0-9-]+)\/?/);
+    if (m) return m[1];
+    m = path.match(/^\/taxpilot\/([a-z0-9-]+)\.html/);
+    if (m) return m[1];
+    return null;
+  }
+
+  function extractArticleSlug(path) {
+    var m = path.match(/^\/blog\/([a-z0-9-]+)\/?/);
+    return m ? m[1] : null;
+  }
+
   function track(el) {
     try {
       if (typeof gtag !== "function") return;
       var targetPath = normalizeInternalPath(el.getAttribute("href") || "");
       var linkType = classify(targetPath);
       if (!linkType) return;
+
+      var sourcePage = location.pathname;
+      var inBlogGrid = !!el.closest("#blogPostGrid, .cp-post-card");
+      var inCtaBox = !!el.closest(".cp-cta");
+
+      if (inBlogGrid) {
+        gtag("event", "article_click", {
+          article_slug: extractArticleSlug(targetPath),
+          target_path: targetPath,
+          source_page: sourcePage
+        });
+        return;
+      }
+
+      if (inCtaBox && linkType === "calculator") {
+        gtag("event", "calculator_cta_click", {
+          calculator_id: extractCalculatorId(targetPath),
+          target_path: targetPath,
+          source_page: sourcePage
+        });
+        return;
+      }
+
       gtag("event", linkType === "article" ? "related_article_click" : "related_calculator_click", {
         target_path: targetPath,
-        source_path: location.pathname
+        source_page: sourcePage
       });
     } catch (e) {}
   }
