@@ -1165,7 +1165,11 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", calculateGiftTax);
+  calcBtn.addEventListener("click", function(){
+    try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "gift-tax" }); } catch (e) {}
+    calculateGiftTax();
+    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "gift-tax" }); } catch (e) {}
+  });
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");
@@ -1184,6 +1188,8 @@
   });
 })();
 </script>
+
+<script src="/js/link-tracking.js" defer></script>
 
 </body>
 </html>

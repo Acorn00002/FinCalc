@@ -1320,7 +1320,11 @@
     }).join("");
   }
 
-  calcBtn.addEventListener("click", calculateInheritanceTax);
+  calcBtn.addEventListener("click", function(){
+    try { if (typeof gtag === "function") gtag("event", "calc_start", { calculator_id: "inheritance-tax" }); } catch (e) {}
+    calculateInheritanceTax();
+    try { if (typeof gtag === "function") gtag("event", "calc_complete", { calculator_id: "inheritance-tax" }); } catch (e) {}
+  });
 
   /* ---------- Toast ---------- */
   var toast = document.getElementById("toast");
@@ -1339,6 +1343,8 @@
   });
 })();
 </script>
+
+<script src="/js/link-tracking.js" defer></script>
 
 </body>
 </html>

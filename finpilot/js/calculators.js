@@ -3473,10 +3473,18 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
     var SQM_TO_PYEONG = 0.3025;
 
+    var pyeongTracked = false;
     function renderPyeongResult(sqm, pyeong) {
         var resultEl = document.getElementById("pyeongResultValue");
         if (!resultEl) return;
         resultEl.innerText = formatResult(Math.round(sqm * 100) / 100) + "㎡ = " + formatResult(Math.round(pyeong * 100) / 100) + "평";
+        // pyeong has no discrete calculate button (converts live on input), so we
+        // fire a single calc_complete the first time a real conversion renders,
+        // instead of once per keystroke.
+        if (!pyeongTracked && sqm > 0 && typeof gtag === "function") {
+            pyeongTracked = true;
+            try { gtag("event", "calc_complete", { calculator_id: "pyeong" }); } catch (e) {}
+        }
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -4068,5 +4076,69 @@ document.addEventListener('DOMContentLoaded', () => {
                 cashflowHint.innerText = formatKoreanUnit(parseNumber(cashflowInput.value));
             });
         }
+    });
+})();
+
+// ---------- Calculator usage tracking (GA4) ----------
+// Wraps each calculate function to fire calc_start/calc_complete without touching
+// the calculation logic itself. calc_complete fires whenever the wrapped function
+// returns (including early-return validation failures), so it measures "the
+// calculate action ran" rather than strictly "a valid result was shown".
+(function () {
+    function trackCalcEvent(calculatorId, eventName) {
+        try {
+            if (typeof gtag === "function") {
+                gtag("event", eventName, { calculator_id: calculatorId });
+            }
+        } catch (e) {}
+    }
+
+    var CALC_FN_TO_ID = {
+        calculateSimpleCompound: "compound-simple",
+        calculatePeriodicCompound: "compound-periodic",
+        calculateGoalPlanner: "goal-planner",
+        calculateAveragePrice: "water-ratio",
+        calculateKelly: "kelly",
+        calculateROI: "roi",
+        calculatePercentage: "roi",
+        calculateExchange: "exchange",
+        calculateDividends: "dividend",
+        calculateSalary: "salary",
+        calculateLoan: "loan",
+        calculateDeposit: "deposit",
+        calculateSavings: "savings",
+        calculateGiftTax: "gift-tax",
+        calculateInheritanceTax: "inheritance-tax",
+        calculateCapitalGainsTax: "gains-tax",
+        calculateInflation: "inflation",
+        calculateSeverance: "severance",
+        calculateEarlyTermination: "early-termination",
+        calculateRetirement: "retirement",
+        calculateLoanLimit: "loan-limit",
+        calculateAptBuyTax: "apt-buy",
+        calculateAptHoldingTax: "apt-tax",
+        calculateBrokerageFee: "brokerage",
+        calculateDepositConversion: "deposit-calc",
+        calculateSubscriptionScore: "subscription",
+        calculateHomeBudget: "home-budget",
+        calculateGlobalStockTax: "global-stock-tax",
+        calculateGlobalNet: "global-net",
+        calculateFinFunc: "fin-func"
+    };
+
+    Object.keys(CALC_FN_TO_ID).forEach(function (fnName) {
+        var original = window[fnName];
+        if (typeof original !== "function") return;
+        var calculatorId = CALC_FN_TO_ID[fnName];
+        window[fnName] = function () {
+            trackCalcEvent(calculatorId, "calc_start");
+            var result;
+            try {
+                result = original.apply(this, arguments);
+            } finally {
+                trackCalcEvent(calculatorId, "calc_complete");
+            }
+            return result;
+        };
     });
 })();

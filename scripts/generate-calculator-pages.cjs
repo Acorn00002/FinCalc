@@ -30,6 +30,14 @@ function renderHead(entry) {
   return [
     '<meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">',
+    "<!-- Google tag (gtag.js) -->",
+    '<script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></' + "script>",
+    "<script>",
+    "  window.dataLayer = window.dataLayer || [];",
+    "  function gtag(){dataLayer.push(arguments);}",
+    "  gtag('js', new Date());",
+    "  gtag('config', 'G-HWY33CNTB1');",
+    "</" + "script>",
     "<title>" + entry.title + "</title>",
     '<meta name="description" content="' + entry.description + '">',
     '<link rel="canonical" href="' + entry.canonical + '">',
@@ -122,7 +130,9 @@ function renderBody(slug, entry) {
     '    <a href="/contact/">문의하기</a>',
     '    <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>',
     "  </div>",
-    "</footer>"
+    "</footer>",
+    "",
+    '<script src="/js/link-tracking.js" defer></script>'
   ].join("\n");
 }
 
