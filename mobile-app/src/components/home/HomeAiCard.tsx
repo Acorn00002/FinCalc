@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Card from '../ui/Card';
@@ -114,7 +114,14 @@ function renderAnswer(raw: string, styles: ReturnType<typeof createStyles>) {
   });
 }
 
-export default function HomeAiCard() {
+type Props = {
+  /** 지원금 상세의 "신청 자격 AI에게 질문하기"에서 넘어온 요약 질문 — 있으면 autoAskNonce가
+   *  바뀔 때마다(같은 문구라도) 곧바로 질문을 보낸다. */
+  autoAskPrompt?: string;
+  autoAskNonce?: number;
+};
+
+export default function HomeAiCard({ autoAskPrompt, autoAskNonce }: Props) {
   const { colors } = useAppTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
   const { user, signInWithGoogle, getFreshIdToken } = useAuth();
@@ -177,6 +184,14 @@ export default function HomeAiCard() {
       setError(result.message);
     }
   };
+
+  const handledAskNonceRef = useRef(0);
+  useEffect(() => {
+    if (!autoAskNonce || autoAskNonce === handledAskNonceRef.current) return;
+    handledAskNonceRef.current = autoAskNonce;
+    if (autoAskPrompt) ask(autoAskPrompt);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoAskNonce, autoAskPrompt]);
 
   const confirmProposal = async () => {
     if (!proposal || !user) return;

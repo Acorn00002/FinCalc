@@ -1,11 +1,15 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import AppScreen from '../components/AppScreen';
 import HomeWelcomeRow from '../components/home/HomeWelcomeRow';
 import HomeAiCard from '../components/home/HomeAiCard';
 import HomeNewsPreview from '../components/home/HomeNewsPreview';
 import { useAppTheme } from '../context/ThemeContext';
 import type { ThemeColors } from '../constants/theme';
+import type { RootStackParamList } from '../navigation/types';
+
+type HomeRouteProp = RouteProp<RootStackParamList, 'Home'>;
 
 // index.html의 #view-home(웰컴 & 포인트 배지 → AI 자산파일럿 서포터 → 실시간 경제뉴스)을 그대로
 // 네이티브로 이식한 화면 — 예전엔 이 화면 전체가 WebView였는데, 스토어 심사(최소 기능 정책) 리스크를
@@ -15,6 +19,20 @@ export default function HomeScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 지원금 상세("신청 자격 AI에게 질문하기")에서 넘어올 때만 채워지는 값 — route.params는 같은
+  // 문구로 다시 navigate해도 매번 새 객체라, 그 변화를 감지해 nonce를 올려 AI 카드가 매번 다시
+  // 질문을 보내도록 한다(WebViewRouteScreen의 injectNonce와 동일한 패턴).
+  const route = useRoute<HomeRouteProp>();
+  const askNonceRef = useRef(0);
+  const [askNonce, setAskNonce] = useState(0);
+  const [askPrompt, setAskPrompt] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    if (!route.params?.aiAskPrompt) return;
+    askNonceRef.current += 1;
+    setAskNonce(askNonceRef.current);
+    setAskPrompt(route.params.aiAskPrompt);
+  }, [route.params]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -31,7 +49,7 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.brand} />}
       >
         <HomeWelcomeRow key={`welcome-${refreshKey}`} />
-        <HomeAiCard key={`ai-${refreshKey}`} />
+        <HomeAiCard key={`ai-${refreshKey}`} autoAskPrompt={askPrompt} autoAskNonce={askNonce} />
         <HomeNewsPreview key={`news-${refreshKey}`} />
         <Text style={styles.footer}>
           자산 파일럿은 투자 자문업이 아닌 정보 제공 및 계산 시뮬레이션 서비스입니다. 실제 투자·세무 의사결정 전 반드시

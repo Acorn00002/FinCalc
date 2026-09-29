@@ -13,10 +13,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NavigationProp } from '@react-navigation/native';
 import AppScreen from '../components/AppScreen';
 import { useAppTheme } from '../context/ThemeContext';
 import type { ThemeColors, RADIUS, SHADOW } from '../constants/theme';
 import { fetchFirestoreCollection } from '../lib/firestoreRest';
+import type { RootStackParamList } from '../navigation/types';
 import {
   SUBSIDY_CATEGORIES,
   SUBSIDY_EMPLOYMENT_OPTIONS,
@@ -78,6 +81,7 @@ function isSubsidyMatch(program: SubsidyProgram, filter: PersonalFilter): boolea
 // 하트 버튼은 누르면 "로그인 후 이용해주세요" 안내만 하고 실제 저장은 하지 않는다(Phase 3에서 붙일 예정).
 export default function SubsidyScreen() {
   const { colors, radius, shadow } = useAppTheme();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, radius, shadow, insets.bottom), [colors, radius, shadow, insets.bottom]);
 
@@ -147,6 +151,17 @@ export default function SubsidyScreen() {
   const onShare = useCallback((program: SubsidyProgram) => {
     Share.share({ message: `[${program.title}] ${program.applyUrl || ''}` }).catch(() => {});
   }, []);
+
+  // index.html의 askAiAboutSubsidy()를 그대로 이식 — 상세 시트를 닫고 홈으로 돌아가면서, 웹처럼
+  // 입력창에 채워주기만 하는 게 아니라 곧바로 AI에게 요약 질문을 보낸다.
+  const askAiAboutSubsidy = useCallback(
+    (program: SubsidyProgram) => {
+      setSelected(null);
+      const prompt = `'${program.title}' 지원금 신청 자격이 저한테 맞는지 확인해줘. 지원 내용: ${(program.benefits || '').slice(0, 200)}`;
+      navigation.navigate('Home', { aiAskPrompt: prompt });
+    },
+    [navigation]
+  );
 
   const summaryText = hasFilter
     ? [
@@ -325,6 +340,10 @@ export default function SubsidyScreen() {
                     <Text style={styles.applyBtnText}>신청하기</Text>
                   </Pressable>
                 </View>
+                <Pressable style={styles.aiAskBtn} onPress={() => askAiAboutSubsidy(selected)}>
+                  <Ionicons name="sparkles" size={15} color={colors.brand} />
+                  <Text style={styles.aiAskBtnText}>신청 자격 AI에게 질문하기</Text>
+                </Pressable>
               </ScrollView>
             ) : null}
           </Pressable>
@@ -508,6 +527,17 @@ function createStyles(colors: ThemeColors, radius: typeof RADIUS, shadow: typeof
       justifyContent: 'center',
     },
     applyBtnText: { fontSize: 14.5, fontWeight: '700', color: '#fff' },
+    aiAskBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: colors.brandSoft,
+      borderRadius: 14,
+      paddingVertical: 12,
+      marginTop: 10,
+    },
+    aiAskBtnText: { fontSize: 13, fontWeight: '700', color: colors.brand },
     fieldLabel: { fontSize: 13, fontWeight: '700', color: colors.ink2, marginBottom: 8, marginTop: 12 },
     ageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     chipsScroll: { gap: 8 },

@@ -6,7 +6,9 @@ import type { FinanceCategory } from '../data/financeProducts';
 // 별도 파일로 뺐다.
 export type RootStackParamList = {
   WebViewRoute: { url: string; injectOnLoad?: string };
-  Home: undefined;
+  /** aiAskPrompt는 지원금 상세의 "신청 자격 AI에게 질문하기" 버튼에서만 쓰인다 — 홈으로 돌아가면서
+   *  AI 카드에 요약 질문을 즉시 던지기 위한 값. */
+  Home: { aiAskPrompt?: string } | undefined;
   Calendar: undefined;
   Settings: undefined;
   Dictionary: undefined;
