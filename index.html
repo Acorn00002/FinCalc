@@ -189,6 +189,7 @@ try {
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
+<script src="js/subsidy-match.js"></script>
 <script>
   // ==================================================
   // 🔥 Firebase 프로젝트 설정 (Firebase Console > 프로젝트 설정 > 일반 > 내 앱 > SDK 설정 및 구성 에서 확인)
@@ -1564,9 +1565,16 @@ try {
 
   <div class="subsidy-hero">
     <h2 class="subsidy-hero-title">
-      <span id="subsidyHeroName">파일럿 형</span>님이 지금 받을 수 있는<br>
+      <span id="subsidyHeroName">파일럿 형</span>님이 우선 확인해볼 만한<br>
       정부지원금 <strong id="subsidyHeroCount">0</strong>건
     </h2>
+    <p class="subsidy-hero-sub" id="subsidyHeroSub">입력한 조건 기준의 참고 정보예요. 세부 자격은 공고문 확인이 필요해요.</p>
+  </div>
+  <p class="subsidy-disclaimer" id="subsidyDisclaimer"><span class="subsidy-beta-badge">Beta</span>입력 조건을 기준으로 우선순위를 정리한 참고용 결과입니다. 최종 자격과 신청 가능 여부는 공식 공고문을 확인해 주세요.</p>
+
+  <div class="subsidy-audience-tabs" id="subsidyAudienceTabs" role="tablist" aria-label="지원 대상 구분">
+    <button type="button" class="subsidy-audience-tab is-active" data-audience="personal" role="tab" aria-selected="true">개인 지원<small id="subsidyAudienceCountPersonal"></small></button>
+    <button type="button" class="subsidy-audience-tab" data-audience="business" role="tab" aria-selected="false">사업자·농어업 지원<small id="subsidyAudienceCountBusiness"></small></button>
   </div>
 
   <div class="subsidy-category-pills" id="subsidyCategoryPills"></div>
@@ -1580,6 +1588,7 @@ try {
 
   <div class="subsidy-card-list" id="subsidyCardList"></div>
   <div class="subsidy-empty-state" id="subsidyEmptyMsg" hidden></div>
+  <div class="subsidy-list-footer" id="subsidyListFooter"></div>
 </main>
 
 <main class="wrap app-view" id="view-ipo">
@@ -2223,6 +2232,8 @@ try {
         </button>
       </div>
     </div>
+    <div class="subsidy-step" data-step="1">
+    <p class="subsidy-step-indicator">기본 조건 · 1/3</p>
     <label class="admin-push-label">나이</label>
     <input type="number" class="admin-push-input" id="subsidyFilterAgeInput" min="0" max="120" placeholder="예: 29">
     <label class="admin-push-label">거주 지역</label>
@@ -2256,7 +2267,97 @@ try {
       <option value="대학생">대학생</option>
       <option value="무직">무직</option>
     </select>
-    <button type="button" class="calendar-detail-remind-btn-v2" id="subsidyFilterSaveBtn" style="margin-top:18px;">적용하기</button>
+    <div class="subsidy-step-nav">
+      <button type="button" class="subsidy-step-btn-soft" id="subsidyStepToExtraBtn">추가 조건 입력 (선택)</button>
+      <button type="button" class="subsidy-step-btn-primary" id="subsidyFilterSaveBtn">적용하기</button>
+    </div>
+    </div>
+
+    <!-- 추가 조건은 전부 선택 사항이다. 답하지 않아도 결과를 볼 수 있고, 이 기기(localStorage)에만 저장된다. -->
+    <div class="subsidy-step" data-step="2" hidden>
+      <p class="subsidy-step-indicator">추가 조건 (선택) · 2/3</p>
+      <h4 class="subsidy-step-title">지원 대상 · 소득 · 가구 · 재학</h4>
+      <p class="subsidy-step-desc">답한 만큼 추천 순위가 더 정확해져요. 건너뛰어도 결과를 볼 수 있어요.</p>
+
+      <span class="subsidy-q-label">지원 대상</span>
+      <div class="subsidy-chip-group" data-group="audience">
+        <button type="button" class="subsidy-chip" data-value="personal">개인으로 신청</button>
+        <button type="button" class="subsidy-chip" data-value="business">사업자·농어업 종사자</button>
+      </div>
+
+      <span class="subsidy-q-label">소득 구간 (대략)</span>
+      <p class="subsidy-step-desc">기준 중위소득(2026년, 보건복지부 고시): 1인 가구 월 약 256만원, 2인 가구 약 420만원. 가구 규모를 고려해 가장 가까운 구간을 골라주세요. 실제 심사는 사업별 기준(소득인정액·건강보험료 등)을 따라요.</p>
+      <div class="subsidy-chip-group" data-group="income">
+        <button type="button" class="subsidy-chip" data-value="50">중위소득 50% 이하 (1인 월 약 128만원 이하)</button>
+        <button type="button" class="subsidy-chip" data-value="100">50~100% (1인 월 약 128~256만원)</button>
+        <button type="button" class="subsidy-chip" data-value="150">100~150% (1인 월 약 256~385만원)</button>
+        <button type="button" class="subsidy-chip" data-value="over">150% 초과 (1인 월 약 385만원 초과)</button>
+        <button type="button" class="subsidy-chip" data-value="">잘 모르겠어요</button>
+      </div>
+
+      <span class="subsidy-q-label">가구 구성</span>
+      <div class="subsidy-chip-group" data-group="household">
+        <button type="button" class="subsidy-chip" data-value="single">1인 가구</button>
+        <button type="button" class="subsidy-chip" data-value="couple">부부·동거 (자녀 없음)</button>
+        <button type="button" class="subsidy-chip" data-value="pregnant">임신·출산 중 또는 예정</button>
+        <button type="button" class="subsidy-chip" data-value="kids">자녀와 함께</button>
+        <button type="button" class="subsidy-chip" data-value="singleParent">한부모 가구</button>
+        <button type="button" class="subsidy-chip" data-value="withFamily">부모님·가족과 함께 (자녀 없음)</button>
+      </div>
+
+      <span class="subsidy-q-label">재학 여부</span>
+      <p class="subsidy-step-desc">직업 상태와 별개로, 학교(대학원 포함)에 다니는 중인지 골라주세요. 고르지 않으면 재학생 전용 사업은 "추가 확인 필요"로 남아요.</p>
+      <div class="subsidy-chip-group" data-group="student">
+        <button type="button" class="subsidy-chip" data-value="enrolled">재학·휴학 중</button>
+        <button type="button" class="subsidy-chip" data-value="notEnrolled">재학 중 아님</button>
+      </div>
+
+      <div class="subsidy-step-nav">
+        <button type="button" class="subsidy-step-btn-ghost" data-nav="prev">이전</button>
+        <button type="button" class="subsidy-step-btn-ghost" id="subsidyStepSkipBtn">여기까지 적용</button>
+        <button type="button" class="subsidy-step-btn-soft" data-nav="next">다음</button>
+      </div>
+    </div>
+
+    <div class="subsidy-step" data-step="3" hidden>
+      <p class="subsidy-step-indicator">추가 조건 (선택) · 3/3</p>
+      <h4 class="subsidy-step-title">주거 · 신청 상태 · 특별 자격</h4>
+      <p class="subsidy-step-desc">해당하는 것만 골라주세요. 장애·보훈 등 민감한 정보는 이 기기에만 저장되고 분석 도구로 전송되지 않아요.</p>
+
+      <span class="subsidy-q-label">주거 형태</span>
+      <div class="subsidy-chip-group" data-group="housing">
+        <button type="button" class="subsidy-chip" data-value="owner">자가</button>
+        <button type="button" class="subsidy-chip" data-value="jeonse">전세</button>
+        <button type="button" class="subsidy-chip" data-value="monthly">월세</button>
+        <button type="button" class="subsidy-chip" data-value="family">부모님 집·기숙사 등</button>
+      </div>
+
+      <span class="subsidy-q-label">신청 상태</span>
+      <p class="subsidy-step-desc">고르지 않으면 신청이 끝났거나 중단된 사업은 "조건 불일치"로 분류돼요. 마감·중단 사업을 참고용으로 보고 싶을 때만 골라주세요.</p>
+      <div class="subsidy-chip-group" data-group="applyStatus">
+        <button type="button" class="subsidy-chip" data-value="open">신청 중</button>
+        <button type="button" class="subsidy-chip" data-value="upcoming">신청 예정</button>
+        <button type="button" class="subsidy-chip" data-value="closed">마감</button>
+        <button type="button" class="subsidy-chip" data-value="discontinued">신규 접수 중단</button>
+      </div>
+
+      <span class="subsidy-q-label">해당하는 특별 자격 (여러 개 선택 가능)</span>
+      <p class="subsidy-step-desc">"해당 없음"을 고르면 해당 자격 전용 사업을 불일치로 분류해요. 고르지 않으면 해당 사업은 "추가 확인 필요"로 남아요.</p>
+      <div class="subsidy-chip-group" data-group="special" data-multi="1">
+        <button type="button" class="subsidy-chip" data-value="__none">해당 없음</button>
+        <button type="button" class="subsidy-chip" data-value="disability">장애인</button>
+        <button type="button" class="subsidy-chip" data-value="veteran">보훈·군 복무 관련</button>
+        <button type="button" class="subsidy-chip" data-value="lowIncome">기초수급·차상위 등 취약계층</button>
+        <button type="button" class="subsidy-chip" data-value="multicultural">다문화·북한이탈</button>
+        <button type="button" class="subsidy-chip" data-value="victim">범죄·재난·산재·전세사기 피해</button>
+        <button type="button" class="subsidy-chip" data-value="careLeaver">보호종료·아동복지 대상</button>
+      </div>
+
+      <div class="subsidy-step-nav">
+        <button type="button" class="subsidy-step-btn-ghost" data-nav="prev">이전</button>
+        <button type="button" class="subsidy-step-btn-primary" id="subsidyExtraApplyBtn">적용하기</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2281,6 +2382,12 @@ try {
       <div class="subsidy-detail-benefit-box">
         <p class="subsidy-detail-benefit-eyebrow">지원 내용</p>
         <p class="subsidy-detail-benefit" id="subsidyDetailBenefit"></p>
+      </div>
+
+      <div class="subsidy-detail-fit" id="subsidyDetailFit" hidden>
+        <p class="subsidy-detail-fit-title"><i class="ph-duotone ph-scales"></i><span id="subsidyDetailFitGrade"></span></p>
+        <ul class="subsidy-detail-fit-list" id="subsidyDetailFitList"></ul>
+        <p class="subsidy-detail-fit-note">입력한 조건을 기준으로 한 참고용 안내예요. 세부 자격과 공고문 확인이 필요해요.</p>
       </div>
 
       <div class="subsidy-checklist" id="subsidyDetailChecklist">
@@ -4116,7 +4223,7 @@ try {
   var subsidyLoadedKey = "";
   var subsidyAutoPages = 0;
   var subsidyCursorRetried = false;     // invalid_cursor로 처음부터 다시 읽는 것은 한 번만(무한 반복 방지)
-  var SUBSIDY_API_LIMIT = 50;           // 서버도 최대 50건으로 제한한다
+  var SUBSIDY_API_LIMIT = 50;          // 서버도 최대 50건으로 제한한다
   var SUBSIDY_MIN_VISIBLE = 15;         // 화면에 보이는 결과가 이보다 적으면 다음 페이지를 이어 읽는다
   var SUBSIDY_MAX_AUTO_PAGES = 3;       // 자동 이어읽기는 조건당 최대 3페이지(150건)까지
 
@@ -4124,7 +4231,8 @@ try {
     var filter = loadSubsidyFilter();
     var p = { limit: SUBSIDY_API_LIMIT, sort: subsidySortMode === "latest" ? "latest" : "deadline", status: "all" };
     if (subsidyActiveCategory !== "all") p.category = subsidyActiveCategory;
-    if (filter.region) p.region = filter.region;       // 지역은 서버에서 먼저 거른다
+    // 지역은 서버에서 먼저 거른다. "조건 불일치 사업 보기"를 켠 동안에는 다른 지역 사업도 확인할 수 있게 지역 필터를 풀어서 읽는다.
+    if (filter.region && !subsidyShowMismatch) p.region = filter.region;
     return p;
   }
   function subsidyParamsKey(p){ return [p.category || "", p.region || "", p.sort].join("|"); }
@@ -4213,6 +4321,51 @@ try {
   var subsidySortMode = "deadline";
   var subsidyActiveCategory = "all";
 
+  // ---------- 적합도 판정(js/subsidy-match.js) 연동 ----------
+  // 소득·가구·주거·특별 자격은 민감한 정보라 이 기기의 localStorage에만 두고, Firestore·GA4로는 보내지 않는다.
+  var DEFAULT_SUBSIDY_EXTRA = { audience: "personal", income: "", household: "", housing: "", student: "", applyStatus: "", special: null };
+  var subsidyExtraFilter = null;
+  var subsidyAudienceTab = "personal";
+  var subsidyShowMismatch = false;
+  var SUBSIDY_PAGE_STEP = 15;
+  var subsidyCheckLimit = SUBSIDY_PAGE_STEP;
+  var subsidyMismatchLimit = SUBSIDY_PAGE_STEP;
+  var subsidyResultMap = {};
+
+  function loadSubsidyExtra(){
+    if (subsidyExtraFilter) return subsidyExtraFilter;
+    var stored = null;
+    try { stored = JSON.parse(localStorage.getItem("subsidyExtraFilter") || "null"); } catch(e) {}
+    subsidyExtraFilter = Object.assign({}, DEFAULT_SUBSIDY_EXTRA, stored || {});
+    if (subsidyExtraFilter.special !== null && !Array.isArray(subsidyExtraFilter.special)) subsidyExtraFilter.special = null;
+    subsidyAudienceTab = subsidyExtraFilter.audience === "business" ? "business" : "personal";
+    return subsidyExtraFilter;
+  }
+  function saveSubsidyExtra(extra){
+    subsidyExtraFilter = extra;
+    try { localStorage.setItem("subsidyExtraFilter", JSON.stringify(extra)); } catch(e) {}
+  }
+  function countSubsidyExtras(extra){
+    return (extra.income ? 1 : 0) + (extra.household ? 1 : 0) + (extra.housing ? 1 : 0) + (extra.student ? 1 : 0) + (extra.applyStatus ? 1 : 0) + (extra.special !== null ? 1 : 0);
+  }
+  function buildSubsidyUser(filter, extra){
+    var ageNum = (filter.age !== null && filter.age !== "" && !isNaN(Number(filter.age))) ? Number(filter.age) : null;
+    return {
+      age: ageNum, region: filter.region || "", employment: filter.employment || "",
+      income: extra.income || "", household: extra.household || "", housing: extra.housing || "",
+      student: extra.student || "", applyStatus: extra.applyStatus || "",
+      special: extra.special
+    };
+  }
+  function resetSubsidyPaging(){
+    subsidyCheckLimit = SUBSIDY_PAGE_STEP;
+    subsidyMismatchLimit = SUBSIDY_PAGE_STEP;
+  }
+  // 입력값(소득·가구·주거 등)은 보내지 않고, 정적인 상태값만 GA4로 보낸다.
+  function trackSubsidyEvent(name, params){
+    if (typeof gtag === "function") gtag("event", name, params || {});
+  }
+
   function renderSubsidyCategoryPills(){
     var wrap = document.getElementById("subsidyCategoryPills");
     if (!wrap) return;
@@ -4233,6 +4386,7 @@ try {
     wrap.querySelectorAll(".subsidy-category-pill").forEach(function(btn){
       btn.addEventListener("click", function(){
         subsidyActiveCategory = btn.getAttribute("data-cat");
+        resetSubsidyPaging();
         renderSubsidyCategoryPills();
         refreshSubsidyPrograms();
       });
@@ -4311,6 +4465,8 @@ try {
     if (filter.region) parts.push(filter.region + " 거주");
     if (filter.age) parts.push("만 " + filter.age + "세");
     if (filter.employment) parts.push(filter.employment + " 기준");
+    var extraCount = countSubsidyExtras(loadSubsidyExtra());
+    if (extraCount) parts.push("추가 조건 " + extraCount + "개");
     var span = document.getElementById("subsidyFilterSummarySpan");
     if (span) span.textContent = parts.length ? parts.join(" · ") : "조건을 설정하면 나에게 맞는 지원금만 보여드려요";
   }
@@ -4419,13 +4575,52 @@ try {
     listEl.innerHTML = skeletonCard + skeletonCard + skeletonCard;
   }
 
+  function subsidyCardHtml(r, todayStr){
+    var SM = window.SubsidyMatch;
+    var p = r.program;
+    var catMeta = SUPPORT_CATEGORY_META[p.category] || { label: p.category, color: "#585CE5", bg: "rgba(88,92,229,0.10)" };
+    var dday = getSubsidyDday(p.endDate, todayStr, p.deadlineText);
+    var ddayClass = dday.closed ? "is-closed" : (!dday.indefinite && dday.days <= 7 ? "is-urgent" : "");
+    var isBookmarked = !!subsidyBookmarkedIds["sp_" + p.id];
+    var reasonChips = SM.pickReasons(r, 4).map(function(x){
+      return '<span class="subsidy-reason is-' + x.kind + '">' + escapeMyPageHtml(x.text) + '</span>';
+    }).join("");
+    var stateKey = r.applyState || "unknown";
+    var stateChip = (stateKey === "upcoming" || stateKey === "closed" || stateKey === "discontinued")
+      ? '<span class="subsidy-card-state is-' + stateKey + '">' + SM.APPLY_STATE_LABEL[stateKey] + '</span>' : "";
+    return '<div class="subsidy-card' + (r.grade === "mismatch" ? ' is-mismatch-card' : '') + '" data-id="' + p.id + '">' +
+      '<div class="subsidy-card-top">' +
+        '<span class="subsidy-card-top-left"><span class="subsidy-card-dday ' + ddayClass + '">' + dday.label + '</span>' + stateChip + '</span>' +
+        '<button type="button" class="subsidy-bookmark-btn' + (isBookmarked ? ' is-bookmarked' : '') + '" data-id="' + p.id + '" aria-label="찜하기"><i class="ph-duotone ph-heart"></i></button>' +
+      '</div>' +
+      '<span class="subsidy-card-cat-mini" style="color:' + catMeta.color + ';">' + catMeta.label + '</span>' +
+      '<h3 class="subsidy-card-title">' + escapeMyPageHtml(p.title) + '</h3>' +
+      '<p class="subsidy-card-summary">' + escapeMyPageHtml(p.summary) + '</p>' +
+      '<div class="subsidy-fit-row"><span class="subsidy-grade-badge is-' + r.grade + '">' + SM.GRADE_LABEL[r.grade] + '</span>' + reasonChips + '</div>' +
+      '<div class="subsidy-card-link">신청 자격 보기<i class="ph-duotone ph-arrow-right"></i></div>' +
+    '</div>';
+  }
+
+  function subsidySectionHtml(title, count, note){
+    return '<h3 class="subsidy-section-title">' + title + '<small>' + count + '건</small></h3>' +
+      '<p class="subsidy-section-note">' + note + '</p>';
+  }
+
+  // 등급(높은 적합도 → 추가 확인 필요 → 조건 불일치) 순으로 나누고, 같은 등급 안에서는 기존 정렬(마감임박/최신)을 유지한다.
+  // 조건 불일치 사업은 삭제하지 않고 기본 목록에서만 숨기며, "조건 불일치 사업 보기"로 언제든 확인할 수 있다.
   function renderSubsidyList(){
+    var SM = window.SubsidyMatch;
+    if (!SM) { renderSubsidyListLegacy(); return; }
+
     var listEl = document.getElementById("subsidyCardList");
     var emptyEl = document.getElementById("subsidyEmptyMsg");
     var heroCountEl = document.getElementById("subsidyHeroCount");
+    var heroSubEl = document.getElementById("subsidyHeroSub");
+    var footerEl = document.getElementById("subsidyListFooter");
     if (!listEl || !emptyEl || !heroCountEl) return;
 
     if (!subsidyProgramsLoaded) {
+      if (footerEl) footerEl.innerHTML = "";
       renderSubsidySkeleton();
       return;
     }
@@ -4433,6 +4628,7 @@ try {
     // 첫 페이지 조회에 실패한 경우: 빈 목록 대신 오류와 다시 시도 버튼을 보여준다.
     if (subsidyLoadError && !SUPPORT_PROGRAMS.length) {
       listEl.innerHTML = "";
+      if (footerEl) footerEl.innerHTML = "";
       heroCountEl.textContent = "0";
       emptyEl.hidden = false;
       emptyEl.innerHTML = '<p>지원금 정보를 불러오지 못했어요. 네트워크를 확인하고 다시 시도해 주세요.</p>' +
@@ -4442,16 +4638,65 @@ try {
       return;
     }
 
-    var filter = loadSubsidyFilter();
+    var extra = loadSubsidyExtra();
+    var user = buildSubsidyUser(loadSubsidyFilter(), extra);
     var todayStr = formatDateYMD(new Date());
-    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){
-      return (subsidyActiveCategory === "all" || p.category === subsidyActiveCategory) && isSubsidyMatch(p, filter);
-    }), todayStr);
 
-    heroCountEl.textContent = matched.length + (subsidyHasMore ? "+" : "");   // 아직 불러오지 않은 사업이 더 있으면 건수 뒤에 +
+    var map = {};
+    var all = SUPPORT_PROGRAMS.filter(function(p){
+      return subsidyActiveCategory === "all" || p.category === subsidyActiveCategory;
+    }).map(function(p){
+      var r = SM.classify(p, user, todayStr);
+      map[p.id] = r;
+      return r;
+    });
+    subsidyResultMap = map;
 
-    if (!matched.length) {
-      listEl.innerHTML = subsidyServerMoreHtml();
+    var visible = { personal: 0, business: 0 };
+    all.forEach(function(r){
+      if (r.grade !== SM.GRADE.MISMATCH) visible[r.audience === "personal" ? "personal" : "business"]++;
+    });
+    var cp = document.getElementById("subsidyAudienceCountPersonal");
+    var cb = document.getElementById("subsidyAudienceCountBusiness");
+    var morePlus = subsidyHasMore ? "+" : "";      // 아직 불러오지 않은 사업이 더 있으면 건수 뒤에 +
+    if (cp) cp.textContent = visible.personal + morePlus;
+    if (cb) cb.textContent = visible.business + morePlus;
+    document.querySelectorAll(".subsidy-audience-tab").forEach(function(tab){
+      var on = tab.getAttribute("data-audience") === subsidyAudienceTab;
+      tab.classList.toggle("is-active", on);
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+    });
+
+    var inTab = all.filter(function(r){ return (r.audience === "personal") === (subsidyAudienceTab === "personal"); });
+    var ordered = sortSubsidyList(inTab.map(function(r){ return r.program; }), todayStr);
+    var buckets = { high: [], check: [], mismatch: [] };
+    ordered.forEach(function(p){ buckets[map[p.id].grade].push(map[p.id]); });
+
+    var shown = buckets.high.length + buckets.check.length;
+    heroCountEl.textContent = shown + morePlus;
+    if (heroSubEl) {
+      heroSubEl.textContent = "높은 적합도 " + buckets.high.length + "건 · 추가 확인 필요 " + buckets.check.length + "건" +
+        (buckets.mismatch.length ? " · 조건 불일치 " + buckets.mismatch.length + "건은 기본 목록에서 숨겼어요" : "") +
+        (subsidyHasMore ? " · 지금까지 불러온 " + SUPPORT_PROGRAMS.length + "건 기준" : "") +
+        ". 입력 조건 기준의 참고 정보예요.";
+    }
+
+    var html = "";
+    if (buckets.high.length) {
+      html += subsidySectionHtml("높은 적합도", buckets.high.length, "입력 조건 기준으로 우선 확인할 만한 사업이에요. 남은 확인 항목과 최종 자격은 공고문에서 확인해 주세요.");
+      html += buckets.high.map(function(r){ return subsidyCardHtml(r, todayStr); }).join("");
+    }
+    if (buckets.check.length) {
+      html += subsidySectionHtml("추가 확인 필요", buckets.check.length, "일부 조건이 확인되지 않았어요. 공고문에서 세부 자격을 확인해 보세요.");
+      html += buckets.check.slice(0, subsidyCheckLimit).map(function(r){ return subsidyCardHtml(r, todayStr); }).join("");
+    }
+    if (subsidyShowMismatch && buckets.mismatch.length) {
+      html += subsidySectionHtml("조건 불일치", buckets.mismatch.length, "입력한 조건과 맞지 않는 사업이에요. 조건을 바꾸면 다시 판정돼요.");
+      html += buckets.mismatch.slice(0, subsidyMismatchLimit).map(function(r){ return subsidyCardHtml(r, todayStr); }).join("");
+    }
+    listEl.innerHTML = html;
+
+    if (!shown && !(subsidyShowMismatch && buckets.mismatch.length)) {
       emptyEl.hidden = false;
       if (subsidyHasMore) {
         // 불러온 범위에는 아직 없지만 서버에 더 있다 — "없음"으로 단정하지 않는다.
@@ -4462,8 +4707,88 @@ try {
         var emptyBtn = emptyEl.querySelector(".subsidy-empty-cta");
         if (emptyBtn) emptyBtn.addEventListener("click", openSubsidyFilterModal);
       }
-      bindSubsidyServerMore(listEl);
-      maybeAutoLoadSubsidyMore(matched.length);
+    } else {
+      emptyEl.hidden = true;
+    }
+
+    if (footerEl) {
+      var f = "";
+      var hiddenCheck = Math.max(0, buckets.check.length - subsidyCheckLimit);
+      if (hiddenCheck) f += '<button type="button" class="subsidy-more-btn" data-act="more-check">추가 확인 필요 ' + hiddenCheck + '건 더 보기</button>';
+      // 서버에서 다음 페이지(cursor)를 읽는 버튼 — 불러온 범위가 전부가 아닐 때만 보인다.
+      if (subsidyLoadError) {
+        f += '<p class="subsidy-section-note">추가 목록을 불러오지 못했어요.</p><button type="button" class="subsidy-more-btn" data-act="retry-server">다시 시도</button>';
+      } else if (subsidyHasMore) {
+        f += '<button type="button" class="subsidy-more-btn" data-act="load-server"' + (subsidyLoading ? ' disabled' : '') + '>' +
+          (subsidyLoading ? '불러오는 중…' : '지원사업 더 불러오기 (' + SUPPORT_PROGRAMS.length + '건 확인함)') + '</button>';
+      }
+      if (buckets.mismatch.length) {
+        if (subsidyShowMismatch) {
+          var hiddenMis = Math.max(0, buckets.mismatch.length - subsidyMismatchLimit);
+          if (hiddenMis) f += '<button type="button" class="subsidy-more-btn" data-act="more-mismatch">조건 불일치 ' + hiddenMis + '건 더 보기</button>';
+          f += '<button type="button" class="subsidy-mismatch-toggle" data-act="toggle-mismatch">조건 불일치 사업 숨기기</button>';
+        } else {
+          f += '<button type="button" class="subsidy-mismatch-toggle" data-act="toggle-mismatch">조건 불일치 사업 보기 (' + buckets.mismatch.length + '건)</button>';
+        }
+      }
+      footerEl.innerHTML = f;
+    }
+
+    listEl.querySelectorAll(".subsidy-card").forEach(function(card){
+      var id = card.getAttribute("data-id");
+      var program = SUPPORT_PROGRAMS.filter(function(p){ return p.id === id; })[0];
+      card.addEventListener("click", function(){
+        if (program) openSubsidyDetail(program);
+      });
+      var bookmarkBtn = card.querySelector(".subsidy-bookmark-btn");
+      if (bookmarkBtn) {
+        bookmarkBtn.addEventListener("click", function(e){
+          e.stopPropagation();
+          if (program) toggleSubsidyBookmark(program);
+        });
+      }
+    });
+
+    // 보이는 결과가 너무 적으면(불러온 범위 대부분이 불일치) 다음 페이지를 자동으로 이어 읽는다 — 조건당 최대 3페이지.
+    if (subsidyHasMore && !subsidyLoading && !subsidyLoadError && shown < SUBSIDY_MIN_VISIBLE && subsidyAutoPages < SUBSIDY_MAX_AUTO_PAGES) {
+      subsidyAutoPages++;
+      setTimeout(function(){ fetchSubsidyPage(false); }, 0);
+    }
+  }
+
+  // js/subsidy-match.js를 불러오지 못했을 때만 쓰는 기존 방식(나이·지역·직업만 비교).
+  function renderSubsidyListLegacy(){
+    var listEl = document.getElementById("subsidyCardList");
+    var emptyEl = document.getElementById("subsidyEmptyMsg");
+    var heroCountEl = document.getElementById("subsidyHeroCount");
+    if (!listEl || !emptyEl || !heroCountEl) return;
+
+    if (!subsidyProgramsLoaded) {
+      renderSubsidySkeleton();
+      return;
+    }
+
+    var filter = loadSubsidyFilter();
+    var todayStr = formatDateYMD(new Date());
+    var matched = sortSubsidyList(SUPPORT_PROGRAMS.filter(function(p){
+      return (subsidyActiveCategory === "all" || p.category === subsidyActiveCategory) && isSubsidyMatch(p, filter);
+    }), todayStr);
+
+    heroCountEl.textContent = matched.length + (subsidyHasMore ? "+" : "");
+    var legacyFooter = document.getElementById("subsidyListFooter");
+    if (legacyFooter) {
+      legacyFooter.innerHTML = subsidyHasMore
+        ? '<button type="button" class="subsidy-more-btn" data-act="load-server"' + (subsidyLoading ? ' disabled' : '') + '>' + (subsidyLoading ? '불러오는 중…' : '지원사업 더 불러오기') + '</button>'
+        : "";
+    }
+
+    if (!matched.length) {
+      listEl.innerHTML = "";
+      emptyEl.hidden = false;
+      emptyEl.innerHTML = '<p>현재 조건에 맞는 지원금이 없어요</p>' +
+        '<button type="button" class="subsidy-empty-cta" id="subsidyEmptyChangeBtn">조건 변경하기</button>';
+      var emptyBtn = emptyEl.querySelector(".subsidy-empty-cta");
+      if (emptyBtn) emptyBtn.addEventListener("click", openSubsidyFilterModal);
       return;
     }
     emptyEl.hidden = true;
@@ -4483,7 +4808,7 @@ try {
         '<p class="subsidy-card-summary">' + escapeMyPageHtml(p.summary) + '</p>' +
         '<div class="subsidy-card-link">신청 자격 보기<i class="ph-duotone ph-arrow-right"></i></div>' +
       '</div>';
-    }).join("") + subsidyServerMoreHtml();
+    }).join("");
 
     listEl.querySelectorAll(".subsidy-card").forEach(function(card){
       var id = card.getAttribute("data-id");
@@ -4499,36 +4824,6 @@ try {
         });
       }
     });
-    bindSubsidyServerMore(listEl);
-    maybeAutoLoadSubsidyMore(matched.length);
-  }
-
-  // 서버에서 다음 페이지(cursor)를 읽는 버튼 — 불러온 범위가 전부가 아닐 때(또는 다음 목록 로드가 실패했을 때)만 보인다.
-  function subsidyServerMoreHtml(){
-    if (subsidyLoadError && SUPPORT_PROGRAMS.length) {
-      return '<div class="subsidy-list-footer"><p class="subsidy-section-note">추가 목록을 불러오지 못했어요.</p>' +
-        '<button type="button" class="subsidy-more-btn" data-act="retry-server">다시 시도</button></div>';
-    }
-    if (subsidyHasMore) {
-      return '<div class="subsidy-list-footer"><button type="button" class="subsidy-more-btn" data-act="load-server"' + (subsidyLoading ? ' disabled' : '') + '>' +
-        (subsidyLoading ? '불러오는 중…' : '지원사업 더 불러오기 (' + SUPPORT_PROGRAMS.length + '건 확인함)') + '</button></div>';
-    }
-    return "";
-  }
-  function bindSubsidyServerMore(listEl){
-    var btn = listEl.querySelector("[data-act]");
-    if (!btn) return;
-    btn.addEventListener("click", function(){
-      if (btn.getAttribute("data-act") === "retry-server") subsidyLoadError = false;
-      fetchSubsidyPage(false);
-    });
-  }
-  // 보이는 결과가 너무 적으면(나이·직업 조건으로 대부분 걸러짐) 다음 페이지를 자동으로 이어 읽는다 — 조건당 최대 3페이지.
-  function maybeAutoLoadSubsidyMore(visibleCount){
-    if (subsidyHasMore && !subsidyLoading && !subsidyLoadError && visibleCount < SUBSIDY_MIN_VISIBLE && subsidyAutoPages < SUBSIDY_MAX_AUTO_PAGES) {
-      subsidyAutoPages++;
-      setTimeout(function(){ fetchSubsidyPage(false); }, 0);
-    }
   }
 
   function openSubsidyDetail(program){
@@ -4539,9 +4834,26 @@ try {
     catEl.style.background = catMeta.bg;
 
     document.getElementById("subsidyDetailTitle").textContent = program.title;
-    document.getElementById("subsidyDetailPeriod").textContent = "신청기한 " +
+    var detailState = window.SubsidyMatch ? window.SubsidyMatch.applyStateKey(window.SubsidyMatch.applicationStatusOf(program, formatDateYMD(new Date()))) : "";
+    document.getElementById("subsidyDetailPeriod").textContent = (detailState && detailState !== "unknown" ? "[" + window.SubsidyMatch.APPLY_STATE_LABEL[detailState] + "] " : "") + "신청기한 " +
       (program.deadlineText || (program.startDate ? (program.startDate + " ~ " + program.endDate) : "상시/문의"));
     document.getElementById("subsidyDetailBenefit").textContent = program.benefits;
+
+    var fitBox = document.getElementById("subsidyDetailFit");
+    if (fitBox) {
+      var SM = window.SubsidyMatch;
+      if (SM) {
+        var fit = subsidyResultMap[program.id] ||
+          SM.classify(program, buildSubsidyUser(loadSubsidyFilter(), loadSubsidyExtra()), formatDateYMD(new Date()));
+        document.getElementById("subsidyDetailFitGrade").textContent = "입력 조건 기준 · " + SM.GRADE_LABEL[fit.grade];
+        document.getElementById("subsidyDetailFitList").innerHTML = fit.reasons.map(function(x){
+          return '<li class="is-' + x.kind + '">' + escapeMyPageHtml(x.text) + '</li>';
+        }).join("");
+        fitBox.hidden = false;
+      } else {
+        fitBox.hidden = true;
+      }
+    }
 
     var rowsEl = document.getElementById("subsidyChecklistRows");
     var checklist = program.checklist || [];
@@ -4575,11 +4887,101 @@ try {
     document.getElementById("subsidyDetailOverlay").hidden = true;
   }
 
+  // ---------- 조건 모달: 단계형 추가 질문 (모두 선택 사항) ----------
+  var subsidyModalStep = 1;
+  var subsidyDraft = null; // { audience, income, household, housing, specialNone, specialSet }
+
+  function makeSubsidyDraft(){
+    var extra = loadSubsidyExtra();
+    return {
+      audience: subsidyAudienceTab,
+      income: extra.income || "",
+      household: extra.household || "",
+      housing: extra.housing || "",
+      student: extra.student || "",
+      applyStatus: extra.applyStatus || "",
+      specialNone: Array.isArray(extra.special) && extra.special.length === 0,
+      specialSet: Array.isArray(extra.special) ? extra.special.slice() : []
+    };
+  }
+  function syncSubsidyChips(){
+    document.querySelectorAll("#subsidyFilterOverlay .subsidy-chip-group").forEach(function(group){
+      var key = group.getAttribute("data-group");
+      group.querySelectorAll(".subsidy-chip").forEach(function(chip){
+        var v = chip.getAttribute("data-value");
+        var on;
+        if (key === "special") on = v === "__none" ? subsidyDraft.specialNone : subsidyDraft.specialSet.indexOf(v) !== -1;
+        else on = subsidyDraft[key] === v && (v !== "" || key === "income");
+        chip.classList.toggle("is-selected", !!on);
+        chip.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    });
+  }
+  function showSubsidyStep(n){
+    subsidyModalStep = n;
+    document.querySelectorAll("#subsidyFilterOverlay .subsidy-step").forEach(function(panel){
+      panel.hidden = Number(panel.getAttribute("data-step")) !== n;
+    });
+    var modal = document.querySelector("#subsidyFilterOverlay .calendar-detail-modal-v2");
+    if (modal) modal.scrollTop = 0;
+  }
+  function onSubsidyChipClick(chip){
+    var group = chip.parentNode.getAttribute("data-group");
+    var v = chip.getAttribute("data-value");
+    if (group === "special") {
+      if (v === "__none") {
+        subsidyDraft.specialNone = !subsidyDraft.specialNone;
+        if (subsidyDraft.specialNone) subsidyDraft.specialSet = [];
+      } else {
+        var idx = subsidyDraft.specialSet.indexOf(v);
+        if (idx === -1) subsidyDraft.specialSet.push(v); else subsidyDraft.specialSet.splice(idx, 1);
+        if (subsidyDraft.specialSet.length) subsidyDraft.specialNone = false;
+      }
+    } else if (group === "income") {
+      subsidyDraft.income = v;
+    } else {
+      subsidyDraft[group] = subsidyDraft[group] === v ? "" : v;
+    }
+    syncSubsidyChips();
+  }
+
+  // 기본 조건(나이·지역·직업)은 항상 저장하고, 추가 조건은 includeExtra일 때만 저장한다.
+  function applySubsidyConditions(includeExtra){
+    var ageVal = document.getElementById("subsidyFilterAgeInput").value;
+    saveSubsidyFilter({
+      age: ageVal !== "" ? Number(ageVal) : null,
+      region: document.getElementById("subsidyFilterRegionInput").value,
+      employment: document.getElementById("subsidyFilterJobInput").value
+    });
+    if (includeExtra) {
+      var extra = {
+        audience: subsidyDraft.audience === "business" ? "business" : "personal",
+        income: subsidyDraft.income,
+        household: subsidyDraft.household,
+        housing: subsidyDraft.housing,
+        student: subsidyDraft.student,
+        applyStatus: subsidyDraft.applyStatus,
+        special: subsidyDraft.specialNone ? [] : (subsidyDraft.specialSet.length ? subsidyDraft.specialSet.slice() : null)
+      };
+      subsidyAudienceTab = extra.audience;
+      saveSubsidyExtra(extra);
+      if (countSubsidyExtras(extra)) trackSubsidyEvent("subsidy_extra_conditions_saved");
+    }
+    resetSubsidyPaging();
+    closeSubsidyFilterModal();
+    renderSubsidyFilterChips();
+    refreshSubsidyPrograms();
+    showToast("조건을 적용했어요", "ph-check-circle");
+  }
+
   function openSubsidyFilterModal(){
     var filter = loadSubsidyFilter();
     document.getElementById("subsidyFilterAgeInput").value = filter.age || "";
     document.getElementById("subsidyFilterRegionInput").value = filter.region || "";
     document.getElementById("subsidyFilterJobInput").value = filter.employment || "";
+    subsidyDraft = makeSubsidyDraft();
+    syncSubsidyChips();
+    showSubsidyStep(1);
     document.getElementById("subsidyFilterOverlay").hidden = false;
   }
   function closeSubsidyFilterModal(){
@@ -4589,6 +4991,7 @@ try {
   function initSubsidyView(){
     var heroNameEl = document.getElementById("subsidyHeroName");
     if (heroNameEl) heroNameEl.textContent = authState.userProfile.name;
+    loadSubsidyExtra();
     renderSubsidyFilterChips();
     renderSubsidyCategoryPills();
     renderSubsidyList();
@@ -4616,9 +5019,16 @@ try {
     if (resetBtn) {
       resetBtn.addEventListener("click", function(){
         saveSubsidyFilter(Object.assign({}, DEFAULT_SUBSIDY_FILTER));
+        saveSubsidyExtra(Object.assign({}, DEFAULT_SUBSIDY_EXTRA));
+        subsidyAudienceTab = "personal";
+        subsidyShowMismatch = false;
+        resetSubsidyPaging();
         document.getElementById("subsidyFilterAgeInput").value = "";
         document.getElementById("subsidyFilterRegionInput").value = "";
         document.getElementById("subsidyFilterJobInput").value = "";
+        subsidyDraft = makeSubsidyDraft();
+        syncSubsidyChips();
+        showSubsidyStep(1);
         renderSubsidyFilterChips();
         refreshSubsidyPrograms();
         showToast("조건을 초기화했어요", "ph-arrow-counter-clockwise");
@@ -4626,19 +5036,59 @@ try {
     }
     filterCloseBtn.addEventListener("click", closeSubsidyFilterModal);
     filterOverlay.addEventListener("click", function(e){ if (e.target === filterOverlay) closeSubsidyFilterModal(); });
-    filterSaveBtn.addEventListener("click", function(){
-      var ageVal = document.getElementById("subsidyFilterAgeInput").value;
-      var filter = {
-        age: ageVal !== "" ? Number(ageVal) : null,
-        region: document.getElementById("subsidyFilterRegionInput").value,
-        employment: document.getElementById("subsidyFilterJobInput").value
-      };
-      saveSubsidyFilter(filter);
-      closeSubsidyFilterModal();
-      renderSubsidyFilterChips();
-      refreshSubsidyPrograms();
-      showToast("조건을 적용했어요", "ph-check-circle");
+    filterSaveBtn.addEventListener("click", function(){ applySubsidyConditions(false); });
+
+    // 단계형 추가 질문: 선택 사항이며 건너뛰어도 결과를 볼 수 있다.
+    filterOverlay.querySelectorAll(".subsidy-chip").forEach(function(chip){
+      chip.addEventListener("click", function(){ onSubsidyChipClick(chip); });
     });
+    var toExtraBtn = document.getElementById("subsidyStepToExtraBtn");
+    if (toExtraBtn) toExtraBtn.addEventListener("click", function(){ showSubsidyStep(2); });
+    filterOverlay.querySelectorAll("[data-nav]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        showSubsidyStep(btn.getAttribute("data-nav") === "next" ? Math.min(3, subsidyModalStep + 1) : Math.max(1, subsidyModalStep - 1));
+      });
+    });
+    var skipBtn = document.getElementById("subsidyStepSkipBtn");
+    if (skipBtn) skipBtn.addEventListener("click", function(){ applySubsidyConditions(true); });
+    var extraApplyBtn = document.getElementById("subsidyExtraApplyBtn");
+    if (extraApplyBtn) extraApplyBtn.addEventListener("click", function(){ applySubsidyConditions(true); });
+
+    // 개인 / 사업자·농어업 지원 분리 탭
+    document.querySelectorAll(".subsidy-audience-tab").forEach(function(tab){
+      tab.addEventListener("click", function(){
+        var next = tab.getAttribute("data-audience") === "business" ? "business" : "personal";
+        if (next === subsidyAudienceTab) return;
+        subsidyAudienceTab = next;
+        var extra = Object.assign({}, loadSubsidyExtra(), { audience: next });
+        saveSubsidyExtra(extra);
+        resetSubsidyPaging();
+        trackSubsidyEvent("subsidy_audience_selected", { audience: next });
+        renderSubsidyList();
+      });
+    });
+
+    // 더 보기 / 조건 불일치 사업 보기·숨기기
+    var listFooter = document.getElementById("subsidyListFooter");
+    if (listFooter) {
+      listFooter.addEventListener("click", function(e){
+        var btn = e.target.closest("[data-act]");
+        if (!btn) return;
+        var act = btn.getAttribute("data-act");
+        if (act === "load-server") { subsidyCheckLimit += SUBSIDY_PAGE_STEP; fetchSubsidyPage(false); return; }       // 다음 페이지(cursor) + 새로 읽은 만큼 화면에도 더 보여준다
+        if (act === "retry-server") { if (subsidyProgramsLoaded && SUPPORT_PROGRAMS.length) { subsidyLoadError = false; fetchSubsidyPage(false); } else loadSupportPrograms(); return; }
+        if (act === "more-check") subsidyCheckLimit += SUBSIDY_PAGE_STEP;
+        else if (act === "more-mismatch") subsidyMismatchLimit += SUBSIDY_PAGE_STEP;
+        else if (act === "toggle-mismatch") {
+          subsidyShowMismatch = !subsidyShowMismatch;
+          subsidyMismatchLimit = SUBSIDY_PAGE_STEP;
+          trackSubsidyEvent("subsidy_mismatch_toggled", { visible: subsidyShowMismatch });
+          refreshSubsidyPrograms();                                             // 지역 필터 범위가 바뀌면 서버에서 다시 읽는다
+          return;
+        }
+        renderSubsidyList();
+      });
+    }
 
     detailCloseBtn.addEventListener("click", closeSubsidyDetail);
     detailOverlay.addEventListener("click", function(e){ if (e.target === detailOverlay) closeSubsidyDetail(); });
@@ -4647,6 +5097,7 @@ try {
       tab.addEventListener("click", function(){
         subsidySortMode = tab.getAttribute("data-sort");
         sortTabs.forEach(function(t){ t.classList.toggle("is-active", t === tab); });
+        resetSubsidyPaging();
         refreshSubsidyPrograms();
       });
     });
@@ -5788,7 +6239,7 @@ try {
           try { localStorage.setItem("subsidyUserFilter", JSON.stringify(subsidyUserFilter)); } catch(e) {}
           if (typeof renderSubsidyFilterChips === "function" && document.getElementById("view-subsidy") && document.getElementById("view-subsidy").classList.contains("active")) {
             renderSubsidyFilterChips();
-            refreshSubsidyPrograms();
+            renderSubsidyList();
           }
         }
         syncAuthUI();
