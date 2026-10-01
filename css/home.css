@@ -1756,3 +1756,12 @@
   .finpilot-seo-guide p{margin:0 0 4px;font-size:13.5px;line-height:1.75;color:var(--ink-2);}
   .finpilot-seo-guide strong{color:var(--ink-1);font-weight:700;}
   .finpilot-seo-guide-disclaimer{margin-top:18px !important;font-size:12px !important;color:var(--ink-3) !important;line-height:1.6 !important;}
+
+  /* 정부지원금 "더 불러오기"(cursor 페이지네이션) */
+  .subsidy-list-footer{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .subsidy-more-btn{
+    width:100%;border:none;border-radius:14px;padding:13px;font-size:13px;font-weight:800;
+    cursor:pointer;font-family:inherit;background:var(--brand-soft);color:var(--brand);
+  }
+  .subsidy-more-btn:disabled{opacity:.6;cursor:default;}
+  .subsidy-section-note{margin:0;font-size:12.5px;font-weight:600;color:var(--ink-3);}

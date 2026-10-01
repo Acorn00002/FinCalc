@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Linking,
@@ -18,7 +19,7 @@ import type { NavigationProp } from '@react-navigation/native';
 import AppScreen from '../components/AppScreen';
 import { useAppTheme } from '../context/ThemeContext';
 import type { ThemeColors, RADIUS, SHADOW } from '../constants/theme';
-import { fetchFirestoreCollection } from '../lib/firestoreRest';
+import { SubsidyApiError, fetchSubsidyPage, mergeUnique } from '../lib/subsidyPrograms';
 import type { RootStackParamList } from '../navigation/types';
 import {
   SUBSIDY_CATEGORIES,
@@ -76,7 +77,7 @@ function isSubsidyMatch(program: SubsidyProgram, filter: PersonalFilter): boolea
 }
 
 // index.html의 #subsidy(정부 지원금) 뷰를 그대로 이식 — Firestore supportPrograms 컬렉션을
-// (Firebase SDK 없이) REST로 통째로 읽어와 카테고리/개인조건 필터 + 마감임박순/최신순 정렬로 보여준다.
+// /api/support-programs로 "서버 필터(카테고리·지역) + cursor 페이지네이션"해 최대 50건씩만 읽어와 개인조건 필터 + 마감임박순/최신순 정렬로 보여준다.
 // 찜(bookmark)은 로그인 세션이 있어야 Firestore에 쓸 수 있는데 네이티브엔 아직 그 브릿지가 없어서,
 // 하트 버튼은 누르면 "로그인 후 이용해주세요" 안내만 하고 실제 저장은 하지 않는다(Phase 3에서 붙일 예정).
 export default function SubsidyScreen() {
@@ -85,8 +86,15 @@ export default function SubsidyScreen() {
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, radius, shadow, insets.bottom), [colors, radius, shadow, insets.bottom]);
 
-  const [programs, setPrograms] = useState<SubsidyProgram[] | null>(null);
-  const [error, setError] = useState(false);
+  const [programs, setPrograms] = useState<SubsidyProgram[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<null | 'first' | 'more'>(null);
+  const requestGen = useRef(0); // 조건이 바뀌거나 새로고침하면 이전 요청의 응답은 버린다
+  const autoPages = useRef(0);
   const [category, setCategory] = useState<string>('all');
   const [sortMode, setSortMode] = useState<'deadline' | 'latest'>('deadline');
   const [personalFilter, setPersonalFilter] = useState<PersonalFilter>({ age: '', region: '', employment: '' });
@@ -95,16 +103,79 @@ export default function SubsidyScreen() {
   const [selected, setSelected] = useState<SubsidyProgram | null>(null);
   const [checkedRows, setCheckedRows] = useState<Record<number, boolean>>({});
 
+  // 첫 페이지: 조건(카테고리·지역·정렬)이 바뀌거나 당겨서 새로고침하면 cursor를 버리고 처음부터 읽는다.
+  const loadFirstPage = useCallback(
+    (refresh = false) => {
+      const gen = ++requestGen.current;
+      autoPages.current = 0;
+      setError(null);
+      setLoadingMore(false);
+      if (refresh) setRefreshing(true);
+      else {
+        setInitialLoading(true);
+        setPrograms([]);
+        setNextCursor(null);
+        setHasMore(false);
+      }
+      fetchSubsidyPage<SubsidyProgram>({
+        category: category === 'all' ? '' : category,
+        region: personalFilter.region,
+        sort: sortMode,
+      })
+        .then((page) => {
+          if (gen !== requestGen.current) return;
+          setPrograms(mergeUnique<SubsidyProgram>([], page.items));
+          setNextCursor(page.nextCursor);
+          setHasMore(page.hasMore);
+        })
+        .catch(() => {
+          if (gen === requestGen.current) setError('first');
+        })
+        .finally(() => {
+          if (gen === requestGen.current) {
+            setInitialLoading(false);
+            setRefreshing(false);
+          }
+        });
+    },
+    [category, personalFilter.region, sortMode]
+  );
+
   useEffect(() => {
-    fetchFirestoreCollection('supportPrograms')
-      .then((docs) => setPrograms(docs as unknown as SubsidyProgram[]))
-      .catch(() => setError(true));
-  }, []);
+    loadFirstPage();
+  }, [loadFirstPage]);
+
+  // 다음 페이지: 이전 응답의 nextCursor로 이어서 읽고, 같은 id는 한 번만 둔다.
+  const loadMore = useCallback(() => {
+    if (!hasMore || !nextCursor || loadingMore || initialLoading || refreshing) return;
+    const gen = requestGen.current;
+    setLoadingMore(true);
+    setError(null);
+    fetchSubsidyPage<SubsidyProgram>({
+      category: category === 'all' ? '' : category,
+      region: personalFilter.region,
+      sort: sortMode,
+      cursor: nextCursor,
+    })
+      .then((page) => {
+        if (gen !== requestGen.current) return;
+        setPrograms((prev) => mergeUnique(prev, page.items));
+        setNextCursor(page.nextCursor);
+        setHasMore(page.hasMore);
+      })
+      .catch((e) => {
+        if (gen !== requestGen.current) return;
+        if (e instanceof SubsidyApiError && e.code === 'invalid_cursor') loadFirstPage();
+        else setError('more');
+      })
+      .finally(() => {
+        if (gen === requestGen.current) setLoadingMore(false);
+      });
+  }, [hasMore, nextCursor, loadingMore, initialLoading, refreshing, category, personalFilter.region, sortMode, loadFirstPage]);
 
   const hasFilter = !!(personalFilter.age || personalFilter.region || personalFilter.employment);
 
   const filtered = useMemo(() => {
-    if (!programs) return [];
     let list = programs;
     if (category !== 'all') list = list.filter((p) => p.category === category);
     if (hasFilter) list = list.filter((p) => isSubsidyMatch(p, personalFilter));
@@ -125,6 +196,14 @@ export default function SubsidyScreen() {
     }
     return sorted;
   }, [programs, category, hasFilter, personalFilter, sortMode]);
+
+  // 나이·직업은 화면에서 거르므로 보이는 결과가 너무 적으면 다음 페이지를 이어 읽는다(조건당 최대 3페이지).
+  useEffect(() => {
+    if (filtered.length < 10 && hasMore && !loadingMore && !initialLoading && !refreshing && !error && autoPages.current < 3) {
+      autoPages.current += 1;
+      loadMore();
+    }
+  }, [filtered.length, hasMore, loadingMore, initialLoading, refreshing, error, loadMore]);
 
   const openFilterModal = () => {
     setDraftFilter(personalFilter);
@@ -179,6 +258,10 @@ export default function SubsidyScreen() {
         data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.content}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        refreshing={refreshing}
+        onRefresh={() => loadFirstPage(true)}
         ListHeaderComponent={
           <>
             <Pressable style={styles.filterBar} onPress={openFilterModal}>
@@ -188,7 +271,7 @@ export default function SubsidyScreen() {
               <Text style={styles.filterBarBtn}>조건 변경</Text>
             </Pressable>
 
-            <Text style={styles.hero}>지금 받을 수 있는 정부지원금 {programs ? filtered.length : 0}건</Text>
+            <Text style={styles.hero}>지금 받을 수 있는 정부지원금 {filtered.length}{hasMore ? '+' : ''}건</Text>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pillsRow}>
               <Pressable
@@ -231,15 +314,42 @@ export default function SubsidyScreen() {
             </View>
           </>
         }
+        ListFooterComponent={
+          programs.length === 0 ? null : loadingMore ? (
+            <ActivityIndicator style={styles.footerSpinner} color={colors.brand} />
+          ) : error === 'more' ? (
+            <View style={styles.footerWrap}>
+              <Text style={styles.empty}>다음 목록을 불러오지 못했어요.</Text>
+              <Pressable style={styles.emptyResetBtn} onPress={loadMore}>
+                <Text style={styles.emptyResetBtnText}>다시 시도</Text>
+              </Pressable>
+            </View>
+          ) : hasMore ? (
+            <View style={styles.footerWrap}>
+              <Pressable style={styles.emptyResetBtn} onPress={loadMore}>
+                <Text style={styles.emptyResetBtnText}>지원금 더 불러오기</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <Text style={styles.empty}>모든 지원금을 불러왔어요.</Text>
+          )
+        }
         ListEmptyComponent={
-          programs === null && !error ? (
+          initialLoading && !error ? (
             <View style={styles.skelWrap}>
               {[0, 1, 2].map((i) => (
                 <View key={i} style={styles.skelItem} />
               ))}
             </View>
-          ) : error ? (
-            <Text style={styles.empty}>지원금 정보를 불러올 수 없어요. 잠시 후 다시 시도해주세요.</Text>
+          ) : error === 'first' ? (
+            <View style={styles.emptyWrap}>
+              <Text style={styles.empty}>지원금 정보를 불러올 수 없어요. 잠시 후 다시 시도해주세요.</Text>
+              <Pressable style={styles.emptyResetBtn} onPress={() => loadFirstPage()}>
+                <Text style={styles.emptyResetBtnText}>다시 시도</Text>
+              </Pressable>
+            </View>
+          ) : hasMore ? (
+            <Text style={styles.empty}>불러온 지원금 중에는 아직 없어요. 아래로 내리면 더 찾아봐요.</Text>
           ) : (
             <View style={styles.emptyWrap}>
               <Text style={styles.empty}>조건에 맞는 지원금이 없어요.</Text>
@@ -483,6 +593,8 @@ function createStyles(colors: ThemeColors, radius: typeof RADIUS, shadow: typeof
     skelItem: { height: 120, borderRadius: 16, backgroundColor: colors.cardSoft },
     empty: { textAlign: 'center', color: colors.ink3, fontSize: 13.5, marginTop: 24 },
     emptyWrap: { alignItems: 'center', marginTop: 24, gap: 12 },
+    footerWrap: { alignItems: 'center', marginTop: 8, marginBottom: 8, gap: 8 },
+    footerSpinner: { marginVertical: 16 },
     emptyResetBtn: { backgroundColor: colors.brandSoft, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 999 },
     emptyResetBtnText: { fontSize: 13, fontWeight: '700', color: colors.brand },
     backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
