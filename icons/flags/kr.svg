@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-labelledby="title">
+  <title id="title">Flag of the Republic of Korea</title>
+  <rect width="900" height="600" fill="#fff"/>
+  <g transform="translate(450 300) rotate(-33.6900675)">
+    <path fill="#cd2e3a" d="M0-150a150 150 0 1 1 0 300 75 75 0 1 0 0-150 75 75 0 1 1 0-150z"/>
+    <path fill="#0047a0" d="M0 150a150 150 0 1 1 0-300 75 75 0 1 0 0 150 75 75 0 1 1 0 150z"/>
+  </g>
+  <g fill="#000">
+    <g transform="translate(225 135) rotate(-33.6900675)"><path d="M-75-36h150v24H-75zm0 24h150v24H-75zm0 24h150v24H-75z"/></g>
+    <g transform="translate(675 465) rotate(-33.6900675)"><path d="M-75-36h60v24h-60zm90 0h60v24H15zM-75-12h150v24H-75zM-75 12h60v24h-60zm90 0h60v24H15z"/></g>
+    <g transform="translate(675 135) rotate(33.6900675)"><path d="M-75-36h150v24H-75zM-75-12h60v24h-60zm90 0h60v24H15zM-75 12h150v24H-75z"/></g>
+    <g transform="translate(225 465) rotate(33.6900675)"><path d="M-75-36h60v24h-60zm90 0h60v24H15zM-75-12h60v24h-60zm90 0h60v24H15zM-75 12h60v24h-60zm90 0h60v24H15z"/></g>
+  </g>
+</svg>

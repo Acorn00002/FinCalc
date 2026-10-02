@@ -866,7 +866,9 @@
   }
 
   function resolveEventIconHtml(ev){
-    var flagEmoji = ev.flag === "us" ? "🇺🇸" : "🇰🇷";
+    var flagCode = String(ev.flag || "").toLowerCase() === "us" ? "us" : "kr";
+    var flagAlt = flagCode === "us" ? "미국 국기" : "대한민국 국기";
+    var flagIconHtml = '<img class="calendar-event-country-flag" src="/icons/flags/' + flagCode + '.svg" alt="' + flagAlt + '">';
 
     if (ev.category === "stock") {
       return resolveStockIconHtml(ev);
@@ -884,14 +886,14 @@
       return '' +
         '<span class="calendar-event-icon-circle ipo-icon">' +
           '<span class="calendar-event-ipo-mark">IPO</span>' +
-          '<span class="calendar-event-flag-badge">' + flagEmoji + '</span>' +
+          '<span class="calendar-event-flag-badge">' + flagIconHtml + '</span>' +
         '</span>';
     }
     if (ev.category === "personal") {
       return '<span class="calendar-event-icon-circle personal-icon"><i class="ph-duotone ph-user"></i></span>';
     }
-    // economy(경제·경제지표) 등 그 외 카테고리는 국기 이모지 유지 — 특정 기업이 아니라 국가 단위 지표라서.
-    return '<span class="calendar-event-icon-circle economy-icon">' + flagEmoji + '</span>';
+    // economy(경제·경제지표) 등 그 외 카테고리는 OS별 이모지 렌더링 차이가 없는 로컬 국기 이미지를 쓴다.
+    return '<span class="calendar-event-icon-circle economy-icon">' + flagIconHtml + '</span>';
   }
 
   var calendarViewYear = new Date().getFullYear();
