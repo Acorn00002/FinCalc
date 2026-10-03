@@ -98,7 +98,7 @@
   var DELEGATED_RE = /자율(?:적)?(?:으로)?\s*설정|지자체\s*(?:별|자율)|자치단체(?:별|가\s*자율)|별도\s*공고|공고문?\s*(?:참고|확인)|세부\s*(?:기준|요건|대상)[^.]{0,12}(?:공고|상이|별도)|모집\s*공고|공고(?:문)?\s*(?:에\s*따|확인)|채용기관|종합지침|심사를\s*거|심의회|선발|추천/;
   var INCOME_WORD = /소득|중위|연봉|건강보험료|재산/;
   // 연령 구조화 값은 사업 문구가 연령을 말하는 사업(청년·아동·노인 등)에서만 제외 근거로 쓴다.
-  var AGE_ORIENTED_RE = /청년|청소년|아동|어린이|유아|영유아|노인|어르신|고령|대학생|신혼|사회초년|임산부|\d+\s*세/;
+  var AGE_ORIENTED_RE = /청년|청소년|아동|어린이|유아|영유아|노인|어르신|고령|대학생|신혼|사회초년|임산부|초등학생|중학생|고등학생|유치원|어린이집|\d+\s*세/;
   // 개인이 아니라 기관·단체·연구팀이 신청 주체인 사업 — 개인의 재학·재직 상태로 제외하지 않는다.
   var INSTITUTION_RE = /교육연구단|연구단|컨소시엄|운영\s*기관|지방자치단체|조합법인|협동조합|영농\(어\)조합/;
   var WORKER_SOFT_RE = /근로자|취업\s*후/;
@@ -106,6 +106,15 @@
   var RESTRICTIVE_RE = /소외계층|위기\s*(?:청소년|가구|아동|상황)|취약계층|출원생|출소|퇴소|피해|환자|질환|질병|장애|유공|수급|저소득|한부모|다문화|이주|북한|탈북|난민|병역|위탁|보호대상|학대|폭력|중독|재난|재해/;
   // 대상 문구에서 "서로 다른 대상 유형"을 세는 표지 — 둘 이상이면 택일 나열로 본다(그중 하나에 해당하면 됨).
   var POPULATION_MARKERS = [/대학생|재학생/, /청년/, /신혼|예비\s*부부/, /한부모/, /고령자|노인|어르신/, /주거급여|수급자|기초생활|차상위/, /산업단지|근로자/, /장애인/, /보훈|유공자/, /다자녀|다둥이/, /자립준비|보호종료|퇴소/, /북한이탈|다문화|결혼이민/, /피해자|피해\s*청년|피해\s*임차/, /임산부|임신부|산모/, /영유아|신생아|유아|어린이|아동/, /초등학생|중학생|고등학생|청소년/, /어르신|65세\s*이상/, /보호자|학부모/, /교사|교직원|교원/, /국가유공자|참전/];
+
+  // 신청 주체·역할을 가리키는 표지(보호자·교사)는 "서로 다른 대상 유형"이 아니므로 택일 나열 판단에서 세지 않는다.
+  var ROLE_MARKER_SRC = ["보호자|학부모", "교사|교직원|교원"];
+  // 특수 자격 신호: 제목에 있으면 "그 자격 전용 사업"으로 본다(입력 칩에 없는 자격 포함).
+  var FACILITY_RE = /아동복지시설|보호대상아동|양육시설|그룹홈/;
+  var JUVENILE_RE = /소년원|출원생|보호관찰|소년범|출소자/;
+  var SPECIAL_LABEL = { disability: "장애인", veteran: "보훈·군 복무 관련", lowIncome: "기초수급·차상위", multicultural: "다문화·북한이탈", victim: "피해자(범죄·재난·산재 등)", careLeaver: "보호종료아동" };
+  // 위탁·입양·돌봄 등은 본인이 아동을 양육하지 않아도 대상일 수 있다.
+  var CHILD_EXEMPT_RE = /위탁|입양|돌봄|조손|손자녀|조카|대리\s*양육/;
 
   function hasV2(p) {
     return !!(p && p.eligibility && typeof p.eligibility === "object" && Number(p.eligibility.schemaVersion) >= 2);
@@ -281,6 +290,8 @@
     var sMax = typeof s.max === "number" && s.max < 99 ? s.max : null;
     var info = hasV2(p) ? (p.eligibility.ageInfo || {}) : legacyAgeInfo(lists.core, lists.pref, lists.excl);
     var ranges = info.textRanges || [];
+    // 선정기준에 연령이 없어도 제목·요약에 "3~5세 아동", "만 65세 이상"처럼 명시되면 구조화 값보다 우선한다.
+    if (!ranges.length && lists.head) ranges = readAgeRanges([lists.head]);
     var textMin = null, textMax = null;
     ranges.forEach(function (r) {
       if (r.min !== null && r.min !== undefined) textMin = textMin === null ? r.min : Math.min(textMin, r.min);
@@ -346,9 +357,11 @@
     // 본문에 스친 신분을 이 사업의 전용 대상으로 보지 않는다(제목에 있는 신분만 전용 대상).
     var personClauses = v2 ? ((e.coreStats && e.coreStats.personClauses) || 0)
       : coreList.filter(function (c) { return /(?:사람|분|자|청년|구직자|근로자|가구|세대|학생|아동|노인|어르신)\s*[)*]?\s*$/.test(c); }).length;
-    var markerCount = POPULATION_MARKERS.filter(function (r) { return r.test(head + " " + coreText); }).length;
+    // 제목·요약·선정기준에 숫자 연령이 명시된 사업은 보호자·교사 같은 역할 표지를 "다른 대상 유형"으로 세지 않는다.
+    var statedAge = readAgeRanges(coreList.concat([head])).length > 0 || !!(v2 && e.ageInfo && e.ageInfo.textRanges && e.ageInfo.textRanges.length);
+    var markerCount = POPULATION_MARKERS.filter(function (r) { return !(statedAge && ROLE_MARKER_SRC.indexOf(r.source) !== -1) && r.test(head + " " + coreText); }).length;
     var enumeratedPre = markerCount >= 2 || personClauses >= 3;
-    var age = ageSpecOf(p, todayStr, { core: coreList, pref: prefList, excl: exclusions }, enumeratedPre);
+    var age = ageSpecOf(p, todayStr, { core: coreList, pref: prefList, excl: exclusions, head: head }, enumeratedPre);
     var headAlt = /[·,，、]|및|또는/.test(head);       // 제목이 대상을 "A·B", "A 및 B"처럼 나열하면 그중 하나에 해당하면 된다
     var groups = {};
     var softGroups = {};                                    // 본문에서만 읽힌 신분: 제외 근거가 아니라 확인 필요
@@ -383,6 +396,19 @@
     }
     var qualifier = QUALIFIER_RE.test(head + " " + coreText);
     var restrictive = RESTRICTIVE_RE.test(head + " " + coreText);
+    var specialQuals = [];
+    var altCleared = enumeratedPre && (headAlt || markerCount >= 3);
+    // 택일로 나열된 사업이면 제목에 단독으로 나온 자격만 전용으로 본다(요약의 쉼표 때문에 전용 사업을 놓치지 않도록).
+    var title = p.title || "";
+    var titleAlt = /[·,，、]|및|또는/.test(title);
+    var srcText = altCleared ? (titleAlt ? "" : title) : head;
+    function hasQual(re, g) { return altCleared ? (!!srcText && re.test(srcText)) : (g ? (groups[g] || softGroups[g]) : re.test(srcText)); }
+    if (JUVENILE_RE.test(srcText)) specialQuals.push({ key: "juvenile", label: /소년원|출원생/.test(srcText) ? "소년원 출원생 등" : "보호관찰·출소자 등" });
+    if (FACILITY_RE.test(srcText)) specialQuals.push({ key: "facility", label: "아동복지시설 보호 대상" });
+    STATUS_GROUPS.forEach(function (g) { if (hasQual(RE[g], g)) specialQuals.push({ key: g, label: SPECIAL_LABEL[g] }); });
+    if (altCleared ? RE.singleParent.test(srcText) : (singleParentFlag || softSingleParent)) specialQuals.push({ key: "singleParent", label: "한부모·조손 가구" });
+    if (RE.license.test(srcText)) specialQuals.push({ key: "license", label: "특정 자격·면허 소지자" });
+    var childNoun = ["아동", "어린이", "영유아", "유아", "초등학생", "중학생", "고등학생", "청소년"].filter(function (w) { return head.indexOf(w) !== -1; })[0] || "자녀";
 
     // 직업 유형: 제목·요약·핵심 문구 첫 줄(제외 문구 제외)에 한 가지 유형만 나올 때 대상 유형으로 본다.
     var firstRule = coreList[0] || "";
@@ -435,7 +461,7 @@
       groups: groups, multiGroup: multiGroup, enumerated: enumerated, qualifier: qualifier,
       senior: seniorFlag, parenting: parentingFlag, minor: minorFlag, singleParent: singleParentFlag,
       female: /여성/.test(head), license: RE.license.test(head),
-      restrictive: restrictive, softGroups: softGroups, softSingleParent: softSingleParent, softParenting: softParenting, studentChild: studentChild,
+      restrictive: restrictive, specialQuals: specialQuals, childNoun: childNoun, childExempt: CHILD_EXEMPT_RE.test(head + " " + coreText), softGroups: softGroups, softSingleParent: softSingleParent, softParenting: softParenting, studentChild: studentChild,
       empType: empType, studentSoft: studentSoft, workerSoft: workerSoft, institutional: institutional, multiEmp: typesAll.length > 1, empTypeExplicit: empTypeExplicit,
       youthOriented: (age.max !== null && age.max <= 45) || /청년/.test(head),
       lowIncomeSoft: RE.lowIncomeSoft.test(head),
@@ -495,6 +521,7 @@
     var householdKnown = !!user.household;
     var band = user.income && INCOME_BANDS[user.income];
     var neverHigh = false;
+    var childDemote = false;
 
     // 1) 신청 상태 (기본: 종료·중단은 불일치 / 사용자가 상태를 고르면 그 선택과 비교)
     var app = applicationStatusOf(p, todayStr);
@@ -534,21 +561,30 @@
       var below = prof.hasMin && age < prof.min;
       var above = prof.hasMax && age > prof.max;
       var rangeText = prof.hasMin && prof.hasMax ? "만 " + prof.min + "~" + prof.max + "세" : (prof.hasMin ? "만 " + prof.min + "세 이상" : "만 " + prof.max + "세 이하");
+      var shortRange = (prof.hasMin && prof.hasMax ? prof.min + "~" + prof.max + "세" : (prof.hasMin ? prof.min + "세 이상" : prof.max + "세 이하"));
       if (childBeneficiary && (below || above)) {
-        // 아래 가구 구성 단계에서 자녀 여부로 판정한다.
+        // 자녀 대상 사업: 본인이 아니라 자녀의 나이 기준이다. 자녀가 있다고 답했으면 자녀 연령 확인으로,
+        // 가구를 "1인 가구"로 답했고 위탁·입양·돌봄 같은 예외 문구가 없으면 명백한 연령 불일치로 본다. 가구를 답하지 않았으면 제외하지 않고 뒤로 보낸다.
+        var childHardOut = (below && spec.minHard) || (above && spec.maxHard);
+        var careSel = Array.isArray(user.special) && user.special.indexOf("careLeaver") !== -1;
+        var childOnlyExempt = (careSel && prof.specialQuals.some(function (q) { return q.key === "facility"; })) || prof.childExempt || prof.groups.careLeaver || prof.softGroups.careLeaver || prof.groups.disability || prof.softGroups.disability;
+        if (hasKids) add("unknown", "자녀 연령 확인 필요 (" + shortRange + " " + prof.childNoun + " 대상)", { blocking: true });
+        else if (childHardOut && !childOnlyExempt && user.household === "single") add("mismatch", "연령 조건 불일치: " + shortRange + " " + prof.childNoun + " 대상");
+        else if (childHardOut && !childOnlyExempt) { childDemote = true; add("unknown", "자녀 대상 사업 (" + shortRange + " " + prof.childNoun + ") — 자녀가 있는 경우에만 해당", { blocking: true }); }   // 가구 미응답: 제외하지 않고 뒤로 보낸다
+        // 그 밖에는 아래 가구 구성 단계에서 확인 필요로 둔다.
       } else if (below || above) {
         var unverifiedSide = (below && !spec.minHard) || (above && !spec.maxHard);
         var withinException = spec.soft && ((above && (spec.tiered && spec.source !== "text" ? true : (spec.extMax !== null && age <= spec.extMax))) ||
                                             (below && ((spec.tiered && spec.source !== "text") || spec.hasExc)));
         if (unverifiedSide) add("unknown", "연령 기준이 공고문과 다를 수 있어 확인 필요", { blocking: true });
         else if (withinException) add("unknown", "연령 예외·유형별 기준 확인 필요 (" + rangeText + " 기준, 병역 인정·유형별 차이 가능)", { blocking: true });
-        else add("mismatch", "연령 조건 불일치 (" + rangeText + ")");
+        else add("mismatch", "연령 조건 불일치: " + rangeText + " 대상");
       } else if (hasAgeSpec) {
         add("match", "연령 조건 일치 (" + rangeText + ")", { strong: prof.narrowAge && !spec.soft });
         if (spec.soft) add("unknown", "연령 예외·유형별 기준 확인 필요", { blocking: false });
         if (prof.schoolAge) add("unknown", "학령기(초·중·고) 대상 사업 — 해당 시 확인", { blocking: true });
       }
-      if (prof.senior && age < 60) add("mismatch", "고령자 대상 사업");
+      if (prof.senior && age < 60) add("mismatch", "연령 조건 불일치: 고령자 대상");
       if (prof.youthText && !prof.hasMax && /청년/.test(prof.head)) {
         if (age > 45) add("mismatch", "청년 대상 사업 (연령 초과)");
         else if (age > 39) add("unknown", "청년 연령 기준 확인 필요", { blocking: true });
@@ -613,7 +649,7 @@
     }
     if (prof.academicGraduated) add("unknown", "졸업·학적 조건 확인 필요", { blocking: true });
     if (prof.female) add("unknown", "여성 대상 사업 — 해당 시 확인", { blocking: true });
-    if (prof.license) add("unknown", "특정 자격·면허 소지자 대상 — 해당 시 확인", { blocking: true });
+    if (prof.license) add("unknown", "특정 자격·면허 소지자 대상 — 해당 시 확인", { blocking: true, dup: true });
     if (age !== null && age <= 39 && prof.youthText && /청년/.test(prof.head) && !hasReason(reasons, "mismatch") && !prof.enumerated) {
       add("match", "청년 대상 사업", { strong: true });
     }
@@ -634,9 +670,9 @@
     STATUS_GROUPS.forEach(function (g) {
       if (!prof.groups[g]) return;
       if (user.special === null || user.special === undefined) {
-        add("unknown", STATUS_LABEL[g] + " 대상 — 해당 시 확인", { blocking: true });
+        add("unknown", STATUS_LABEL[g] + " 대상 — 해당 시 확인", { blocking: true, dup: true });
       } else if (user.special.indexOf(g) !== -1) {
-        add("match", STATUS_LABEL[g] + " 해당 (입력 기준)", { strong: false });
+        add("match", STATUS_LABEL[g] + " 해당 (입력 기준)", { strong: false, sel: true });
         add("unknown", "세부 요건(신분 범위·정도 등) 확인 필요", { blocking: true });
       } else {
         add("mismatch", STATUS_LABEL[g] + " 대상 사업 (특별 자격 '해당 없음')");
@@ -644,8 +680,8 @@
     });
     STATUS_GROUPS.forEach(function (g) {
       if (!prof.softGroups[g]) return;
-      if (Array.isArray(user.special) && user.special.indexOf(g) !== -1) add("match", STATUS_LABEL[g] + " 해당 (입력 기준)", { strong: false });
-      add("unknown", STATUS_LABEL[g] + " 관련 요건 — 해당 시 확인", { blocking: true });
+      if (Array.isArray(user.special) && user.special.indexOf(g) !== -1) add("match", STATUS_LABEL[g] + " 해당 (입력 기준)", { strong: false, sel: true });
+      add("unknown", STATUS_LABEL[g] + " 관련 요건 — 해당 시 확인", { blocking: true, dup: true });
     });
     // 공식 제외 문구에 입력한 신분이 명시되면 제외, 모호하면 확인 필요
     if (prof.exclusionText && Array.isArray(user.special)) {
@@ -657,17 +693,17 @@
     }
 
     // 8) 가구 구성 — "자녀와 함께"는 한부모일 수 있고 "부부·동거"는 임신·출산 예정일 수 있어 단정하지 않는다.
-    if (prof.softSingleParent) add("unknown", "한부모·조손 가구 관련 요건 — 해당 시 확인", { blocking: true });
+    if (prof.softSingleParent) add("unknown", "한부모·조손 가구 관련 요건 — 해당 시 확인", { blocking: true, dup: true });
     if (prof.softParenting) add("unknown", "임신·출산·양육 관련 요건 — 해당 시 확인", { blocking: true });
     if (prof.singleParent) {
-      if (!householdKnown) add("unknown", "한부모·조손 가구 대상 — 해당 시 확인", { blocking: true });
-      else if (user.household === "singleParent") add("match", "한부모 가구 해당 (입력 기준)", { strong: false });
-      else if (user.household === "kids" || user.household === "pregnant") add("unknown", "한부모·조손 가구 대상 — 해당 여부 확인 필요", { blocking: true });
-      else add("unknown", "한부모·조손 가구 대상 — 입력한 가구 구성과 다를 수 있어 확인 필요", { blocking: true });
+      if (!householdKnown) add("unknown", "한부모·조손 가구 대상 — 해당 시 확인", { blocking: true, dup: true });
+      else if (user.household === "singleParent") add("match", "한부모 가구 해당 (입력 기준)", { strong: false, sel: true });
+      else if (user.household === "kids" || user.household === "pregnant") add("unknown", "한부모·조손 가구 대상 — 해당 여부 확인 필요", { blocking: true, dup: true });
+      else add("unknown", "한부모·조손 가구 대상 — 입력한 가구 구성과 다를 수 있어 확인 필요", { blocking: true, dup: true });
     } else if ((prof.parenting || prof.minor) && !prof.groups.careLeaver && !prof.groups.disability) {
       var familyLabel = prof.parenting ? "임신·출산·자녀 양육 가구 대상" : "아동·청소년 대상 사업";
       if (!householdKnown) add("unknown", familyLabel + " — 해당 시 확인", { blocking: true });
-      else if (hasKids) add("match", "자녀 양육·임신 가구 (입력 기준) · 세부 요건 확인 필요");
+      else if (hasKids) add("match", "자녀 양육·임신 가구 (입력 기준) · 세부 요건 확인 필요", { sel: true });
       else add("unknown", familyLabel + " — 자녀·임신 여부(위탁·입양·돌봄 포함)를 공식 공고문에서 확인 필요", { blocking: true });
     }
 
@@ -691,11 +727,36 @@
     // 유형별(우대형·일반형 등) 요건이 따로 있으면 어느 유형에 해당하는지 입력만으로는 알 수 없다.
     if (prof.tiered) add("unknown", "유형별(우대·일반 등) 요건이 달라 " + OFFICIAL_CHECK, { blocking: true });
 
-    if (prof.restrictive) add("unknown", "특정 계층 대상 여부 확인 필요 — " + OFFICIAL_CHECK, { blocking: true });
+    if (prof.restrictive) add("unknown", "특정 계층 대상 여부 확인 필요 — " + OFFICIAL_CHECK, { blocking: true, dup: true });
 
     // 10) 근거가 얇은 경우: 여러 대상을 나열했거나 세부 대상을 공고에 위임한 사업
     if (prof.enumerated) add("unknown", "여러 대상 유형이 나열된 사업 — " + OFFICIAL_CHECK, { blocking: true });
     if (prof.delegated) add("unknown", "세부 대상은 지자체·공고에 따라 달라 " + OFFICIAL_CHECK, { blocking: true });
+
+    // 11) 특수 자격: 사용자가 해당 자격을 고르지 않은 전용 사업은 하나의 신호로 모아 보여주고, 높은 적합도로 올리지 않으며 정렬에서 뒤로 보낸다.
+    var unmet = prof.specialQuals.filter(function (q) {
+      if (STATUS_GROUPS.indexOf(q.key) !== -1) return !(Array.isArray(user.special) && user.special.indexOf(q.key) !== -1);
+      if (q.key === "singleParent") return user.household !== "singleParent";
+      if (q.key === "facility") return !(Array.isArray(user.special) && user.special.indexOf("careLeaver") !== -1);
+      return true;
+    });
+    // 사용자가 직접 고른 자격·가구와 맞는 사업은 한 단계 더 가중한다.
+    var matchedCount = reasons.reduce(function (n, r) { return n + (r.kind === "match" ? (r.sel ? 2 : 1) : 0); }, 0);
+    if (unmet.length) {
+      reasons = reasons.filter(function (r) { return !r.dup; });
+      var labels = unmet.map(function (q) { return q.label; });
+      var front = [{ kind: "unknown", text: "특정 자격 확인 필요: " + labels.slice(0, 2).join("·") + (labels.length > 2 ? " 등" : ""), blocking: true, special: true }];
+      if (!hasReason(reasons, "mismatch")) {
+        var ageIdx = -1;
+        reasons.forEach(function (r, i) { if (r.kind === "match" && /^연령 조건 일치/.test(r.text)) ageIdx = i; });
+        if (ageIdx !== -1) {
+          reasons.splice(ageIdx, 1);
+          front.push({ kind: "unknown", text: "연령은 일치하지만 특수 자격 확인 필요", blocking: false, special: true });
+        }
+      }
+      reasons = front.concat(reasons);
+    }
+    var unknownCount = reasons.filter(function (r) { return r.kind === "unknown" && r.blocking && !r.special; }).length;
 
     // ---------- 등급 ----------
     var hasMismatch = hasReason(reasons, "mismatch");
@@ -710,7 +771,19 @@
       add("unknown", OFFICIAL_CHECK);
     }
 
-    return { program: p, grade: grade, audience: prof.audience === "personal" ? "personal" : "business", reasons: reasons, applyState: appKey };
+    return {
+      program: p, grade: grade, audience: prof.audience === "personal" ? "personal" : "business", reasons: reasons, applyState: appKey,
+      rank: { matched: matchedCount, unknown: unknownCount, special: (unmet.length || childDemote) ? 1 : 0 }
+    };
+  }
+
+  // 같은 등급 안의 관련도 비교: 사용자가 고르지 않은 특수 자격 전용 사업은 뒤로 → 일치한 조건이 많을수록 → 미확인 필수 조건이 적을수록.
+  // 0이면 동률(호출 쪽에서 신청 마감 임박도 등 기존 정렬을 유지한다).
+  function compareFit(a, b) {
+    var ra = a.rank || { matched: 0, unknown: 0, special: 0 }, rb = b.rank || { matched: 0, unknown: 0, special: 0 };
+    if (ra.special !== rb.special) return ra.special - rb.special;
+    if (ra.matched !== rb.matched) return rb.matched - ra.matched;
+    return ra.unknown - rb.unknown;
   }
 
   function hasReason(reasons, kind) {
@@ -743,6 +816,7 @@
     analyzeProgram: analyzeProgram,
     classify: classify,
     pickReasons: pickReasons,
+    compareFit: compareFit,
     isStrictlyClosed: isStrictlyClosed,
     applicationStatusOf: applicationStatusOf,
     applyStateKey: applyStateKey

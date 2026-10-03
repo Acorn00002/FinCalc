@@ -263,3 +263,94 @@ test("질병·서비스명만으로 연령대 전용(고령자)으로 단정하�
   assert.notEqual(grade(parent, U({ household: "pregnant" })), "mismatch");
   assert.equal(grade(parent, U({ household: "couple" })), "check");
 });
+
+test("자녀 대상 사업(3~5세 아동): 숫자 연령이 명시되고 자녀가 없다고 보이면 조건 불일치, 자녀가 있으면 확인 필요", () => {
+  const nuri = legacy("유아학비 (누리과정) 지원", {
+    summary: "유치원에 다니는 3~5세 아동에게 유아학비, 방과후과정비 등 지원",
+    checklist: ["지원대상 : 국공립유치원 및 사립유치원에 다니는  만 3~5세 아동", "신청인 : 아동의 보호자"], age: { min: 3, max: 5 }
+  });
+  const r = SM.classify(nuri, U({ age: 24, employment: "대학생", student: "enrolled", household: "single" }), TODAY);
+  assert.equal(r.grade, "mismatch");
+  const un = SM.classify(nuri, U({ age: 24, employment: "대학생", student: "enrolled" }), TODAY);   // 가구 미응답: 제외하지 않고 뒤로
+  assert.equal(un.grade, "check");
+  assert.equal(un.rank.special, 1);
+  assert.ok(r.reasons.some((x) => x.kind === "mismatch" && x.text === "연령 조건 불일치: 3~5세 아동 대상"));
+  assert.equal(grade(nuri, U({ age: 24, household: "single" })), "mismatch");
+  assert.equal(grade(nuri, U({ age: 24, household: "kids" })), "check");        // 자녀가 있다고 답하면 자녀 연령 확인으로
+  assert.equal(grade(nuri, U({ age: 24, household: "pregnant" })), "check");
+  assert.equal(grade(nuri, U({ age: 38, household: "" })), "check");            // 미응답이면 나이와 무관하게 제외하지 않는다
+  const kids = SM.classify(nuri, U({ age: 33, household: "kids" }), TODAY);
+  assert.ok(kids.reasons.some((x) => x.kind === "unknown" && /자녀 연령 확인 필요 \(3~5세 아동 대상\)/.test(x.text)));
+  assert.notEqual(kids.grade, "high");
+  // 위탁·입양·돌봄 같은 예외 문구가 있으면 본인이 양육하지 않아도 대상일 수 있다
+  const foster = legacy("위탁가정 아동 양육 지원", { summary: "만 0~17세 아동을 위탁하는 가정 지원", checklist: ["만 0~17세 위탁 아동"], age: { min: 0, max: 17 } });
+  assert.notEqual(grade(foster, U({ age: 40, household: "single" })), "mismatch");
+});
+
+test("제목·요약의 연령 문구가 구조화 연령 필드보다 우선한다", () => {
+  const senior = legacy("노후 안심 지원", { summary: "만 65세 이상에게 노후 생활비 지원", checklist: ["신청 가능"], age: { min: 0, max: 99 } });
+  const r = SM.classify(senior, U({ age: 24 }), TODAY);
+  assert.equal(r.grade, "mismatch");
+  assert.ok(r.reasons.some((x) => x.kind === "mismatch" && /연령 조건 불일치: 만 65세 이상 대상/.test(x.text)));
+  // 숫자 연령이 없는 '청소년' 같은 단어만으로는 기존처럼 보수적으로 확인 필요
+  const loose = legacy("청소년회복지원시설운영", { summary: "소년법 처분(제1호 ‘보호자 감호위탁’)을 받은 청소년에게 상담·주거 지원", checklist: ["소년법 처분을 받은 청소년"], age: { min: 13, max: 18 } });
+  assert.notEqual(grade(loose, U({ age: 21 })), "mismatch");
+});
+
+test("특수 자격(소년원 출원생 등) 전용 사업: 연령이 맞아도 확인 필요, 높음 불가, 이유 문구와 정렬 순서", () => {
+  const juvenile = legacy("소년원 출원생 등 소외계층 청소년을 위한 청소년자립생활관 운영 지원", {
+    summary: "소외계층 청소년에게 생활공간을 제공하여 무료숙식, 대학진학 등 사회정착 지원", checklist: ["지원대상과 동일(만 12세 ~ 만 24세)"], age: { min: 13, max: 18 }, deadline: "접수기관 별 상이"
+  });
+  const general = legacy("청년 대학생 학업 지원", { summary: "청년 대학생에게 학업 지원", checklist: ["만 19~34세 청년 대학생"], age: { min: 19, max: 34 } });
+  const u = U({ age: 24, employment: "대학생", student: "enrolled" });
+  const rj = SM.classify(juvenile, u, TODAY);
+  assert.equal(rj.grade, "check");
+  assert.ok(rj.reasons.some((x) => x.special && x.text === "특정 자격 확인 필요: 소년원 출원생 등"));
+  assert.ok(rj.reasons.some((x) => x.special && x.text === "연령은 일치하지만 특수 자격 확인 필요"));
+  assert.ok(SM.pickReasons(rj, 4).slice(0, 2).every((x) => x.special));            // 카드에서도 맨 앞에 보인다
+  assert.equal(rj.rank.special, 1);
+  const rg = SM.classify(general, u, TODAY);
+  assert.equal(rg.rank.special, 0);
+  assert.ok(SM.compareFit(rg, rj) < 0);                                            // 일반 청년·대학생 사업이 먼저
+  assert.equal(SM.compareFit(rj, rj), 0);
+  // 연령이 범위 밖이면 연령 불일치가 먼저
+  assert.equal(grade(juvenile, U({ age: 33 })), "mismatch");
+});
+
+test("특수 자격을 직접 고르면 해당 전용 사업의 순위가 올라간다 (장애·보훈·보호종료)", () => {
+  const dis = legacy("중증장애인 자립생활 지원", { summary: "등록장애인 자립생활 지원", checklist: ["만 18세 이상 등록장애인"], age: { min: 18, max: 99 } });
+  const vet = legacy("국가유공자 생활 지원", { summary: "국가유공자 본인 생활 지원", checklist: ["국가유공자 본인"], age: { min: 18, max: 99 } });
+  const care = legacy("자립준비청년 자립정착금", { summary: "보호종료 자립준비청년 정착금 지원", checklist: ["보호종료 후 5년 이내 자립준비청년 만 18~24세"], age: { min: 18, max: 24 } });
+  const cases = [[dis, "disability"], [vet, "veteran"], [care, "careLeaver"]];
+  cases.forEach(([p, key]) => {
+    const none = SM.classify(p, U({ age: 22, special: null }), TODAY);
+    const picked = SM.classify(p, U({ age: 22, special: [key] }), TODAY);
+    assert.equal(none.rank.special, 1, p.title + " 미선택");
+    assert.equal(picked.rank.special, 0, p.title + " 선택");
+    assert.ok(picked.rank.matched > none.rank.matched, p.title + " 일치 가중");
+    assert.notEqual(picked.grade, "mismatch");
+    assert.ok(none.reasons.some((x) => x.special && /^특정 자격 확인 필요/.test(x.text)), p.title);
+  });
+  assert.equal(grade(dis, U({ age: 22, special: [] })), "mismatch");              // '해당 없음'은 기존대로 장애인 전용 제외
+});
+
+test("상시 신청이라는 이유만으로 관련도가 올라가지 않는다 (rank는 신청 상태를 보지 않는다)", () => {
+  const always = legacy("청년 일반 지원", { checklist: ["만 19~34세 청년"], age: { min: 19, max: 34 }, deadline: "상시신청" });
+  const dated = legacy("청년 일반 지원2", { checklist: ["만 19~34세 청년"], age: { min: 19, max: 34 }, deadline: "2026.10.05~2026.10.20" });
+  const a = SM.classify(always, U({ age: 24 }), TODAY), d = SM.classify(dated, U({ age: 24 }), TODAY);
+  assert.equal(SM.compareFit(a, d), 0);
+  assert.deepEqual(a.rank, d.rank);
+});
+
+test("제목 단독 특수 자격 사업은 요약에 쉼표가 있어도 전용으로 보고, 시설 보호 아동 사업도 특수 자격으로 본다", () => {
+  const nk = legacy("북한이탈주민 자산형성 지원 (미래행복통장)", { summary: "북한이탈주민 대상으로 매월 10~50만 원 저축 시, 적립금과 동일한 금액 지원", checklist: ["아래 해당 요건 모두 충족하는 북한이탈주민", "3개월 이상 취업, 사업 등의 경제활동 상태인 자", "가입 신청일 기준 만 18세 이상"], age: { min: 18, max: 99 } });
+  const r = SM.classify(nk, U({ age: 29, special: [] }), TODAY);
+  assert.equal(r.rank.special, 1);
+  assert.notEqual(r.grade, "high");
+  const care = SM.classify(legacy("아동복지시설 아동치료재활지원", { summary: "시설 보호 아동 치료", checklist: ["아동복지시설 보호 아동 만 6~12세"], age: { min: 6, max: 12 } }), U({ age: 24, household: "kids" }), TODAY);
+  assert.equal(care.rank.special, 1);
+  assert.ok(care.reasons.some((x) => x.special && /아동복지시설/.test(x.text)));
+  // 택일 나열 사업은 전용으로 보지 않는다
+  const alt = legacy("청년·장애인 일자리 지원", { summary: "청년 및 장애인 일자리", checklist: ["만 19~34세 청년 또는 등록장애인"], age: { min: 19, max: 34 } });
+  assert.equal(SM.classify(alt, U({ age: 25, special: [] }), TODAY).rank.special, 0);
+});
