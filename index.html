@@ -2304,6 +2304,18 @@ try {
         <button type="button" class="subsidy-chip" data-value="singleParent">한부모 가구</button>
         <button type="button" class="subsidy-chip" data-value="withFamily">부모님·가족과 함께 (자녀 없음)</button>
       </div>
+      <div id="subsidyChildAgeBlock" hidden>
+        <span class="subsidy-q-label">자녀 연령대 (여러 개 선택 가능)</span>
+        <p class="subsidy-step-desc">정확한 나이는 묻지 않아요. 고르지 않거나 "잘 모르겠어요"를 고르면 자녀 연령 전용 사업은 "자녀 연령 확인 필요"로 남아요.</p>
+        <div class="subsidy-chip-group" data-group="childAges" data-multi="1">
+          <button type="button" class="subsidy-chip" data-value="0-2">만 0~2세</button>
+          <button type="button" class="subsidy-chip" data-value="3-5">만 3~5세</button>
+          <button type="button" class="subsidy-chip" data-value="elem">초등학생</button>
+          <button type="button" class="subsidy-chip" data-value="teen">중·고등학생</button>
+          <button type="button" class="subsidy-chip" data-value="adult">성인 자녀</button>
+          <button type="button" class="subsidy-chip" data-value="unknown">잘 모르겠어요</button>
+        </div>
+      </div>
 
       <span class="subsidy-q-label">재학 여부</span>
       <p class="subsidy-step-desc">직업 상태와 별개로, 학교(대학원 포함)에 다니는 중인지 골라주세요. 고르지 않으면 재학생 전용 사업은 "추가 확인 필요"로 남아요.</p>
@@ -2342,7 +2354,7 @@ try {
       </div>
 
       <span class="subsidy-q-label">해당하는 특별 자격 (여러 개 선택 가능)</span>
-      <p class="subsidy-step-desc">"해당 없음"을 고르면 해당 자격 전용 사업을 불일치로 분류해요. 고르지 않으면 해당 사업은 "추가 확인 필요"로 남아요.</p>
+      <p class="subsidy-step-desc">"해당 없음"을 고르면 장애·보훈·기초수급 등 해당 자격 전용 사업과 명백한 여성 전용 사업을 불일치로 분류해요. 고르지 않으면 해당 사업은 "추가 확인 필요"로 남아요.</p>
       <div class="subsidy-chip-group" data-group="special" data-multi="1">
         <button type="button" class="subsidy-chip" data-value="__none">해당 없음</button>
         <button type="button" class="subsidy-chip" data-value="disability">장애인</button>
@@ -2351,6 +2363,7 @@ try {
         <button type="button" class="subsidy-chip" data-value="multicultural">다문화·북한이탈</button>
         <button type="button" class="subsidy-chip" data-value="victim">범죄·재난·산재·전세사기 피해</button>
         <button type="button" class="subsidy-chip" data-value="careLeaver">보호종료·아동복지 대상</button>
+        <button type="button" class="subsidy-chip" data-value="female">여성·경력보유여성 대상</button>
       </div>
 
       <div class="subsidy-step-nav">
@@ -4489,7 +4502,7 @@ try {
 
   // ---------- 적합도 판정(js/subsidy-match.js) 연동 ----------
   // 소득·가구·주거·특별 자격은 민감한 정보라 이 기기의 localStorage에만 두고, Firestore·GA4로는 보내지 않는다.
-  var DEFAULT_SUBSIDY_EXTRA = { audience: "personal", income: "", household: "", housing: "", student: "", applyStatus: "", special: null };
+  var DEFAULT_SUBSIDY_EXTRA = { audience: "personal", income: "", household: "", housing: "", student: "", applyStatus: "", special: null, childAges: [] };
   var subsidyExtraFilter = null;
   var subsidyAudienceTab = "personal";
   var subsidyShowMismatch = false;
@@ -4504,6 +4517,7 @@ try {
     try { stored = JSON.parse(localStorage.getItem("subsidyExtraFilter") || "null"); } catch(e) {}
     subsidyExtraFilter = Object.assign({}, DEFAULT_SUBSIDY_EXTRA, stored || {});
     if (subsidyExtraFilter.special !== null && !Array.isArray(subsidyExtraFilter.special)) subsidyExtraFilter.special = null;
+    if (!Array.isArray(subsidyExtraFilter.childAges)) subsidyExtraFilter.childAges = [];
     subsidyAudienceTab = subsidyExtraFilter.audience === "business" ? "business" : "personal";
     return subsidyExtraFilter;
   }
@@ -4520,7 +4534,8 @@ try {
       age: ageNum, region: filter.region || "", employment: filter.employment || "",
       income: extra.income || "", household: extra.household || "", housing: extra.housing || "",
       student: extra.student || "", applyStatus: extra.applyStatus || "",
-      special: extra.special
+      special: extra.special,
+      childAges: (extra.household === "kids" || extra.household === "singleParent") && Array.isArray(extra.childAges) ? extra.childAges : []
     };
   }
   function resetSubsidyPaging(){
@@ -5074,7 +5089,8 @@ try {
       student: extra.student || "",
       applyStatus: extra.applyStatus || "",
       specialNone: Array.isArray(extra.special) && extra.special.length === 0,
-      specialSet: Array.isArray(extra.special) ? extra.special.slice() : []
+      specialSet: Array.isArray(extra.special) ? extra.special.slice() : [],
+      childAges: Array.isArray(extra.childAges) ? extra.childAges.slice() : []
     };
   }
   function syncSubsidyChips(){
@@ -5084,11 +5100,15 @@ try {
         var v = chip.getAttribute("data-value");
         var on;
         if (key === "special") on = v === "__none" ? subsidyDraft.specialNone : subsidyDraft.specialSet.indexOf(v) !== -1;
+        else if (key === "childAges") on = subsidyDraft.childAges.indexOf(v) !== -1;
         else on = subsidyDraft[key] === v && (v !== "" || key === "income");
         chip.classList.toggle("is-selected", !!on);
         chip.setAttribute("aria-pressed", on ? "true" : "false");
       });
     });
+    // 자녀 연령 질문은 자녀가 있는 가구(자녀와 함께·한부모)를 골랐을 때만 보인다.
+    var ageBlock = document.getElementById("subsidyChildAgeBlock");
+    if (ageBlock) ageBlock.hidden = !(subsidyDraft.household === "kids" || subsidyDraft.household === "singleParent");
   }
   function showSubsidyStep(n){
     subsidyModalStep = n;
@@ -5110,6 +5130,12 @@ try {
         if (idx === -1) subsidyDraft.specialSet.push(v); else subsidyDraft.specialSet.splice(idx, 1);
         if (subsidyDraft.specialSet.length) subsidyDraft.specialNone = false;
       }
+    } else if (group === "childAges") {
+      var ci = subsidyDraft.childAges.indexOf(v);
+      if (ci === -1) {
+        if (v === "unknown") subsidyDraft.childAges = ["unknown"];
+        else subsidyDraft.childAges = subsidyDraft.childAges.filter(function(x){ return x !== "unknown"; }).concat(v);
+      } else subsidyDraft.childAges.splice(ci, 1);
     } else if (group === "income") {
       subsidyDraft.income = v;
     } else {
@@ -5134,7 +5160,8 @@ try {
         housing: subsidyDraft.housing,
         student: subsidyDraft.student,
         applyStatus: subsidyDraft.applyStatus,
-        special: subsidyDraft.specialNone ? [] : (subsidyDraft.specialSet.length ? subsidyDraft.specialSet.slice() : null)
+        special: subsidyDraft.specialNone ? [] : (subsidyDraft.specialSet.length ? subsidyDraft.specialSet.slice() : null),
+        childAges: (subsidyDraft.household === "kids" || subsidyDraft.household === "singleParent") ? subsidyDraft.childAges.slice() : []
       };
       subsidyAudienceTab = extra.audience;
       saveSubsidyExtra(extra);

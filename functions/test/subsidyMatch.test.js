@@ -354,3 +354,65 @@ test("제목 단독 특수 자격 사업은 요약에 쉼표가 있어도 전용
   const alt = legacy("청년·장애인 일자리 지원", { summary: "청년 및 장애인 일자리", checklist: ["만 19~34세 청년 또는 등록장애인"], age: { min: 19, max: 34 } });
   assert.equal(SM.classify(alt, U({ age: 25, special: [] }), TODAY).rank.special, 0);
 });
+
+const femaleJob = () => legacy("경력보유여성 등 취업지원", { summary: "구직을 희망하는 여성에게 새일센터를 통해 종합적인 취업지원서비스 제공", checklist: ["경력보유여성 등 구직 희망 여성"], age: { min: 0, max: 99 } });
+const youthJob = () => legacy("청년 취업 지원", { summary: "구직 청년 취업 지원", checklist: ["만 19~34세 구직 청년"], age: { min: 19, max: 34 } });
+
+test("여성 전용 사업: 미선택은 뒤로(높음 불가), 선택하면 상승, 해당 없음이면 명백한 전용만 불일치", () => {
+  const f = femaleJob(), y = youthJob();
+  const u = U({ age: 26, region: "경기도", employment: "취준생", student: "notEnrolled" });
+  const rf = SM.classify(f, u, TODAY), ry = SM.classify(y, u, TODAY);
+  assert.notEqual(rf.grade, "high");
+  assert.equal(rf.rank.special, 1);
+  assert.ok(SM.compareFit(ry, rf) < 0);                                            // 일반 청년 사업이 먼저
+  assert.ok(rf.reasons.some((x) => x.special && /특정 자격 확인 필요: 여성/.test(x.text)));
+  const sel = SM.classify(f, U({ age: 26, employment: "취준생", special: ["female"] }), TODAY);
+  assert.equal(sel.rank.special, 0);
+  assert.ok(sel.rank.matched > rf.rank.matched);
+  assert.notEqual(sel.grade, "mismatch");
+  assert.equal(grade(f, U({ age: 26, employment: "취준생", special: [] })), "mismatch");          // 해당 없음 + 제목·대상 모두 여성 전용
+  assert.notEqual(grade(f, U({ age: 26, employment: "취준생", special: ["disability"] })), "mismatch");   // 다른 자격만 고른 것은 여성 여부를 답한 게 아니다
+  // 단어가 스친 것만으로는 전용이 아니다
+  const mention = legacy("지역 청년 창업 지원", { summary: "여성 창업가 사례를 포함한 청년 창업 교육", checklist: ["만 19~39세 청년"], age: { min: 19, max: 39 } });
+  assert.equal(SM.classify(mention, U({ special: [] }), TODAY).rank.special, 0);
+  assert.notEqual(grade(mention, U({ special: [] })), "mismatch");
+  // 임신·출산은 여성 전용 규칙과 별개(가구 구성으로만 연결)
+  const preg = legacy("임산부 건강관리 지원", { summary: "임신 중인 여성에게 건강관리 지원", checklist: ["임신 중인 여성"], age: { min: 0, max: 99 } });
+  const rp = SM.classify(preg, U({ age: 30, special: [], household: "pregnant" }), TODAY);
+  assert.notEqual(rp.grade, "mismatch");
+  assert.ok(!rp.reasons.some((x) => /여성/.test(x.text) && x.kind !== "match"));
+  assert.equal(rp.rank.special, 0);
+});
+
+test("자녀 연령대 선택: 3~5세 사업은 선택에 따라 일치/불일치/확인 필요로 갈린다", () => {
+  const nuri = legacy("유아학비 (누리과정) 지원", {
+    summary: "유치원에 다니는 3~5세 아동에게 유아학비, 방과후과정비 등 지원",
+    checklist: ["지원대상 : 국공립유치원 및 사립유치원에 다니는  만 3~5세 아동", "신청인 : 아동의 보호자"], age: { min: 3, max: 5 }
+  });
+  const base = { age: 24, employment: "대학생", student: "enrolled" };
+  const k = (ages, hh) => SM.classify(nuri, U(Object.assign({}, base, { household: hh || "kids", childAges: ages })), TODAY);
+  assert.equal(grade(nuri, U(Object.assign({}, base, { household: "single" }))), "mismatch");     // 자녀 없음
+  const hit = k(["3-5"]);
+  assert.equal(hit.grade, "check");
+  assert.notEqual(hit.grade, "high");                                                // 다른 필수 조건이 남아 높음으로 확정하지 않는다
+  assert.ok(hit.reasons.some((x) => x.kind === "match" && /자녀 연령대 일치/.test(x.text)));
+  assert.equal(hit.rank.special, 0);
+  assert.equal(k(["elem"]).grade, "mismatch");                                       // 초등학생만 선택
+  assert.equal(k(["teen", "adult"]).grade, "mismatch");
+  assert.equal(k(["elem", "3-5"]).grade, "check");                                   // 여러 자녀 중 하나라도 해당
+  const un = k([]);
+  assert.equal(un.grade, "check");
+  assert.ok(un.reasons.some((x) => /자녀 연령 확인 필요/.test(x.text)));
+  assert.equal(un.rank.special, 1);
+  assert.equal(k(["unknown"]).rank.special, 1);
+  assert.equal(k(["unknown"]).grade, "check");
+  assert.equal(k(["elem"], "singleParent").grade, "mismatch");                       // 한부모도 동일
+  // 같은 이유가 중복되지 않는다
+  const dup = k(["3-5", "0-2", "elem"]).reasons.map((x) => x.text);
+  assert.equal(new Set(dup).size, dup.length);
+  // 위탁·입양·돌봄 예외 유지
+  const foster = legacy("위탁가정 아동 양육 지원", { summary: "만 0~17세 아동을 위탁하는 가정 지원", checklist: ["만 0~17세 위탁 아동"], age: { min: 0, max: 17 } });
+  assert.notEqual(grade(foster, U({ age: 40, household: "kids", childAges: ["adult"] })), "mismatch");
+  // 가구 미응답은 숨기지 않고 뒤로
+  assert.equal(grade(nuri, U(Object.assign({}, base, { household: "" }))), "check");
+});

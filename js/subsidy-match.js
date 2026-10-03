@@ -110,6 +110,9 @@
   // 신청 주체·역할을 가리키는 표지(보호자·교사)는 "서로 다른 대상 유형"이 아니므로 택일 나열 판단에서 세지 않는다.
   var ROLE_MARKER_SRC = ["보호자|학부모", "교사|교직원|교원"];
   // 특수 자격 신호: 제목에 있으면 "그 자격 전용 사업"으로 본다(입력 칩에 없는 자격 포함).
+  // 자녀 연령대 선택값 → 만 나이 범위
+  var CHILD_AGE_BANDS = { "0-2": [0, 2], "3-5": [3, 5], "elem": [6, 13], "teen": [14, 19], "adult": [20, 120] };
+  var FEMALE_EXCLUDE_RE = /임신|임산부|출산|산모|난임|남성|남녀|성별s*무관/;
   var FACILITY_RE = /아동복지시설|보호대상아동|양육시설|그룹홈/;
   var JUVENILE_RE = /소년원|출원생|보호관찰|소년범|출소자/;
   var SPECIAL_LABEL = { disability: "장애인", veteran: "보훈·군 복무 관련", lowIncome: "기초수급·차상위", multicultural: "다문화·북한이탈", victim: "피해자(범죄·재난·산재 등)", careLeaver: "보호종료아동" };
@@ -408,6 +411,10 @@
     STATUS_GROUPS.forEach(function (g) { if (hasQual(RE[g], g)) specialQuals.push({ key: g, label: SPECIAL_LABEL[g] }); });
     if (altCleared ? RE.singleParent.test(srcText) : (singleParentFlag || softSingleParent)) specialQuals.push({ key: "singleParent", label: "한부모·조손 가구" });
     if (RE.license.test(srcText)) specialQuals.push({ key: "license", label: "특정 자격·면허 소지자" });
+    // 여성 전용: 제목·요약에 여성이 대상으로 나오고 선정기준 첫 줄에도 여성이 대상으로 명시된 경우만(단어가 스친 것만으로 판단하지 않음).
+    var femaleOnly = /여성/.test(head) && coreList.slice(0, 2).some(function (c) { return /여성/.test(c); }) && !FEMALE_EXCLUDE_RE.test(head + " " + coreList.slice(0, 2).join(" "));
+    var femaleStrict = femaleOnly && /여성/.test(title);
+    if (femaleOnly) specialQuals.push({ key: "female", label: "여성 대상" });
     var childNoun = ["아동", "어린이", "영유아", "유아", "초등학생", "중학생", "고등학생", "청소년"].filter(function (w) { return head.indexOf(w) !== -1; })[0] || "자녀";
 
     // 직업 유형: 제목·요약·핵심 문구 첫 줄(제외 문구 제외)에 한 가지 유형만 나올 때 대상 유형으로 본다.
@@ -460,7 +467,7 @@
       tags: p.targetEmployment || [],
       groups: groups, multiGroup: multiGroup, enumerated: enumerated, qualifier: qualifier,
       senior: seniorFlag, parenting: parentingFlag, minor: minorFlag, singleParent: singleParentFlag,
-      female: /여성/.test(head), license: RE.license.test(head),
+      female: /여성/.test(head), femaleOnly: femaleOnly, femaleStrict: femaleStrict, license: RE.license.test(head),
       restrictive: restrictive, specialQuals: specialQuals, childNoun: childNoun, childExempt: CHILD_EXEMPT_RE.test(head + " " + coreText), softGroups: softGroups, softSingleParent: softSingleParent, softParenting: softParenting, studentChild: studentChild,
       empType: empType, studentSoft: studentSoft, workerSoft: workerSoft, institutional: institutional, multiEmp: typesAll.length > 1, empTypeExplicit: empTypeExplicit,
       youthOriented: (age.max !== null && age.max <= 45) || /청년/.test(head),
@@ -568,7 +575,16 @@
         var childHardOut = (below && spec.minHard) || (above && spec.maxHard);
         var careSel = Array.isArray(user.special) && user.special.indexOf("careLeaver") !== -1;
         var childOnlyExempt = (careSel && prof.specialQuals.some(function (q) { return q.key === "facility"; })) || prof.childExempt || prof.groups.careLeaver || prof.softGroups.careLeaver || prof.groups.disability || prof.softGroups.disability;
-        if (hasKids) add("unknown", "자녀 연령 확인 필요 (" + shortRange + " " + prof.childNoun + " 대상)", { blocking: true });
+        var bandKeys = (user.household === "kids" || user.household === "singleParent") && Array.isArray(user.childAges) ? user.childAges.filter(function (k) { return CHILD_AGE_BANDS[k]; }) : [];
+        var pMin = prof.hasMin ? prof.min : 0, pMax = prof.hasMax ? prof.max : 120;
+        var bandHit = bandKeys.filter(function (k) { return CHILD_AGE_BANDS[k][0] <= pMax && CHILD_AGE_BANDS[k][1] >= pMin; });
+        var bandNames = { "0-2": "만 0~2세", "3-5": "만 3~5세", "elem": "초등학생", "teen": "중·고등학생", "adult": "성인 자녀" };
+        if (hasKids && bandKeys.length && bandHit.length) {
+          add("match", "자녀 연령대 일치 (" + bandNames[bandHit[0]] + ")", { strong: false, sel: true });
+          add("unknown", "자녀 세부 연령·이용 여부 확인 필요 (" + shortRange + " " + prof.childNoun + " 대상)", { blocking: true });
+        } else if (hasKids && bandKeys.length && !childOnlyExempt && childHardOut) {
+          add("mismatch", "연령 조건 불일치: " + shortRange + " " + prof.childNoun + " 대상 (선택한 자녀 연령대와 다름)");
+        } else if (hasKids) { childDemote = true; add("unknown", "자녀 연령 확인 필요 (" + shortRange + " " + prof.childNoun + " 대상)", { blocking: true }); }
         else if (childHardOut && !childOnlyExempt && user.household === "single") add("mismatch", "연령 조건 불일치: " + shortRange + " " + prof.childNoun + " 대상");
         else if (childHardOut && !childOnlyExempt) { childDemote = true; add("unknown", "자녀 대상 사업 (" + shortRange + " " + prof.childNoun + ") — 자녀가 있는 경우에만 해당", { blocking: true }); }   // 가구 미응답: 제외하지 않고 뒤로 보낸다
         // 그 밖에는 아래 가구 구성 단계에서 확인 필요로 둔다.
@@ -648,7 +664,12 @@
       add("unknown", "소득이 있어야 하는 사업 — 소득 발생 여부 확인 필요", { blocking: true });
     }
     if (prof.academicGraduated) add("unknown", "졸업·학적 조건 확인 필요", { blocking: true });
-    if (prof.female) add("unknown", "여성 대상 사업 — 해당 시 확인", { blocking: true });
+    if (prof.femaleOnly) {
+      var femSel = Array.isArray(user.special) && user.special.indexOf("female") !== -1;
+      if (femSel) { add("match", "여성 대상 해당 (입력 기준)", { strong: false, sel: true }); add("unknown", "세부 요건(경력단절 등) 확인 필요", { blocking: true }); }
+      else if (Array.isArray(user.special) && user.special.length === 0 && prof.femaleStrict) add("mismatch", "여성 전용 사업 (특별 자격 '해당 없음')");
+      else add("unknown", "여성 대상 사업 — 해당 시 확인", { blocking: true, dup: true });
+    } else if (prof.female && !FEMALE_EXCLUDE_RE.test(prof.head)) add("unknown", "여성 대상 사업 — 해당 시 확인", { blocking: true });
     if (prof.license) add("unknown", "특정 자격·면허 소지자 대상 — 해당 시 확인", { blocking: true, dup: true });
     if (age !== null && age <= 39 && prof.youthText && /청년/.test(prof.head) && !hasReason(reasons, "mismatch") && !prof.enumerated) {
       add("match", "청년 대상 사업", { strong: true });
@@ -737,6 +758,7 @@
     var unmet = prof.specialQuals.filter(function (q) {
       if (STATUS_GROUPS.indexOf(q.key) !== -1) return !(Array.isArray(user.special) && user.special.indexOf(q.key) !== -1);
       if (q.key === "singleParent") return user.household !== "singleParent";
+      if (q.key === "female") return !(Array.isArray(user.special) && user.special.indexOf("female") !== -1);
       if (q.key === "facility") return !(Array.isArray(user.special) && user.special.indexOf("careLeaver") !== -1);
       return true;
     });
