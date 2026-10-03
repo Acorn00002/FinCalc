@@ -35,8 +35,8 @@ function doc(title, o) {
   };
 }
 const U = (o) => Object.assign({ age: 24, region: "서울특별시", employment: "취준생", student: "", income: "", household: "", housing: "", special: null, applyStatus: "" }, o || {});
-const grade = (p, u) => SM.classify(p, u, TODAY).grade;
-const has = (p, u, kind, re) => SM.classify(p, u, TODAY).reasons.some((r) => r.kind === kind && re.test(r.text));
+const grade = (p, u) => SM.classifyAuto(p, u, TODAY).grade;
+const has = (p, u, kind, re) => SM.classifyAuto(p, u, TODAY).reasons.some((r) => r.kind === kind && re.test(r.text));
 
 const LOAN = () => doc("일반 상환 학자금 특별상환유예대출", {
   summary: "경제적 곤란 사유가 발생한 일반 상환 학자금대출자의 원리금 상환을 일정기간 유예",
@@ -93,7 +93,7 @@ test("본인과 부모 모두 거주 조건: 타 지역=불일치, 본인 일치
   const p = doc("강원 가족 거주 지원", { regionName: GANGWON, target: AND_TEXT });
   assert.equal(p.eligibility.regionRequirement.subject, "applicant_and_parent");
   assert.equal(grade(p, U({ region: "서울특별시" })), "mismatch");
-  const r = SM.classify(p, U({ region: GANGWON }), TODAY);
+  const r = SM.classifyAuto(p, U({ region: GANGWON }), TODAY);
   assert.equal(r.grade, "check");
   assert.ok(r.reasons.some((x) => x.kind === "unknown" && /부모의 거주지/.test(x.text)));
 });

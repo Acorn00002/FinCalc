@@ -44,8 +44,8 @@ function legacy(title, o) {
     endDate: null, checklist: o.checklist || [], targetAge: o.age || { min: 0, max: 99 }, targetRegions: o.regions || ["전국"], targetEmployment: [], source: "gov24"
   };
 }
-const grade = (p, u) => SM.classify(p, u, TODAY).grade;
-const texts = (p, u) => SM.classify(p, u, TODAY).reasons.map((r) => r.kind + ":" + r.text);
+const grade = (p, u) => SM.classifyAuto(p, u, TODAY).grade;
+const texts = (p, u) => SM.classifyAuto(p, u, TODAY).reasons.map((r) => r.kind + ":" + r.text);
 const U = (o) => Object.assign({ age: 24, region: "서울특별시", employment: "취준생", student: "", income: "", household: "", housing: "", special: null, applyStatus: "" }, o || {});
 const RANGE = (min, max) => ({ textRanges: [{ min: min, max: max }], exceptions: [], tiered: false, birthYears: null });
 
@@ -82,8 +82,8 @@ test("제목의 전세·월세 단어만으로 현재 거주 상태를 단정해
 });
 
 test("사업자 단어가 제목에 있어도 사용자구분이 개인이면 개인 사업으로 분류한다", () => {
-  assert.equal(SM.classify(v2("소상공인 출신 청년 재도전 지원", { core: "만 19~39세 청년" }), U(), TODAY).audience, "personal");
-  assert.equal(SM.classify(v2("소상공인 경영안정 자금", { audience: "business" }), U(), TODAY).audience, "business");
+  assert.equal(SM.classifyAuto(v2("소상공인 출신 청년 재도전 지원", { core: "만 19~39세 청년" }), U(), TODAY).audience, "personal");
+  assert.equal(SM.classifyAuto(v2("소상공인 경영안정 자금", { audience: "business" }), U(), TODAY).audience, "business");
 });
 
 test("선정기준의 제외 문구는 대상 문구와 분리된다 (수급자 제외 ≠ 수급자 대상)", () => {
@@ -161,7 +161,7 @@ test("신청 상태: 종료·중단은 기본에서 불일치(높음 불가), �
   assert.equal(grade(mk("-", { checklist: ["* '24년부터 신규지원 중단"] }), U()), "mismatch");
   assert.equal(grade(mk("상시신청"), U({ age: 25 })), "high");
   assert.notEqual(grade(mk("2026.11.01~2026.11.30"), U()), "mismatch");
-  assert.equal(SM.classify(mk("2026.05.04~2026.05.20"), U(), TODAY).applyState, "closed");
+  assert.equal(SM.classifyAuto(mk("2026.05.04~2026.05.20"), U(), TODAY).applyState, "closed");
 });
 
 test("신청 상태 선택 필터: 선택과 명백히 다른 사업만 불일치, 상태를 알 수 없으면 확인 필요, 종료 사업은 높음 불가", () => {
@@ -231,7 +231,7 @@ test("가구 구성: 한부모·임신·출산 사업은 가구 구성만으로 
 
 test("근거가 부족하면 판정 이유에 '공식 공고문 추가 확인 필요'가 표시되고, 여러 대상 나열·공고 위임은 높음이 아니다", () => {
   const p = v2("복합 지원", { age: { min: 19, max: 34 }, core: "만 19~34세 청년", ageInfo: RANGE(19, 34), income: { rules: ["중위소득 100% 이하"], percents: [100], varies: false } });
-  const r = SM.classify(p, U(), TODAY);
+  const r = SM.classifyAuto(p, U(), TODAY);
   assert.equal(r.grade, "check");
   assert.ok(r.reasons.some((x) => /공식 공고문 추가 확인 필요/.test(x.text)));
   const multi = v2("행복주택 공급", { core: "대학생, 청년(19~39세), (예비)신혼부부, 한부모가족, 주거급여수급자, 고령자, 산업단지 근로자" });
@@ -270,9 +270,9 @@ test("자녀 대상 사업(3~5세 아동): 숫자 연령이 명시되고 자녀�
     summary: "유치원에 다니는 3~5세 아동에게 유아학비, 방과후과정비 등 지원",
     checklist: ["지원대상 : 국공립유치원 및 사립유치원에 다니는  만 3~5세 아동", "신청인 : 아동의 보호자"], age: { min: 3, max: 5 }
   });
-  const r = SM.classify(nuri, U({ age: 24, employment: "대학생", student: "enrolled", household: "single" }), TODAY);
+  const r = SM.classifyAuto(nuri, U({ age: 24, employment: "대학생", student: "enrolled", household: "single" }), TODAY);
   assert.equal(r.grade, "mismatch");
-  const un = SM.classify(nuri, U({ age: 24, employment: "대학생", student: "enrolled" }), TODAY);   // 가구 미응답: 제외하지 않고 뒤로
+  const un = SM.classifyAuto(nuri, U({ age: 24, employment: "대학생", student: "enrolled" }), TODAY);   // 가구 미응답: 제외하지 않고 뒤로
   assert.equal(un.grade, "check");
   assert.equal(un.rank.special, 1);
   assert.ok(r.reasons.some((x) => x.kind === "mismatch" && x.text === "연령 조건 불일치: 3~5세 아동 대상"));
@@ -280,7 +280,7 @@ test("자녀 대상 사업(3~5세 아동): 숫자 연령이 명시되고 자녀�
   assert.equal(grade(nuri, U({ age: 24, household: "kids" })), "check");        // 자녀가 있다고 답하면 자녀 연령 확인으로
   assert.equal(grade(nuri, U({ age: 24, household: "pregnant" })), "check");
   assert.equal(grade(nuri, U({ age: 38, household: "" })), "check");            // 미응답이면 나이와 무관하게 제외하지 않는다
-  const kids = SM.classify(nuri, U({ age: 33, household: "kids" }), TODAY);
+  const kids = SM.classifyAuto(nuri, U({ age: 33, household: "kids" }), TODAY);
   assert.ok(kids.reasons.some((x) => x.kind === "unknown" && /자녀 연령 확인 필요 \(3~5세 아동 대상\)/.test(x.text)));
   assert.notEqual(kids.grade, "high");
   // 위탁·입양·돌봄 같은 예외 문구가 있으면 본인이 양육하지 않아도 대상일 수 있다
@@ -290,7 +290,7 @@ test("자녀 대상 사업(3~5세 아동): 숫자 연령이 명시되고 자녀�
 
 test("제목·요약의 연령 문구가 구조화 연령 필드보다 우선한다", () => {
   const senior = legacy("노후 안심 지원", { summary: "만 65세 이상에게 노후 생활비 지원", checklist: ["신청 가능"], age: { min: 0, max: 99 } });
-  const r = SM.classify(senior, U({ age: 24 }), TODAY);
+  const r = SM.classifyAuto(senior, U({ age: 24 }), TODAY);
   assert.equal(r.grade, "mismatch");
   assert.ok(r.reasons.some((x) => x.kind === "mismatch" && /연령 조건 불일치: 만 65세 이상 대상/.test(x.text)));
   // 숫자 연령이 없는 '청소년' 같은 단어만으로는 기존처럼 보수적으로 확인 필요
@@ -304,13 +304,13 @@ test("특수 자격(소년원 출원생 등) 전용 사업: 연령이 맞아도 
   });
   const general = legacy("청년 대학생 학업 지원", { summary: "청년 대학생에게 학업 지원", checklist: ["만 19~34세 청년 대학생"], age: { min: 19, max: 34 } });
   const u = U({ age: 24, employment: "대학생", student: "enrolled" });
-  const rj = SM.classify(juvenile, u, TODAY);
+  const rj = SM.classifyAuto(juvenile, u, TODAY);
   assert.equal(rj.grade, "check");
   assert.ok(rj.reasons.some((x) => x.special && x.text === "특정 자격 확인 필요: 소년원 출원생 등"));
   assert.ok(rj.reasons.some((x) => x.special && x.text === "연령은 일치하지만 특수 자격 확인 필요"));
   assert.ok(SM.pickReasons(rj, 4).slice(0, 2).every((x) => x.special));            // 카드에서도 맨 앞에 보인다
   assert.equal(rj.rank.special, 1);
-  const rg = SM.classify(general, u, TODAY);
+  const rg = SM.classifyAuto(general, u, TODAY);
   assert.equal(rg.rank.special, 0);
   assert.ok(SM.compareFit(rg, rj) < 0);                                            // 일반 청년·대학생 사업이 먼저
   assert.equal(SM.compareFit(rj, rj), 0);
@@ -324,8 +324,8 @@ test("특수 자격을 직접 고르면 해당 전용 사업의 순위가 올라
   const care = legacy("자립준비청년 자립정착금", { summary: "보호종료 자립준비청년 정착금 지원", checklist: ["보호종료 후 5년 이내 자립준비청년 만 18~24세"], age: { min: 18, max: 24 } });
   const cases = [[dis, "disability"], [vet, "veteran"], [care, "careLeaver"]];
   cases.forEach(([p, key]) => {
-    const none = SM.classify(p, U({ age: 22, special: null }), TODAY);
-    const picked = SM.classify(p, U({ age: 22, special: [key] }), TODAY);
+    const none = SM.classifyAuto(p, U({ age: 22, special: null }), TODAY);
+    const picked = SM.classifyAuto(p, U({ age: 22, special: [key] }), TODAY);
     assert.equal(none.rank.special, 1, p.title + " 미선택");
     assert.equal(picked.rank.special, 0, p.title + " 선택");
     assert.ok(picked.rank.matched > none.rank.matched, p.title + " 일치 가중");
@@ -338,22 +338,22 @@ test("특수 자격을 직접 고르면 해당 전용 사업의 순위가 올라
 test("상시 신청이라는 이유만으로 관련도가 올라가지 않는다 (rank는 신청 상태를 보지 않는다)", () => {
   const always = legacy("청년 일반 지원", { checklist: ["만 19~34세 청년"], age: { min: 19, max: 34 }, deadline: "상시신청" });
   const dated = legacy("청년 일반 지원2", { checklist: ["만 19~34세 청년"], age: { min: 19, max: 34 }, deadline: "2026.10.05~2026.10.20" });
-  const a = SM.classify(always, U({ age: 24 }), TODAY), d = SM.classify(dated, U({ age: 24 }), TODAY);
+  const a = SM.classifyAuto(always, U({ age: 24 }), TODAY), d = SM.classifyAuto(dated, U({ age: 24 }), TODAY);
   assert.equal(SM.compareFit(a, d), 0);
   assert.deepEqual(a.rank, d.rank);
 });
 
 test("제목 단독 특수 자격 사업은 요약에 쉼표가 있어도 전용으로 보고, 시설 보호 아동 사업도 특수 자격으로 본다", () => {
   const nk = legacy("북한이탈주민 자산형성 지원 (미래행복통장)", { summary: "북한이탈주민 대상으로 매월 10~50만 원 저축 시, 적립금과 동일한 금액 지원", checklist: ["아래 해당 요건 모두 충족하는 북한이탈주민", "3개월 이상 취업, 사업 등의 경제활동 상태인 자", "가입 신청일 기준 만 18세 이상"], age: { min: 18, max: 99 } });
-  const r = SM.classify(nk, U({ age: 29, special: [] }), TODAY);
+  const r = SM.classifyAuto(nk, U({ age: 29, special: [] }), TODAY);
   assert.equal(r.rank.special, 1);
   assert.notEqual(r.grade, "high");
-  const care = SM.classify(legacy("아동복지시설 아동치료재활지원", { summary: "시설 보호 아동 치료", checklist: ["아동복지시설 보호 아동 만 6~12세"], age: { min: 6, max: 12 } }), U({ age: 24, household: "kids" }), TODAY);
+  const care = SM.classifyAuto(legacy("아동복지시설 아동치료재활지원", { summary: "시설 보호 아동 치료", checklist: ["아동복지시설 보호 아동 만 6~12세"], age: { min: 6, max: 12 } }), U({ age: 24, household: "kids" }), TODAY);
   assert.equal(care.rank.special, 1);
   assert.ok(care.reasons.some((x) => x.special && /아동복지시설/.test(x.text)));
   // 택일 나열 사업은 전용으로 보지 않는다
   const alt = legacy("청년·장애인 일자리 지원", { summary: "청년 및 장애인 일자리", checklist: ["만 19~34세 청년 또는 등록장애인"], age: { min: 19, max: 34 } });
-  assert.equal(SM.classify(alt, U({ age: 25, special: [] }), TODAY).rank.special, 0);
+  assert.equal(SM.classifyAuto(alt, U({ age: 25, special: [] }), TODAY).rank.special, 0);
 });
 
 const femaleJob = () => legacy("경력보유여성 등 취업지원", { summary: "구직을 희망하는 여성에게 새일센터를 통해 종합적인 취업지원서비스 제공", checklist: ["경력보유여성 등 구직 희망 여성"], age: { min: 0, max: 99 } });
@@ -362,12 +362,12 @@ const youthJob = () => legacy("청년 취업 지원", { summary: "구직 청년 
 test("여성 전용 사업: 미선택은 뒤로(높음 불가), 선택하면 상승, 해당 없음이면 명백한 전용만 불일치", () => {
   const f = femaleJob(), y = youthJob();
   const u = U({ age: 26, region: "경기도", employment: "취준생", student: "notEnrolled" });
-  const rf = SM.classify(f, u, TODAY), ry = SM.classify(y, u, TODAY);
+  const rf = SM.classifyAuto(f, u, TODAY), ry = SM.classifyAuto(y, u, TODAY);
   assert.notEqual(rf.grade, "high");
   assert.equal(rf.rank.special, 1);
   assert.ok(SM.compareFit(ry, rf) < 0);                                            // 일반 청년 사업이 먼저
   assert.ok(rf.reasons.some((x) => x.special && /특정 자격 확인 필요: 여성/.test(x.text)));
-  const sel = SM.classify(f, U({ age: 26, employment: "취준생", special: ["female"] }), TODAY);
+  const sel = SM.classifyAuto(f, U({ age: 26, employment: "취준생", special: ["female"] }), TODAY);
   assert.equal(sel.rank.special, 0);
   assert.ok(sel.rank.matched > rf.rank.matched);
   assert.notEqual(sel.grade, "mismatch");
@@ -375,11 +375,11 @@ test("여성 전용 사업: 미선택은 뒤로(높음 불가), 선택하면 상
   assert.notEqual(grade(f, U({ age: 26, employment: "취준생", special: ["disability"] })), "mismatch");   // 다른 자격만 고른 것은 여성 여부를 답한 게 아니다
   // 단어가 스친 것만으로는 전용이 아니다
   const mention = legacy("지역 청년 창업 지원", { summary: "여성 창업가 사례를 포함한 청년 창업 교육", checklist: ["만 19~39세 청년"], age: { min: 19, max: 39 } });
-  assert.equal(SM.classify(mention, U({ special: [] }), TODAY).rank.special, 0);
+  assert.equal(SM.classifyAuto(mention, U({ special: [] }), TODAY).rank.special, 0);
   assert.notEqual(grade(mention, U({ special: [] })), "mismatch");
   // 임신·출산은 여성 전용 규칙과 별개(가구 구성으로만 연결)
   const preg = legacy("임산부 건강관리 지원", { summary: "임신 중인 여성에게 건강관리 지원", checklist: ["임신 중인 여성"], age: { min: 0, max: 99 } });
-  const rp = SM.classify(preg, U({ age: 30, special: [], household: "pregnant" }), TODAY);
+  const rp = SM.classifyAuto(preg, U({ age: 30, special: [], household: "pregnant" }), TODAY);
   assert.notEqual(rp.grade, "mismatch");
   assert.ok(!rp.reasons.some((x) => /여성/.test(x.text) && x.kind !== "match"));
   assert.equal(rp.rank.special, 0);
@@ -391,7 +391,7 @@ test("자녀 연령대 선택: 3~5세 사업은 선택에 따라 일치/불일�
     checklist: ["지원대상 : 국공립유치원 및 사립유치원에 다니는  만 3~5세 아동", "신청인 : 아동의 보호자"], age: { min: 3, max: 5 }
   });
   const base = { age: 24, employment: "대학생", student: "enrolled" };
-  const k = (ages, hh) => SM.classify(nuri, U(Object.assign({}, base, { household: hh || "kids", childAges: ages })), TODAY);
+  const k = (ages, hh) => SM.classifyAuto(nuri, U(Object.assign({}, base, { household: hh || "kids", childAges: ages })), TODAY);
   assert.equal(grade(nuri, U(Object.assign({}, base, { household: "single" }))), "mismatch");     // 자녀 없음
   const hit = k(["3-5"]);
   assert.equal(hit.grade, "check");

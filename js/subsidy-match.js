@@ -524,7 +524,7 @@
   //  - housing: "owner"|"jeonse"|"monthly"|"family"|""   (family = 부모님·기숙사 등 무상거주)
   //  - special: null(미응답) | string[] (빈 배열 = "해당 없음" 응답)
   //  - applyStatus: ""(기본: 종료·중단은 불일치로 숨김)|"open"|"upcoming"|"closed"|"discontinued"
-  function classify(p, user, todayStr) {
+  function classifyAuto(p, user, todayStr) {
     var prof = analyzeProgram(p, todayStr);
     var reasons = []; // { kind: "match"|"unknown"|"mismatch", text, strong?, blocking? }
     function add(kind, text, extra) {
@@ -547,21 +547,21 @@
     var closedNow = app.state === "closed" || app.state === "discontinued";
     var closedText = app.state === "discontinued" ? "신규 지원 중단 (공식 안내)" : "신청 기간 종료";
     if (!want) {
-      if (closedNow) add("mismatch", closedText);
+      if (closedNow) add("mismatch", closedText, { status: true });
       else if (app.roundClosedHint) add("unknown", "현재 접수 회차는 마감됐을 수 있음 — 신청 기간 확인 필요", { blocking: true });
     } else if (want === "closed" || want === "discontinued") {
       neverHigh = true;                                          // 종료·중단 사업은 참고용 — 높은 적합도로 올리지 않는다
       if (app.state === want || (want === "closed" && closedNow)) add("match", "선택한 신청 상태와 일치 (" + APPLY_STATE_LABEL[app.state] + ")");
       else if (app.state === "unknown") add("unknown", "신청 상태를 확인할 수 없어요 — " + OFFICIAL_CHECK, { blocking: true });
-      else add("mismatch", "선택한 신청 상태(" + APPLY_STATE_LABEL[want] + ")와 다름 (현재 " + APPLY_STATE_LABEL[appKey] + ")");
+      else add("mismatch", "선택한 신청 상태(" + APPLY_STATE_LABEL[want] + ")와 다름 (현재 " + APPLY_STATE_LABEL[appKey] + ")", { status: true });
     } else if (want === "open") {
-      if (closedNow) add("mismatch", closedText);
-      else if (app.state === "upcoming") add("mismatch", "아직 신청 전 (신청 예정)");
+      if (closedNow) add("mismatch", closedText, { status: true });
+      else if (app.state === "upcoming") add("mismatch", "아직 신청 전 (신청 예정)", { status: true });
       else if (app.state === "open") add("match", "신청 중 (" + APPLY_STATE_LABEL[appKey] + ")");
       else add("unknown", "신청 가능 시기를 확인할 수 없어요 — " + OFFICIAL_CHECK, { blocking: true });
     } else if (want === "upcoming") {
-      if (closedNow) add("mismatch", closedText);
-      else if (app.state === "open") add("mismatch", "이미 신청 중 (" + APPLY_STATE_LABEL[appKey] + ")");
+      if (closedNow) add("mismatch", closedText, { status: true });
+      else if (app.state === "open") add("mismatch", "이미 신청 중 (" + APPLY_STATE_LABEL[appKey] + ")", { status: true });
       else if (app.state === "upcoming") add("match", "신청 예정");
       else add("unknown", "신청 가능 시기를 확인할 수 없어요 — " + OFFICIAL_CHECK, { blocking: true });
     }
@@ -827,9 +827,243 @@
   function compareFit(a, b) {
     var ra = a.rank || { matched: 0, unknown: 0, special: 0 }, rb = b.rank || { matched: 0, unknown: 0, special: 0 };
     if (ra.special !== rb.special) return ra.special - rb.special;
+    if ((ra.auto || 0) !== (rb.auto || 0)) return (ra.auto || 0) - (rb.auto || 0);             // 자동 판정에서 조건이 어긋나 보인 미검토 사업은 뒤로
+    if ((ra.region || 0) !== (rb.region || 0)) return (ra.region || 0) - (rb.region || 0);      // 다른 지역 기관 사업은 같은 조건이면 뒤로
+    if ((ra.gap || 0) !== (rb.gap || 0)) return (ra.gap || 0) - (rb.gap || 0);                  // 대상 직업군·상황이 사용자와 다른 사업은 뒤로
+    if ((ra.tier || 0) !== (rb.tier || 0)) return (ra.tier || 0) - (rb.tier || 0);               // 공식 공고 기반으로 정리한 사업 우선
     if (ra.matched !== rb.matched) return rb.matched - ra.matched;
     return ra.unknown - rb.unknown;
   }
+
+  // =====================================================================================
+  // 공식 공고 기반으로 조건을 정리한 핵심 사업(reviewed) 우선 구조
+  //  - reviewed: data/subsidy-eligibility-reviewed.json (공식 보조금24 상세를 사람이 대조해 구조화) — 높음·확인 필요·불일치 모두 가능
+  //  - unreviewed: 자동 추출·기존 필드만 있는 사업 — 높음 불가, 신청 종료·중단 외에는 불일치로 제외하지 않는다(정렬 보조 신호로만 사용)
+  //  - reviewed 파일이 없거나 불러오지 못해도(REVIEWED === null) 모든 사업을 unreviewed 안전 모드로 처리한다 — 공격적인 자동 판정(classifyAuto)으로 복귀하지 않는다
+  //  - 일부 항목만 잘못된 파일은 정상 항목만 쓰고 나머지는 unreviewed로 둔다(validateReviewed)
+  // =====================================================================================
+  var REVIEWED = null;
+  var REVIEWED_STATES = ["always", "open", "periodic", "agency", "closed", "discontinued", "unknown"];
+  var SPECIAL_CHIPS = ["disability", "veteran", "lowIncome", "multicultural", "victim", "careLeaver", "female"];
+  var REVIEWED_SPECIAL_LABEL = { disability: "장애인", veteran: "보훈·군 복무", lowIncome: "기초수급·차상위", multicultural: "다문화·북한이탈", victim: "피해자", careLeaver: "보호종료(자립준비청년)", female: "여성", juvenile: "소년원 출원생 등" };
+  var HOUSEHOLD_LABEL = { single: "1인 가구", couple: "부부·동거", pregnant: "임신·출산", kids: "자녀 양육", singleParent: "한부모", withFamily: "부모님·가족과 함께" };
+  // 화면의 가구 선택지 중 "(자녀 없음)"이 명시된 응답 — reviewed 사업에서는 자녀 전용 조건과 명백히 충돌한다
+  var NO_KIDS_HOUSEHOLDS = ["single", "couple", "withFamily"];
+  var HOUSING_REQ_LABEL = { monthly: "월세", jeonse: "전세", owner: "자가", family: "부모님 집·기숙사" };
+
+  function isYmd(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+  // reviewed 파일 검증: 출처·기준일·검토일·상태가 없는 항목, 중복 ID, 잘못된 스키마는 거부한다(해당 사업은 unreviewed로 처리).
+  function validateReviewed(payload) {
+    var map = {}, errors = [];
+    var list = payload && Array.isArray(payload.programs) ? payload.programs : null;
+    if (!list) return { map: null, errors: ["programs 배열 없음"], count: 0 };
+    list.forEach(function (e, i) {
+      var id = e && e.programId;
+      var bad = [];
+      if (!id || typeof id !== "string") bad.push("programId");
+      if (e.reviewStatus !== "reviewed") bad.push("reviewStatus");
+      if (e.schemaVersion !== 1) bad.push("schemaVersion");
+      if (typeof e.sourceUrl !== "string" || e.sourceUrl.indexOf("https://www.gov.kr/") !== 0) bad.push("sourceUrl");
+      if (!isYmd(e.sourceModifiedAt)) bad.push("sourceModifiedAt");
+      if (!isYmd(e.reviewedAt)) bad.push("reviewedAt");
+      if (typeof e.conditionsComplete !== "boolean") bad.push("conditionsComplete");
+      if (!e.applicationStatus || REVIEWED_STATES.indexOf(e.applicationStatus.state) === -1) bad.push("applicationStatus");
+      if (!Array.isArray(e.requiredUnknowns)) bad.push("requiredUnknowns");
+      if (id && map[id]) bad.push("중복 ID");
+      if (bad.length) { errors.push((id || "#" + i) + ": " + bad.join(",")); return; }
+      map[id] = e;
+    });
+    return { map: map, errors: errors, count: Object.keys(map).length };
+  }
+  function setReviewed(payload) {
+    if (payload === null) { REVIEWED = null; return { map: null, errors: [], count: 0 }; }
+    var v = validateReviewed(payload);
+    REVIEWED = v.map;
+    return v;
+  }
+  function reviewedEntryOf(p) { return REVIEWED && p && p.id ? (REVIEWED[p.id] || null) : null; }
+
+  function reviewedStatusOf(st, todayStr) {
+    var today = todayStr || new Date().toISOString().slice(0, 10);
+    if (st.state !== "open") return st.state;
+    var ps = st.periods || [];
+    if (!ps.length) return "open";
+    if (ps.some(function (x) { return x.start <= today && today <= x.end; })) return "open";
+    if (ps.some(function (x) { return x.start > today; })) return "upcoming";
+    return "closed";
+  }
+
+  function classifyReviewed(entry, p, user, todayStr) {
+    var reasons = [];
+    function add(kind, text, extra) { var r = { kind: kind, text: text }; if (extra) for (var k in extra) r[k] = extra[k]; reasons.push(r); }
+    user = user || {};
+    var age = (user.age !== null && user.age !== undefined && user.age !== "" && !isNaN(Number(user.age))) ? Number(user.age) : null;
+    var neverHigh = !entry.conditionsComplete;
+    var specialUnmet = false, childDemote = false, gap = entry.situational ? 1 : 0;   // gap: 입력으로 알 수 없는 상황(입시·시험·예비창업)이나 대상 직업군이 사용자와 다른 사업
+
+    // 1) 신청 상태
+    var st = reviewedStatusOf(entry.applicationStatus, todayStr);
+    var stKey = st === "always" ? "always" : (st === "open" || st === "upcoming" || st === "closed" || st === "discontinued" ? st : "unknown");
+    var want = user.applyStatus || "";
+    if (st === "closed" || st === "discontinued") {
+      if (want === "closed" || want === "discontinued") { add("match", "선택한 신청 상태와 일치 (" + APPLY_STATE_LABEL[st] + ")"); neverHigh = true; }
+      else add("mismatch", st === "closed" ? "신청 기간 종료 (공식 공고 기준)" : "신규 지원 중단 (공식 공고 기준)", { status: true });
+    } else if (want === "closed" || want === "discontinued") {
+      add("mismatch", "선택한 신청 상태(" + APPLY_STATE_LABEL[want] + ")와 다름", { status: true });
+    } else if (st === "upcoming") {
+      if (want === "open") add("mismatch", "아직 신청 전 (신청 예정)", { status: true }); else add("unknown", "신청 예정 — 신청 기간 확인 필요", { blocking: true });
+    } else if (st === "always" || st === "open") {
+      if (want === "upcoming") add("mismatch", "이미 신청 중", { status: true });
+    } else {
+      add("unknown", "신청 시기 확인 필요" + (entry.applicationStatus.note ? " (" + entry.applicationStatus.note + ")" : ""), { blocking: true });
+    }
+
+    // 2) 연령 (신청자 본인 / 자녀)
+    var ag = entry.age;
+    var hasKids = user.household === "kids" || user.household === "singleParent" || user.household === "pregnant";
+    if (ag && ag.subject === "applicant") {
+      var lo = ag.min, hi = ag.max;
+      var range = (lo != null && hi != null) ? "만 " + lo + "~" + hi + "세" : (lo != null ? "만 " + lo + "세 이상" : "만 " + hi + "세 이하");
+      if (age === null) add("unknown", "연령 확인 필요 (" + range + ")", { blocking: true });
+      else {
+        var exc = ag.exceptions && ag.exceptions.length;
+        var birthBased = exc && ag.exceptions.join(" ").indexOf("출생") !== -1;
+        var extHi = ag.extMax != null ? ag.extMax : (birthBased ? (hi != null ? hi + 1 : null) : (exc ? Infinity : hi));
+        var extLo = birthBased ? (lo != null ? lo - 1 : null) : (exc && ag.extMax == null ? -Infinity : lo);
+        var outLo = lo != null && age < lo, outHi = hi != null && age > hi;
+        if (!outLo && !outHi) add("match", "연령 조건 일치 (" + range + ")");
+        else if ((outHi && extHi != null && age <= extHi) || (outLo && extLo != null && age >= extLo)) add("unknown", "연령 예외 기준 확인 필요 (" + range + ", " + ag.exceptions[0] + ")", { blocking: true });
+        else add("mismatch", "연령 조건 불일치: " + range + " 대상");
+      }
+    } else if (ag && ag.subject === "child") {
+      var crange = "만 " + ag.min + "~" + ag.max + "세 자녀";
+      var hh = user.household || "";
+      if (NO_KIDS_HOUSEHOLDS.indexOf(hh) !== -1 && !(entry.household && (entry.household.required || []).indexOf("pregnant") !== -1)) add("mismatch", "자녀 대상 사업 (" + crange + ") — 입력: " + HOUSEHOLD_LABEL[hh] + "(자녀 없음)");
+      else if (!hasKids) { childDemote = true; add("unknown", "자녀 대상 사업 (" + crange + ") — 자녀가 있는 경우에만 해당", { blocking: true }); }
+      else {
+        var bands = (Array.isArray(user.childAges) ? user.childAges : []).filter(function (k) { return CHILD_AGE_BANDS[k]; });
+        var full = bands.filter(function (k) { return CHILD_AGE_BANDS[k][0] >= ag.min && CHILD_AGE_BANDS[k][1] <= ag.max; });
+        var part = bands.filter(function (k) { return CHILD_AGE_BANDS[k][0] <= ag.max && CHILD_AGE_BANDS[k][1] >= ag.min; });
+        if (full.length) add("match", "자녀 연령대 일치 (" + crange + ")", { sel: true });
+        else if (part.length) add("unknown", "자녀 세부 연령 확인 필요 (" + crange + ")", { blocking: true });
+        else if (bands.length) add("mismatch", "연령 조건 불일치: " + crange + " 대상 (선택한 자녀 연령대와 다름)");
+        else { childDemote = true; add("unknown", "자녀 연령 확인 필요 (" + crange + ")", { blocking: true }); }
+      }
+    }
+
+    // 3) 가구 (자녀 연령 사업은 위에서 판단)
+    if (entry.household && !(ag && ag.subject === "child")) {
+      var req = entry.household.required || [];
+      var hhv = user.household || "";
+      var labels = req.map(function (k) { return HOUSEHOLD_LABEL[k] || k; }).join("·");
+      if (hhv && req.indexOf(hhv) !== -1) add("match", "가구 조건 일치 (" + HOUSEHOLD_LABEL[hhv] + ")", { sel: true });
+      else if (NO_KIDS_HOUSEHOLDS.indexOf(hhv) !== -1 && req.indexOf("pregnant") === -1 && req.every(function (k) { return ["kids", "singleParent"].indexOf(k) !== -1; }))   // 임산부는 1인 가구일 수 있어 임신 포함 사업은 제외하지 않는다
+         add("mismatch", "가구 조건 불일치: " + labels + " 대상 (입력: " + HOUSEHOLD_LABEL[hhv] + ")");
+      else { add("unknown", "가구 조건 확인 필요 (" + labels + ")", { blocking: true }); if (hhv) gap = 1; }   // 가구를 답했는데 필요한 가구가 아니면 관련도 뒤로
+    }
+
+    // 4) 지역 — 공식 문구에 명시된 거주 요건만
+    var regionWeakMiss = false;
+    if (entry.regions && entry.regions.hard) {
+      var names = entry.regions.names || [];
+      var hit = !!user.region && regionsIntersect(names.reduce(function (a, n) { return a.concat(expandRegion(n)); }, []), user.region);
+      if (!user.region) add("unknown", "거주 지역 확인 필요 (" + names[0] + ")", { blocking: true });
+      else if (!hit) add("mismatch", names[0] + " 거주자 대상 (입력: " + user.region + ")");
+      else if (entry.regions.level === "sigungu") neverHigh = true;               // 시·도만 입력받으므로 시·군·구 거주는 requiredUnknowns로 확인
+      else add("match", "거주 지역 일치 (" + user.region + ")");
+    } else if (entry.regions && entry.regions.names && entry.regions.names.length) {
+      // 공식 대상 문구에 거주 요건은 없고 소관기관만 지자체인 사업 — 제외하지 않고 정렬에서만 뒤로
+      var whit = !!user.region && regionsIntersect(entry.regions.names, user.region);
+      if (user.region && !whit) { regionWeakMiss = true; add("unknown", "지역 사업으로 보이나 공식 거주요건 확인 필요 (" + entry.regions.names[0] + ")", { blocking: true }); }
+    }
+
+    // 5) 직업·학적
+    var userType = user.employment ? EMP_USER_TYPE[user.employment] : null;
+    if (entry.employment) {
+      var allowed = entry.employment.allowed || [];
+      var label = allowed.map(function (k) { return EMP_TYPE_LABEL[k] || k; }).join("·");
+      if (userType && allowed.indexOf(userType) !== -1) add("match", "직업 상태 일치 (" + label + ")");
+      else if (entry.employment.exclusive && userType === "jobSeek" && allowed.indexOf("jobSeek") === -1 && allowed.every(function (k) { return k === "worker" || k === "selfEmp"; }))
+        add("mismatch", label + " 대상 사업 (입력: " + user.employment + ")");
+      else { add("unknown", label + " 대상 여부 확인 필요", { blocking: true }); if (userType) gap = 1; }
+    }
+    if (entry.studentStatus === "enrolled") {
+      var stud = user.student === "enrolled" || user.employment === "대학생";
+      if (stud) add("match", "재학생 대상 사업 (입력: 재학 중)");
+      else if (user.student === "notEnrolled") add("mismatch", "재학생 대상 사업 (입력: 재학 중 아님)");
+      else add("unknown", "재학 여부 확인 필요", { blocking: true });
+    }
+
+    // 6) 소득 — 불일치로 쓰지 않는다
+    if (entry.income && entry.income.required) {
+      var band = user.income && INCOME_BANDS[user.income];
+      if (!entry.income.varies && entry.income.maxMedianPct && band && band.hi <= entry.income.maxMedianPct) add("match", "소득 기준 범위 내 (" + entry.income.note + ")");
+      else add("unknown", "소득 조건 확인 필요 (" + (entry.income.note || "공고 기준") + ")", { blocking: true });
+    }
+
+    // 7) 주거 — 불일치로 쓰지 않는다(미래 계약·이전 가능)
+    if (entry.housing) {
+      var hreq = entry.housing.required || [];
+      if (user.housing && hreq.indexOf(user.housing) !== -1) add("match", (HOUSING_REQ_LABEL[user.housing]) + " 거주 조건 일치 (입력 기준)");
+      else add("unknown", "주거 조건 확인 필요 (" + hreq.map(function (k) { return HOUSING_REQ_LABEL[k]; }).join("·") + (entry.housing.noHouse ? " · 무주택" : "") + ")", { blocking: true });
+    }
+
+    // 8) 특별 자격
+    var sq = entry.specialQualifications;
+    if (sq && sq.anyOf && sq.anyOf.length) {
+      var slabels = sq.anyOf.map(function (k) { return REVIEWED_SPECIAL_LABEL[k] || k; }).join("·");
+      var picked = Array.isArray(user.special) ? sq.anyOf.filter(function (k) { return user.special.indexOf(k) !== -1; }) : [];
+      var hhAlt = (sq.householdAlternatives || []).indexOf(user.household) !== -1;
+      if (picked.length) add("match", REVIEWED_SPECIAL_LABEL[picked[0]] + " 해당 (입력 기준)", { sel: true });
+      else if (hhAlt) add("match", HOUSEHOLD_LABEL[user.household] + " 가구 해당 (입력 기준)", { sel: true });
+      else if (sq.exclusive) {
+        var allChips = sq.anyOf.every(function (k) { return SPECIAL_CHIPS.indexOf(k) !== -1; });
+        // 가구를 답하지 않았거나 임신 가구일 때만 대체 가구(한부모 등)일 가능성을 열어 둔다 — 대체 가구를 직접 고른 경우는 위에서 이미 일치 처리했다.
+        var altOpen = (sq.householdAlternatives || []).length && (!user.household || user.household === "pregnant");   // 임신 가구는 이미 자녀가 있을 수 있어 열어 둔다
+        specialUnmet = true;
+        if (Array.isArray(user.special) && allChips && !sq.openEnded && !altOpen) add("mismatch", slabels + " 대상 사업 (특별 자격 미해당)");
+        else add("unknown", "특정 자격 확인 필요: " + slabels, { blocking: true, special: true });
+      }
+    }
+
+    // 9) 사람이 확인했지만 입력으로 알 수 없는 필수 조건
+    (entry.requiredUnknowns || []).forEach(function (t) { add("unknown", t + " — 확인 필요", { blocking: true }); });
+    if (!entry.conditionsComplete) add("unknown", "공식 조건 일부를 구조화하지 못함 — 공고 확인 필요", { blocking: true });
+
+    var hasMismatch = reasons.some(function (r) { return r.kind === "mismatch"; });
+    var blocking = reasons.some(function (r) { return r.kind === "unknown" && r.blocking; });
+    var matchedCount = reasons.reduce(function (n, r) { return n + (r.kind === "match" ? (r.sel ? 2 : 1) : 0); }, 0);
+    var statusOk = st === "always" || st === "open";
+    var grade = hasMismatch ? GRADE.MISMATCH : ((!blocking && !neverHigh && statusOk && isYmd(entry.sourceModifiedAt) && matchedCount > 0) ? GRADE.HIGH : GRADE.CHECK);
+    // 특별 자격 칩은 카드 앞쪽에
+    reasons.sort(function (a, b) { return (b.special ? 1 : 0) - (a.special ? 1 : 0); });
+    return {
+      program: p, grade: grade, audience: "personal", reasons: reasons, applyState: stKey,
+      reviewed: { sourceModifiedAt: entry.sourceModifiedAt, reviewedAt: entry.reviewedAt, sourceUrl: entry.sourceUrl, conditionsComplete: entry.conditionsComplete },
+      rank: { tier: 0, auto: 0, gap: gap, region: regionWeakMiss ? 1 : 0, matched: matchedCount, special: (specialUnmet || childDemote) ? 1 : 0,
+        unknown: reasons.filter(function (r) { return r.kind === "unknown" && r.blocking && !r.special; }).length }
+    };
+  }
+
+  // reviewed 파일이 있으면: 목록에 있는 사업은 reviewed 판정, 없는 사업은 자동 판정을 "공고 확인 필요"로 낮춘다.
+  function classify(p, user, todayStr) {
+    var entry = reviewedEntryOf(p);
+    if (entry) return classifyReviewed(entry, p, user, todayStr);
+    var r = classifyAuto(p, user, todayStr);
+    var autoMis = false;
+    var reasons = r.reasons.map(function (x) {
+      if (x.kind === "mismatch" && !x.status) { autoMis = true; return { kind: "unknown", text: "자동 판정: " + x.text + " — 공고 확인 필요", blocking: true, auto: true }; }
+      return x;
+    });
+    var stillMismatch = reasons.some(function (x) { return x.kind === "mismatch"; });
+    reasons.push({ kind: "unknown", text: "공고 확인 필요 (자동 판정 — 공식 조건 미검토)", blocking: true });
+    var rank = r.rank || {};
+    return {
+      program: r.program, grade: stillMismatch ? GRADE.MISMATCH : GRADE.CHECK, audience: r.audience, reasons: reasons, applyState: r.applyState, reviewed: null,
+      rank: { tier: 1, auto: autoMis ? 1 : 0, region: rank.region || 0, matched: rank.matched || 0, special: rank.special || 0, unknown: rank.unknown || 0 }
+    };
+  }
+  function reviewedCount() { return REVIEWED ? Object.keys(REVIEWED).length : 0; }
 
   function hasReason(reasons, kind) {
     for (var i = 0; i < reasons.length; i++) if (reasons[i].kind === kind) return true;
@@ -860,6 +1094,11 @@
     STATUS_GROUPS: STATUS_GROUPS,
     analyzeProgram: analyzeProgram,
     classify: classify,
+    classifyAuto: classifyAuto,
+    classifyReviewed: classifyReviewed,
+    validateReviewed: validateReviewed,
+    setReviewed: setReviewed,
+    reviewedCount: reviewedCount,
     pickReasons: pickReasons,
     compareFit: compareFit,
     isStrictlyClosed: isStrictlyClosed,

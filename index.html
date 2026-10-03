@@ -2400,7 +2400,7 @@ try {
       <div class="subsidy-detail-fit" id="subsidyDetailFit" hidden>
         <p class="subsidy-detail-fit-title"><i class="ph-duotone ph-scales"></i><span id="subsidyDetailFitGrade"></span></p>
         <ul class="subsidy-detail-fit-list" id="subsidyDetailFitList"></ul>
-        <p class="subsidy-detail-fit-note">입력한 조건을 기준으로 한 참고용 안내예요. 세부 자격과 공고문 확인이 필요해요.</p>
+        <p class="subsidy-detail-fit-note" id="subsidyDetailFitNote">입력한 조건을 기준으로 한 참고용 안내예요. 세부 자격과 공고문 확인이 필요해요.</p>
       </div>
 
       <div class="subsidy-checklist" id="subsidyDetailChecklist">
@@ -4393,6 +4393,7 @@ try {
   // 미리 supportPrograms 컬렉션에 동기화해두고, 여기서는 /api/support-programs를 통해
   // "필터 + cursor 페이지네이션"으로 필요한 만큼만 읽는다(컬렉션 전체를 한 번에 받지 않는다).
   var SUPPORT_PROGRAMS = [];            // 지금까지 불러온 사업(중복 제거)
+  var SUBSIDY_REVIEWED_ITEMS = [];      // 공식 공고 기반으로 조건을 정리한 핵심 사업 문서(ids로 따로 불러옴, 서버 필터와 무관)
   var subsidyProgramsLoaded = false;
   var subsidyLoadError = false;
   var subsidyLoading = false;
@@ -4508,6 +4509,50 @@ try {
     });
   }
   function loadSupportPrograms(){ fetchSubsidyPage(true); }
+  // 공식 공고 기반으로 조건을 정리한 핵심 사업(reviewed) 목록 — 정적 파일. 불러오지 못하면 모든 사업을 unreviewed 안전 모드(높음 없음·종료 외 불일치 없음)로 처리한다.
+  var subsidyReviewedState = "idle";   // idle | loading | ready | failed
+  function loadSubsidyReviewed(){
+    var SM = window.SubsidyMatch;
+    if (!SM || !SM.setReviewed || subsidyReviewedState === "loading" || subsidyReviewedState === "ready") return;
+    subsidyReviewedState = "loading";
+    fetch("/data/subsidy-eligibility-reviewed.json", { cache: "no-cache" }).then(function(res){
+      if (!res.ok) throw new Error("reviewed " + res.status);
+      return res.json();
+    }).then(function(json){
+      var v = SM.setReviewed(json);
+      if (!v.map) throw new Error("reviewed invalid");
+      loadSubsidyReviewedItems(Object.keys(v.map));
+      if (v.errors && v.errors.length) console.warn("검토 데이터 일부 제외:", v.errors.length + "건");
+      subsidyReviewedState = "ready";
+      if (subsidyProgramsLoaded) renderSubsidyList();
+    }).catch(function(){
+      SM.setReviewed(null);
+      subsidyReviewedState = "failed";
+    });
+  }
+  // 검토 사업 문서 조회 — 정적 문서 ID만 보내고 사용자 입력값은 보내지 않는다.
+  function loadSubsidyReviewedItems(ids){
+    if (!ids || !ids.length) return;
+    fetch("/api/support-programs?ids=" + encodeURIComponent(ids.slice(0, 50).join(","))).then(function(res){
+      if (!res.ok) throw new Error("reviewed items " + res.status);
+      return res.json();
+    }).then(function(json){
+      SUBSIDY_REVIEWED_ITEMS = (json.items || []).filter(function(it){ return it && it.id; }).map(normalizeSubsidyItem);
+      if (subsidyProgramsLoaded) renderSubsidyList();
+    }).catch(function(){ /* 실패해도 페이지로 불러온 사업만으로 계속 동작한다 */ });
+  }
+  function subsidyProgramsForRender(){
+    if (!SUBSIDY_REVIEWED_ITEMS.length) return SUPPORT_PROGRAMS;
+    var seen = {};
+    SUPPORT_PROGRAMS.forEach(function(p){ seen[p.id] = true; });
+    return SUPPORT_PROGRAMS.concat(SUBSIDY_REVIEWED_ITEMS.filter(function(p){ return !seen[p.id]; }));
+  }
+  function subsidyTrustDateText(ymd){ return String(ymd || "").replace(/-/g, "."); }
+  function subsidyTrustHtml(r){
+    var SM = window.SubsidyMatch;
+    if (r.reviewed) return '<span class="subsidy-trust is-reviewed"><i class="ph-duotone ph-seal-check"></i>공식 공고 기반 정리 · 기준일 ' + subsidyTrustDateText(r.reviewed.sourceModifiedAt) + '</span>';
+    return '<span class="subsidy-trust is-auto">공고 확인 필요 · 자동 판정</span>';
+  }
   // 상세 조건(특별 자격·한부모·임신·자녀 연령대)을 고른 사용자는 아직 읽지 않은 맞춤 사업을 놓치면 안 되므로 끝까지 탐색한다.
   // 판정은 브라우저에서만 하고, 서버에는 카테고리·지역·정렬·cursor만 보낸다.
   function subsidyHasDetailConditions(){
@@ -4806,7 +4851,7 @@ try {
       '<span class="subsidy-card-cat-mini" style="color:' + catMeta.color + ';">' + catMeta.label + '</span>' +
       '<h3 class="subsidy-card-title">' + escapeMyPageHtml(p.title) + '</h3>' +
       '<p class="subsidy-card-summary">' + escapeMyPageHtml(p.summary) + '</p>' +
-      '<div class="subsidy-fit-row"><span class="subsidy-grade-badge is-' + r.grade + '">' + SM.GRADE_LABEL[r.grade] + '</span>' + reasonChips + '</div>' +
+      '<div class="subsidy-fit-row"><span class="subsidy-grade-badge is-' + r.grade + '">' + SM.GRADE_LABEL[r.grade] + '</span>' + subsidyTrustHtml(r) + reasonChips + '</div>' +
       '<div class="subsidy-card-link">신청 자격 보기<i class="ph-duotone ph-arrow-right"></i></div>' +
     '</div>';
   }
@@ -4853,7 +4898,7 @@ try {
     var todayStr = formatDateYMD(new Date());
 
     var map = {};
-    var all = SUPPORT_PROGRAMS.filter(function(p){
+    var all = subsidyProgramsForRender().filter(function(p){
       return subsidyActiveCategory === "all" || p.category === subsidyActiveCategory;
     }).map(function(p){
       var r = SM.classify(p, user, todayStr);
@@ -4892,7 +4937,7 @@ try {
     var shown = buckets.high.length + buckets.check.length;
     heroCountEl.textContent = shown + morePlus;
     if (heroSubEl) {
-      heroSubEl.textContent = "높은 적합도 " + buckets.high.length + "건 · 추가 확인 필요 " + buckets.check.length + "건" +
+      heroSubEl.textContent = (buckets.high.length ? "높은 적합도 " + buckets.high.length + "건 · " : "") + "추가 확인 필요 " + buckets.check.length + "건" +
         (buckets.mismatch.length ? " · 조건 불일치 " + buckets.mismatch.length + "건은 기본 목록에서 숨겼어요" : "") +
         (subsidyHasMore ? " · 지금까지 불러온 " + SUPPORT_PROGRAMS.length + "건 기준" : "") +
         ". 입력 조건 기준의 참고 정보예요.";
@@ -4954,7 +4999,7 @@ try {
 
     listEl.querySelectorAll(".subsidy-card").forEach(function(card){
       var id = card.getAttribute("data-id");
-      var program = SUPPORT_PROGRAMS.filter(function(p){ return p.id === id; })[0];
+      var program = subsidyProgramsForRender().filter(function(p){ return p.id === id; })[0];
       card.addEventListener("click", function(){
         if (program) openSubsidyDetail(program);
       });
@@ -5069,7 +5114,10 @@ try {
       if (SM) {
         var fit = subsidyResultMap[program.id] ||
           SM.classify(program, buildSubsidyUser(loadSubsidyFilter(), loadSubsidyExtra()), formatDateYMD(new Date()));
-        document.getElementById("subsidyDetailFitGrade").textContent = "입력 조건 기준 · " + SM.GRADE_LABEL[fit.grade];
+        document.getElementById("subsidyDetailFitGrade").textContent = "입력 조건 기준 · " + SM.GRADE_LABEL[fit.grade] +
+          (fit.reviewed ? " · 공식 공고 기반 정리(기준일 " + subsidyTrustDateText(fit.reviewed.sourceModifiedAt) + ")" : " · 공고 확인 필요(자동 판정)");
+        var fitNote = document.getElementById("subsidyDetailFitNote");
+        if (fitNote) fitNote.textContent = fit.reviewed ? "공식 공고 내용을 바탕으로 조건을 정리한 참고 결과입니다. 최종 자격은 신청 기관에서 확인해 주세요." : "입력한 조건을 기준으로 한 자동 판정이라 참고용이에요. 세부 자격은 공고문과 신청 기관에서 확인해 주세요.";
         document.getElementById("subsidyDetailFitList").innerHTML = fit.reasons.map(function(x){
           return '<li class="is-' + x.kind + '">' + escapeMyPageHtml(x.text) + '</li>';
         }).join("");
@@ -5235,6 +5283,7 @@ try {
     if (!subsidyLoadedKey || subsidyLoadError) {
       loadSupportPrograms();
     }
+    loadSubsidyReviewed();
     if (!subsidyBookmarksLoaded) {
       loadSubsidyBookmarks(function(){ renderSubsidyList(); });
     }

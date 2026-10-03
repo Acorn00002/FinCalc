@@ -33,9 +33,18 @@ const ISO_TS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,9})?Z$/;
 
 // ---------- 요청 파라미터 ----------
 // 잘못된 값은 무시하지 않고 400으로 돌려보낸다(필터가 조용히 빠져 넓은 조회가 되는 일을 막는다).
+export const MAX_IDS = 50;
 export function parseParams(query) {
   const q = query || {};
   const one = (v) => (Array.isArray(v) ? v[0] : v);
+  // ids 모드: 정해진 문서 ID 목록만 조회(다른 필터·cursor와 함께 쓰지 않는다)
+  const rawIds = one(q.ids);
+  if (rawIds !== undefined && rawIds !== "") {
+    const list = String(rawIds).split(",").map((s) => s.trim()).filter(Boolean);
+    if (!list.length || list.length > MAX_IDS || list.some((id) => !DOC_ID.test(id))) return { error: "invalid_ids" };
+    if (q.cursor) return { error: "invalid_ids" };
+    return { params: { ids: list.filter((v, i) => list.indexOf(v) === i), limit: MAX_IDS } };
+  }
   const out = { limit: DEFAULT_LIMIT, category: "", region: "", sort: "deadline", status: "all", cursor: "" };
 
   const rawLimit = one(q.limit);
@@ -195,6 +204,32 @@ async function runQuery(structuredQuery, deps) {
     }
     if (!Array.isArray(json)) { const err = new Error("bad_response"); err.code = "upstream"; throw err; }
     return json.filter((r) => r && r.document).map((r) => r.document);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ID 목록 조회(batchGet). 없는 문서는 건너뛴다. 반환 형식은 목록 조회와 같다(nextCursor 없음).
+export async function getSupportProgramsByIds(ids, deps) {
+  deps = Object.assign({ fetchImpl: globalThis.fetch }, deps || {});
+  const base = deps.baseUrl || "https://firestore.googleapis.com/v1/projects/" + PROJECT_ID + "/databases/(default)/documents";
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), deps.timeoutMs || 8000);
+  try {
+    const res = await deps.fetchImpl(base + ":batchGet", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ documents: ids.map(docRef), mask: { fieldPaths: LIST_FIELDS } }),
+      signal: controller.signal
+    });
+    const json = await res.json().catch(() => null);
+    if (!res.ok || !Array.isArray(json)) return { error: "upstream_error", status: 502 };
+    const byId = {};
+    json.forEach((r) => { if (r && r.found) { const it = docToItem(r.found); byId[it.id] = it; } });
+    const items = ids.filter((id) => byId[id]).map((id) => byId[id]);
+    return { items: items, nextCursor: null, hasMore: false, degraded: false, stats: { queries: 1, reads: Math.max(1, ids.length) } };
+  } catch (e) {
+    return { error: "upstream_error", status: 502 };
   } finally {
     clearTimeout(timer);
   }

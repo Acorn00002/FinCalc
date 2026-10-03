@@ -252,3 +252,73 @@ test("읽기 전용: Firestore로 보내는 요청은 runQuery(POST) 한 종류�
   await lib.listSupportPrograms(lib.parseParams({ category: "생활안정" }).params, { fetchImpl: spy, now: TODAY_NOW });
   assert.deepEqual([...seen], ["POST runQuery"]);
 });
+
+test("ids 모드: 문서 ID만 batchGet으로 읽고(허용 필드만, 컬렉션 고정), 없는 문서는 건너뛰며, 잘못된 ids는 400", async () => {
+  assert.equal(lib.parseParams({ ids: "a/b" }).error, "invalid_ids");
+  assert.equal(lib.parseParams({ ids: Array.from({ length: 51 }, (_, i) => "id" + i).join(",") }).error, "invalid_ids");
+  assert.equal(lib.parseParams({ ids: "abc", cursor: "x" }).error, "invalid_ids");
+  assert.deepEqual(lib.parseParams({ ids: "a1, a2,a1" }).params.ids, ["a1", "a2"]);
+  const docs = makeDocs(5, 3);
+  let body = null, url = null;
+  const fetchImpl = async (u, init) => {
+    url = u; body = JSON.parse(init.body);
+    const out = body.documents.map((name) => {
+      const id = name.split("/").pop(); const d = docs.find((x) => x.id === id);
+      return d ? { found: toDoc(d) } : { missing: name };
+    });
+    return { ok: true, json: async () => out };
+  };
+  const r = await lib.getSupportProgramsByIds([docs[2].id, "NOPE", docs[0].id], { fetchImpl });
+  assert.ok(/:batchGet$/.test(url));
+  assert.ok(body.documents.every((n) => /\/documents\/supportPrograms\//.test(n)));
+  assert.deepEqual(body.mask.fieldPaths, lib.LIST_FIELDS);
+  assert.deepEqual(r.items.map((i) => i.id), [docs[2].id, docs[0].id]);
+  r.items.forEach((i) => { assert.ok(!("secretInternal" in i)); assert.ok(!("eligibility" in i)); assert.ok(!("source" in i)); });
+  assert.equal(r.hasMore, false);
+  assert.equal(r.nextCursor, null);
+  const fail = await lib.getSupportProgramsByIds(["x1"], { fetchImpl: async () => ({ ok: false, json: async () => ({}) }) });
+  assert.equal(fail.error, "upstream_error");
+});
+
+test("ids 모드 핸들러: 캐시 헤더·읽기 수 ≤ 50·중복 제거·응답 순서 무관·없는 ID 건너뜀·컬렉션 고정, 기본 cursor API 회귀 없음", async () => {
+  const handler = (await import(pathToFileURL(path.join(__dirname, "..", "..", "api", "support-programs.js")).href)).default;
+  const docs = makeDocs(60, 11);
+  const calls = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (u, init) => {
+    calls.push({ u: String(u), body: init && init.body ? JSON.parse(init.body) : null });
+    if (/:batchGet$/.test(String(u))) {
+      const b = JSON.parse(init.body);
+      const out = b.documents.map((name) => { const d = docs.find((x) => x.id === name.split("/").pop()); return d ? { found: toDoc(d) } : { missing: name }; }).reverse();   // 요청과 다른 순서로 응답
+      return { ok: true, json: async () => out };
+    }
+    return { ok: true, json: async () => [] };
+  };
+  const mkRes = () => { const r = { headers: {}, code: 200, body: null, setHeader(k, v) { r.headers[k] = v; }, status(c) { r.code = c; return r; }, json(b) { r.body = b; return r; }, end() { return r; } }; return r; };
+  try {
+    const ids = [docs[3].id, docs[1].id, docs[3].id, "MISSING01", docs[0].id];
+    const res = mkRes();
+    await handler({ method: "GET", query: { ids: ids.join(",") } }, res);
+    assert.equal(res.code, 200);
+    assert.deepEqual(res.body.items.map((i) => i.id), [docs[3].id, docs[1].id, docs[0].id]);      // 요청 순서·중복 제거·없는 ID 제외
+    assert.equal(res.body.hasMore, false);
+    assert.match(res.headers["Cache-Control"], /s-maxage=\d+/);
+    assert.ok(Number(res.headers["X-SP-Reads"]) <= 50);
+    assert.equal(calls.length, 1);
+    assert.ok(calls[0].body.documents.every((n) => n.indexOf("/documents/supportPrograms/") !== -1 && n.indexOf("Staging") === -1));
+    assert.equal(calls[0].body.documents.length, 4);                                             // 중복 제거 후 4개
+    // 잘못된 요청
+    const bad = mkRes(); await handler({ method: "GET", query: { ids: "../supportProgramsStaging/x" } }, bad);
+    assert.equal(bad.code, 400);
+    const many = mkRes(); await handler({ method: "GET", query: { ids: Array.from({ length: 51 }, (_, i) => "d" + i).join(",") } }, many);
+    assert.equal(many.code, 400);
+    // 컬렉션 지정 파라미터는 무시된다(허용 목록 밖)
+    const coll = mkRes(); await handler({ method: "GET", query: { ids: docs[0].id, collection: "supportProgramsStaging" } }, coll);
+    assert.equal(coll.code, 200);
+    assert.ok(!JSON.stringify(calls[calls.length - 1]).includes("Staging"));
+    // 기본 목록 API 회귀 없음
+    const list = mkRes(); await handler({ method: "GET", query: { limit: "5" } }, list);
+    assert.equal(list.code, 200);
+    assert.ok(Array.isArray(list.body.items) && "nextCursor" in list.body && list.body.limit === 5);
+  } finally { globalThis.fetch = realFetch; }
+});

@@ -1480,6 +1480,9 @@
   .subsidy-reason.is-match{background:var(--brand-soft);color:var(--brand);}
   .subsidy-reason.is-mismatch{background:rgba(240,68,82,0.10);color:#f04452;}
   .subsidy-card.is-mismatch-card{opacity:0.72;}
+  .subsidy-trust{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
+  .subsidy-trust.is-reviewed{background:rgba(37,99,235,0.10);color:#2563eb;}
+  .subsidy-trust.is-auto{background:var(--card-soft);color:var(--ink-3);}
   .subsidy-reason::before{margin-right:4px;font-weight:900;}
   .subsidy-reason.is-match::before{content:"✓";}
   .subsidy-reason.is-unknown::before{content:"?";color:#b45309;}
