@@ -1445,7 +1445,6 @@
   }
 
   /* ---------- 정부지원금: 적합도 등급 · 개인/사업자 분리 · 추가 조건 ---------- */
-  .subsidy-hero-sub{margin:8px 0 0;font-size:12.5px;font-weight:600;color:var(--ink-3);line-height:1.5;}
 
   .subsidy-audience-tabs{
     display:flex;gap:4px;background:var(--card-soft);border-radius:12px;padding:4px;margin-bottom:14px;
