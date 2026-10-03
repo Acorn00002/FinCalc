@@ -231,6 +231,8 @@ function buildEligibility(row, detail, cond, status, now, codeRegionMap) {
     targetText: truncate(fullTarget, TEXT_LIMITS.targetText),
     selectionText: truncate(fullSelection, TEXT_LIMITS.selectionText),
     coreText: derived.coreText,
+    targetClauses: N.extractTargetClauses(fullTarget, fullSelection),
+    regionRequirement: N.extractRegionRequirement(fullTarget, fullSelection, region.regionName, N.regionMatchNames(region.regionName)),
     coreStats: derived.coreStats,
     exclusions: derived.exclusions,
     preferences: derived.preferences,
@@ -267,6 +269,8 @@ function validateEligibility(e) {
   if (!e.income || !Array.isArray(e.income.percents) || typeof e.income.varies !== "boolean") problems.push("income");
   if (!e.ageInfo || !Array.isArray(e.ageInfo.textRanges) || !Array.isArray(e.ageInfo.exceptions)) problems.push("ageInfo");
   if (!Array.isArray(e.regionNames)) problems.push("regionNames");
+  if (e.targetClauses !== undefined && (!Array.isArray(e.targetClauses) || e.targetClauses.some(function (c) { return typeof c !== "string"; }))) problems.push("targetClauses");
+  if (e.regionRequirement !== undefined && (!e.regionRequirement || ["applicant", "parent", "applicant_or_parent", "applicant_and_parent", "school", "organization", "unknown"].indexOf(e.regionRequirement.subject) === -1 || !Array.isArray(e.regionRequirement.regions) || typeof e.regionRequirement.raw !== "string")) problems.push("regionRequirement");
   if (AUDIENCE_TYPES.indexOf(e.audienceType) === -1) problems.push("audienceType");
   ["audienceRaw", "targetText", "selectionText", "regionName", "orgName", "orgType", "orgCode", "sourceUrl"].forEach(function (k) {
     if (typeof e[k] !== "string") problems.push(k + " 문자열 아님");

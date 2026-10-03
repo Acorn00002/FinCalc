@@ -161,6 +161,55 @@ function splitClauses(text) {
   return out;
 }
 
+// ---------- 대상 문장 (재학생·재직자 같은 신청 대상 판정에 쓰는 문장만) ----------
+// 주석(※·*·"단,")·제외·우대 문장과 머리말은 빼고, 지원 대상으로 읽히는 문단·목록 항목만 남긴다.
+// coreText(전체 본문 한 덩어리)와 달리 항목 단위라 엔진이 "본문 어디에든 나온 단어"를 대상으로 오인하지 않는다.
+const NOTE_LINE = /^\s*(?:※|＊|\*|\(?\s*단[,\s)]|\[?\s*참고|예\s*[:)]|\(예|e\.g)/;
+const HEADER_ONLY = /^(?:[○●■□▶▷\-\s]*)(?:지원\s*)?(?:대상|요건|자격|조건|신청\s*자격|기본\s*자격요건|추가\s*자격요건)\s*[:：]?$/;
+function extractTargetClauses(targetText, selectionText) {
+  const src = String(targetText == null ? "" : targetText).trim() ? targetText : selectionText;
+  const out = [];
+  String(src == null ? "" : src).replace(/\r\n?/g, "\n").split(/\n+/).forEach(function (raw) {
+    if (NOTE_LINE.test(raw)) return;
+    let line = raw.replace(/^[\s○●•·▶▷◦ㆍㅇ\-–]+/, "").replace(/^(?:\d{1,2}[.)]|[①-⑩]|[가-힣][.)])\s*/, "");
+    line = line.replace(/\s*[※＊*]\s.*$/, "").replace(/\([^()]*(?:제외|불가)[^()]*\)/g, " ").replace(/\s+/g, " ").trim();
+    if (line.length < 4 || HEADER_ONLY.test(line)) return;
+    if (EXCLUDE_RE.test(line) || PREFERENCE_RE.test(line)) return;
+    if (out.indexOf(line) === -1) out.push(line.slice(0, 300));
+  });
+  return out.slice(0, 12);
+}
+
+// ---------- 지역 조건의 주체 (신청자 / 부모 / 학교 / 기관) ----------
+// "본인 또는 부모가 강원 거주"처럼 본인 외 사람의 거주지를 함께 보는 사업을 본인 지역만으로 제외하지 않도록 원문의 주체를 구조화한다.
+const RESIDENCE_WORD = /거주|주민등록|주소|전입/;
+const SELF = "(?:본인|신청자|신청인|학생|청년|대학생)";
+const PARENT = "(?:부모|보호자|직계\\s*존속|부\\s*또는\\s*모)";
+const REQ_OR = new RegExp(SELF + "\\s*(?:또는|혹은|이나|이거나|/)\\s*(?:그\\s*)?" + PARENT + "|" + PARENT + "\\s*(?:중|가운데)\\s*(?:1|한|일)\\s*(?:명|인|사람)|" + PARENT + "\\s*(?:또는|혹은)\\s*" + SELF);
+const REQ_AND = new RegExp(SELF + "\\s*(?:및|과|와|,|·)\\s*(?:그\\s*)?" + PARENT + "\\s*(?:가\\s*)?(?:모두|전원)|" + PARENT + "\\s*(?:및|과|와)\\s*" + SELF + "\\s*(?:가\\s*)?(?:모두|전원)");
+const REQ_SCHOOL = /(?:학교|대학|캠퍼스)[^\n.]{0,12}(?:소재|위치|소재지)/;
+const REQ_SELF = new RegExp(SELF + "[^\\n]{0,24}(?:거주|주민등록|주소)|(?:관내|도내|시내|군내|지역)[^\\n]{0,12}(?:거주|주민등록|주소)|(?:거주|주민등록)[^\\n]{0,10}(?:자|인|청년)");
+function extractRegionRequirement(targetText, selectionText, regionName, regionNames) {
+  const lines = (String(targetText == null ? "" : targetText) + "\n" + String(selectionText == null ? "" : selectionText))
+    .replace(/\r\n?/g, "\n").split(/\n+/).map(function (l) { return l.replace(/\s+/g, " ").trim(); }).filter(Boolean);
+  const regions = (regionNames || []).filter(function (r) { return r && r !== "전국"; });
+  const find = function (re, needResidence) {
+    for (let i = 0; i < lines.length; i++) {
+      if (re.test(lines[i]) && (!needResidence || RESIDENCE_WORD.test(lines[i]))) return lines[i].slice(0, 200);
+    }
+    return "";
+  };
+  // 양쪽 모두 필요한 조건 → 대체 가능 조건 → 학교 소재지 → 본인 거주 순으로 먼저 맞는 것을 쓴다.
+  let subject = "unknown";
+  let raw = find(REQ_AND, true);
+  if (raw) subject = "applicant_and_parent";
+  else if ((raw = find(REQ_OR, true))) subject = "applicant_or_parent";
+  else if ((raw = find(REQ_SCHOOL, false)) && !RESIDENCE_WORD.test(raw.replace(/소재지?/g, ""))) subject = "school";
+  else if ((raw = find(REQ_SELF, true))) subject = "applicant";
+  else raw = "";
+  return { subject: subject, regions: regions, raw: raw };
+}
+
 // ---------- 소득 기준 ----------
 const INCOME_WORD = /소득|중위|연봉|건강보험료|재산|급여/;
 const TYPE_MARK = /[ⅠⅡⅢⅣ]\s*유형|[IV]{1,3}\s*유형|유형\s*\d|형\)|\(\s*[가-힣]{1,6}형|우대형|일반형|구분|청년은|청년의\s*경우|가구\s*유형|맞벌이|홑벌이|신혼|자녀\s*\d|1인\s*가구|2인\s*가구|세대원\s*수/;
@@ -269,5 +318,5 @@ function deriveEligibilityFields(input, today) {
 
 module.exports = {
   REGION_ALIASES, parseApplicationPeriods, deriveApplicationStatus, splitClauses, extractIncome, extractAgeInfo,
-  regionMatchNames, deriveEligibilityFields, STOP_RE
+  regionMatchNames, deriveEligibilityFields, extractTargetClauses, extractRegionRequirement, STOP_RE
 };

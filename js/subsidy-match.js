@@ -101,6 +101,8 @@
   var AGE_ORIENTED_RE = /청년|청소년|아동|어린이|유아|영유아|노인|어르신|고령|대학생|신혼|사회초년|임산부|초등학생|중학생|고등학생|유치원|어린이집|\d+\s*세/;
   // 개인이 아니라 기관·단체·연구팀이 신청 주체인 사업 — 개인의 재학·재직 상태로 제외하지 않는다.
   var INSTITUTION_RE = /교육연구단|연구단|컨소시엄|운영\s*기관|지방자치단체|조합법인|협동조합|영농\(어\)조합/;
+  var TARGET_NOISE_RE = /자녀|졸업|채무|대출|연체|유예|상환|학부모/;
+  var CHILD_STUDENT_RE = /(?:대학(?:원)?생|재학생|학생)의?\s*자녀|자녀의?\s*(?:대학|학자금|등록금)/g;
   var WORKER_SOFT_RE = /근로자|취업\s*후/;
   // 특정 계층을 겨냥한 사업 표지 — 입력 칩(장애·보훈·취약계층 등)으로는 확인되지 않는 신분이 있을 수 있다.
   var RESTRICTIVE_RE = /소외계층|위기\s*(?:청소년|가구|아동|상황)|취약계층|출원생|출소|퇴소|피해|환자|질환|질병|장애|유공|수급|저소득|한부모|다문화|이주|북한|탈북|난민|병역|위탁|보호대상|학대|폭력|중독|재난|재해/;
@@ -418,7 +420,14 @@
     var childNoun = ["아동", "어린이", "영유아", "유아", "초등학생", "중학생", "고등학생", "청소년"].filter(function (w) { return head.indexOf(w) !== -1; })[0] || "자녀";
 
     // 직업 유형: 제목·요약·핵심 문구 첫 줄(제외 문구 제외)에 한 가지 유형만 나올 때 대상 유형으로 본다.
-    var firstRule = coreList[0] || "";
+    // v2: 정규화된 대상 문장(targetClauses)만 직업·학적 유형 판정에 쓴다. 대출 용도·졸업·채무·자녀 학비 같은 문장과 "대학생 자녀"는 신청자의 재학 조건이 아니다.
+    // targetClauses가 없는 v2 문서는 본문 전체를 대상 문장으로 읽지 않고 제목·요약만 쓴다(보수적).
+    var firstRule;
+    if (v2) {
+      firstRule = Array.isArray(e.targetClauses)
+        ? e.targetClauses.filter(function (c) { return !TARGET_NOISE_RE.test(c); }).join(" ").replace(CHILD_STUDENT_RE, " ")
+        : "";
+    } else firstRule = coreList[0] || "";
     var typesAll = empTypesOf([p.title, p.summary, firstRule].filter(Boolean).join(" "));
     var typesStrong = empTypesOf((p.title || "") + " " + firstRule);
     var childLevel = /초\s*[·,]\s*중\s*[·,]\s*고|초등|중학|고등학|유치원|어린이집|영유아|아동|유아|학령/.test(head + " " + firstRule);
@@ -493,7 +502,8 @@
       var names = (p.eligibility.regionNames && p.eligibility.regionNames.length) ? p.eligibility.regionNames : expandRegion(rn);
       // 소관기관이 시·도 자체가 아니라 그 아래 시·군·구면(예: 충청남도 당진시) 입력한 시·도만으로는 거주 조건을 확인할 수 없다.
       var org = String(p.eligibility.orgName || "").replace(/^(?:\([^)]*\)|재단법인|사단법인)\s*/, "").trim();
-      return { national: false, unknown: false, names: names, sub: !!org && org !== rn };
+      var rr = p.eligibility.regionRequirement;
+      return { national: false, unknown: false, names: names, sub: !!org && org !== rn, subject: (rr && rr.subject) || "unknown" };
     }
     var legacy = p.targetRegions || [];
     var national = legacy.indexOf("전국") !== -1;
@@ -615,9 +625,22 @@
       add("unknown", "지역 정보 확인 필요", { blocking: true });
     } else if (!ri.national && ri.names.length) {
       if (user.region) {
-        if (!regionsIntersect(ri.names, user.region)) add("mismatch", ri.names[0] + " 거주자 대상 (입력: " + user.region + ")");
-        else {
+        var regionHit = regionsIntersect(ri.names, user.region);
+        var rsub = ri.subject;
+        if (rsub === "applicant_or_parent") {
+          // 본인 또는 부모 중 한쪽만 해당해도 되는 조건: 부모 거주지는 입력받지 않으므로 본인 지역이 달라도 제외하지 않는다.
+          if (regionHit) add("match", "거주 지역 일치 (" + user.region + ", 본인 또는 부모 거주 조건)");
+          else add("unknown", "본인 또는 부모의 거주지 조건 (" + ri.names[0] + ") — 부모 거주지 확인 필요", { blocking: true });
+          if (regionHit && ri.sub) add("unknown", "시·군·구 단위 거주 조건 확인 필요", { blocking: true });
+        } else if (rsub === "school" || rsub === "organization") {
+          // 학교·기관 소재지는 사용자의 거주지 조건이 아니다.
+          if (regionHit) add("match", "소재지 일치 (" + user.region + ", 학교·기관 기준)");
+          else add("unknown", "학교·기관 소재지(" + ri.names[0] + ") 기준 사업 — 해당 여부 확인 필요", { blocking: true });
+        } else if (!regionHit) {
+          add("mismatch", ri.names[0] + " 거주자 대상 (입력: " + user.region + ")");
+        } else {
           add("match", "거주 지역 일치 (" + user.region + ") · 자치구 조건 확인 필요");
+          if (rsub === "applicant_and_parent") add("unknown", "부모의 거주지도 조건 — 부모 거주지 확인 필요", { blocking: true });
           if (ri.sub) add("unknown", "시·군·구 단위 거주 조건 확인 필요", { blocking: true });
         }
       } else {

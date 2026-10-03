@@ -30,6 +30,7 @@ function v2(title, o) {
       ageInfo: o.ageInfo || { textRanges: [], exceptions: [], tiered: false, birthYears: null },
       applicationStatus: o.status || { state: "open", reason: "always-open", periods: [] },
       regionName: regionName, regionNames: regionName === "전국" ? ["전국"] : (o.regionNames || [regionName]), orgName: o.orgName || regionName,
+      targetClauses: o.targetClauses !== undefined ? o.targetClauses : require("../helpers/gov24Normalize").extractTargetClauses(o.core || "", ""), regionRequirement: o.regionReq,
       coreStats: { clauses: 1, personClauses: o.personClauses || 0 }
     }
   };
