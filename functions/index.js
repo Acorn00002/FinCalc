@@ -1479,6 +1479,45 @@ exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", 
   }
 });
 
+// ---------- 보조금24 자격정보(eligibility) 테스트 수집 — 스테이징 전용, 기본은 dry-run ----------
+// 위의 syncGov24Subsidies·supportPrograms·calendarEvents는 건드리지 않는다. 이 함수는
+//  - 기본(dry-run): 쓰기 없이, 청년·취업·주거·교육 관련 20~50개 사업의 변환 결과(JSON)만 돌려준다.
+//  - write=1&confirm=staging: supportProgramsStaging 컬렉션에만 merge로 쓴다
+//    (헬퍼가 supportPrograms·calendarEvents 등 보호 컬렉션 이름을 코드 수준에서 거부한다).
+// 상세·지원조건 조회가 실패하면 해당 필드를 빈 값으로 덮어쓰지 않고 생략한다. 로직은 helpers/gov24Eligibility.js 참고.
+const gov24Staging = require("./helpers/gov24Eligibility");
+exports.syncGov24SubsidiesStaging = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 300, memory: "512MiB" }, async (req, res) => {
+  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
+    res.status(403).json({ error: "권한이 없습니다." });
+    return;
+  }
+  if (!GOV24_API_KEY) {
+    res.status(500).json({ error: "GOV24 API 키가 설정되지 않았습니다." });
+    return;
+  }
+  const wantsWrite = req.query.write === "1" && req.query.confirm === "staging";
+  const limit = Math.min(50, Math.max(20, Number(req.query.limit) || 40));
+  const requireRows = function (json, what) {
+    if (!json || !Array.isArray(json.data)) throw new Error(what + " 응답 형식이 올바르지 않습니다.");
+    return json;
+  };
+  const api = {
+    list: async function (page, perPage) { return requireRows(await gov24Fetch("/serviceList", {}, page, perPage), "목록"); },
+    detail: async function (id) { return requireRows(await gov24Fetch("/serviceDetail", { "cond[서비스ID::EQ]": id }, 1, 1), "상세").data[0] || null; },
+    conditions: async function (id) { return requireRows(await gov24Fetch("/supportConditions", { "cond[서비스ID::EQ]": id }, 1, 1), "지원조건").data[0] || null; }
+  };
+  try {
+    const result = await gov24Staging.runStagingSync({ api: api, db: db, write: wantsWrite, limit: limit, secrets: [GOV24_API_KEY] });
+    res.status(200).json(wantsWrite
+      ? { summary: result.summary }
+      : { summary: result.summary, docs: result.docs.map(function (d) { return Object.assign({ id: d.id }, d.doc); }) });
+  } catch (error) {
+    const message = gov24Staging.sanitizeError(error, [GOV24_API_KEY]);
+    console.error("보조금24 스테이징 수집 실패:", message);
+    res.status(500).json({ error: "스테이징 수집 중 오류가 발생했습니다: " + message });
+  }
+});
+
 // ---------- /api/finance-products (실시간 예/적금 및 대출 추천 리스트) ----------
 // 금융감독원 "금융상품 한눈에" Open API(finlife.fss.or.kr)를 대신 호출해주는 프록시.
 // 키를 클라이언트(앱/웹)에 절대 내려보내지 않기 위해, 반드시 이 서버를 거쳐서만 조회한다.
