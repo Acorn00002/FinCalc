@@ -578,10 +578,6 @@
   }
   .home-ai-charge-link i{font-size:11px;--ph-duotone-secondary-opacity:0;}
 
-  @media (max-width:420px){
-    .home-ai-input{padding-right:14px;}
-    .home-ai-submit-btn{position:static;transform:none;width:100%;margin-top:10px;}
-  }
   .home-ai-answer{
     margin-top:12px;
     padding-top:12px;
