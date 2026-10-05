@@ -735,6 +735,10 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .toast i{font-size:16px;color:var(--brand-2);--ph-duotone-secondary-opacity:0.2;}
+  /* 모바일: 알림 문구(토스트)가 하단 바텀바(z-index:150)에 가리지 않도록 바텀바 위로 띄움 */
+  @media (max-width:640px){
+    .toast{bottom:calc(84px + env(safe-area-inset-bottom, 0px));z-index:200;max-width:calc(100vw - 32px);white-space:normal;}
+  }
 
   /* ---------- 헤더 미니 프로필 버튼 (아바타 클릭 → 마이페이지) ---------- */
   .header-mypage-btn{
