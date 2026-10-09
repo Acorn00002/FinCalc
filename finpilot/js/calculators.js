@@ -827,6 +827,7 @@ window.updateKoreanHint = function (input) {
                         bestTag +
                         '<span class="product-rate">연 ' + p.rate.toFixed(2) + '%</span>' +
                     '</div>' +
+                    (url ? '<i class="ph-duotone ph-arrow-up-right product-link-icon" aria-hidden="true"></i>' : '') +
                 close;
         }).join('');
     }

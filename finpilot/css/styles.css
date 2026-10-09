@@ -1844,6 +1844,12 @@ a.product-card-link {
     color: inherit;
     cursor: pointer;
 }
+.product-link-icon {
+    flex-shrink: 0;
+    font-size: 16px;
+    color: var(--text-muted);
+    --ph-duotone-secondary-opacity: 0.2;
+}
 .product-badge {
     width: 38px;
     height: 38px;
