@@ -782,6 +782,17 @@ window.updateKoreanHint = function (input) {
         ]
     };
 
+    // 매칭 상품 카드를 누르면 열리는 은행 공식 홈페이지 (새 탭)
+    var LOAN_BANK_URLS = {
+        '카카오뱅크': 'https://www.kakaobank.com',
+        '하나은행': 'https://www.kebhana.com',
+        '케이뱅크': 'https://www.kbanknow.com',
+        '국민은행': 'https://www.kbstar.com',
+        '신한은행': 'https://www.shinhan.com',
+        '우리은행': 'https://www.wooribank.com',
+        '토스뱅크': 'https://www.tossbank.com'
+    };
+
     function renderProductFeed(loanType, baseRate) {
         var feed = document.getElementById('loan-product-feed');
         if (!feed) return;
@@ -800,8 +811,13 @@ window.updateKoreanHint = function (input) {
 
         feed.innerHTML = withRates.map(function (p) {
             var bestTag = p.rate === bestRate ? '<span class="product-best">최저금리</span>' : '';
+            var url = LOAN_BANK_URLS[p.bank];
+            var open = url
+                ? '<a class="product-card product-card-link" href="' + url + '" target="_blank" rel="noopener noreferrer" aria-label="' + p.bank + ' 홈페이지 새 창으로 열기">'
+                : '<div class="product-card">';
+            var close = url ? '</a>' : '</div>';
             return '' +
-                '<div class="product-card">' +
+                open +
                     '<span class="product-badge" style="background:' + p.color + ';color:' + p.textColor + '">' + p.bank.charAt(0) + '</span>' +
                     '<div class="product-info">' +
                         '<div class="product-bank">' + p.bank + '</div>' +
@@ -811,7 +827,7 @@ window.updateKoreanHint = function (input) {
                         bestTag +
                         '<span class="product-rate">연 ' + p.rate.toFixed(2) + '%</span>' +
                     '</div>' +
-                '</div>';
+                close;
         }).join('');
     }
 
