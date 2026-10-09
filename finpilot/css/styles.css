@@ -1844,11 +1844,14 @@ a.product-card-link {
     color: inherit;
     cursor: pointer;
 }
-.product-link-icon {
-    flex-shrink: 0;
-    font-size: 16px;
-    color: var(--text-muted);
-    --ph-duotone-secondary-opacity: 0.2;
+.product-badge-logo {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+.product-badge-logo img {
+    width: 26px;
+    height: 26px;
+    object-fit: contain;
 }
 .product-badge {
     width: 38px;

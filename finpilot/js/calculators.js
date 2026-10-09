@@ -793,6 +793,17 @@ window.updateKoreanHint = function (input) {
         '토스뱅크': 'https://www.tossbank.com'
     };
 
+    // 은행 로고 이미지(사이트 내 /icons/banks). 이미지가 없거나 깨지면 기존 글자 배지로 대체된다.
+    var LOAN_BANK_LOGOS = {
+        '카카오뱅크': '/icons/banks/kakaobank.png',
+        '하나은행': '/icons/banks/hana.png',
+        '케이뱅크': '/icons/banks/kbank.png',
+        '국민은행': '/icons/banks/kb.png',
+        '신한은행': '/icons/banks/shinhan.png',
+        '우리은행': '/icons/banks/woori.png',
+        '토스뱅크': '/icons/banks/toss.png'
+    };
+
     function renderProductFeed(loanType, baseRate) {
         var feed = document.getElementById('loan-product-feed');
         if (!feed) return;
@@ -809,6 +820,17 @@ window.updateKoreanHint = function (input) {
 
         var bestRate = withRates.length ? withRates[0].rate : 0;
 
+        function badgeHtml(p) {
+            var logo = LOAN_BANK_LOGOS[p.bank];
+            var letter = p.bank.charAt(0);
+            if (!logo) return '<span class="product-badge" style="background:' + p.color + ';color:' + p.textColor + '">' + letter + '</span>';
+            // 카카오뱅크는 노란 바탕에 검은 로고라 브랜드 색 바탕을 쓰고, 나머지는 흰 바탕에 로고를 올린다.
+            var bg = p.bank === '카카오뱅크' ? p.color : '#fff';
+            return '<span class="product-badge product-badge-logo" style="background:' + bg + ';color:' + p.textColor + '">' +
+                '<img src="' + logo + '" alt="' + p.bank + ' 로고" loading="lazy" data-letter="' + letter + '" onerror="this.parentNode.textContent=this.dataset.letter">' +
+                '</span>';
+        }
+
         feed.innerHTML = withRates.map(function (p) {
             var bestTag = p.rate === bestRate ? '<span class="product-best">최저금리</span>' : '';
             var url = LOAN_BANK_URLS[p.bank];
@@ -818,7 +840,7 @@ window.updateKoreanHint = function (input) {
             var close = url ? '</a>' : '</div>';
             return '' +
                 open +
-                    '<span class="product-badge" style="background:' + p.color + ';color:' + p.textColor + '">' + p.bank.charAt(0) + '</span>' +
+                    badgeHtml(p) +
                     '<div class="product-info">' +
                         '<div class="product-bank">' + p.bank + '</div>' +
                         '<div class="product-name">' + p.product + '</div>' +
@@ -827,7 +849,6 @@ window.updateKoreanHint = function (input) {
                         bestTag +
                         '<span class="product-rate">연 ' + p.rate.toFixed(2) + '%</span>' +
                     '</div>' +
-                    (url ? '<i class="ph-duotone ph-arrow-up-right product-link-icon" aria-hidden="true"></i>' : '') +
                 close;
         }).join('');
     }
