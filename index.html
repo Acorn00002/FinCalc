@@ -190,6 +190,7 @@ try {
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js"></script>
 <script src="js/subsidy-match.js"></script>
+<script src="js/finance-products.js"></script>
 <script>
   // ==================================================
   // 🔥 Firebase 프로젝트 설정 (Firebase Console > 프로젝트 설정 > 일반 > 내 앱 > SDK 설정 및 구성 에서 확인)
@@ -269,20 +270,20 @@ try {
           <i class="ph-duotone ph-caret-down sidebar-caret"></i>
         </button>
         <div class="sidebar-group-body">
-          <a class="sidebar-item" href="#finance" data-finance-cat="deposit">
+          <a class="sidebar-item" href="#finance/deposit" data-finance-cat="deposit">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-money"></i></span>정기예금
           </a>
-          <a class="sidebar-item" href="#finance" data-finance-cat="savings">
+          <a class="sidebar-item" href="#finance/savings" data-finance-cat="savings">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-piggy-bank"></i></span>정기적금
           </a>
-          <a class="sidebar-item" href="#finance" data-finance-cat="mortgage">
+          <a class="sidebar-item" href="#finance/mortgage" data-finance-cat="mortgage">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-buildings"></i></span>주택담보대출
           </a>
-          <a class="sidebar-item" href="#finance" data-finance-cat="jeonse">
+          <a class="sidebar-item" href="#finance/jeonse" data-finance-cat="jeonse">
             <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-house-line"></i></span>전월세보증금대출
           </a>
-          <a class="sidebar-item" href="#finance" data-finance-cat="credit">
-            <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-credit-card"></i></span>신용담보대출
+          <a class="sidebar-item" href="#finance/credit" data-finance-cat="credit">
+            <span class="sidebar-item-icon-plate"><i class="ph-duotone ph-credit-card"></i></span>개인신용대출
           </a>
         </div>
       </div>
@@ -386,20 +387,20 @@ try {
           <i class="ph-duotone ph-caret-down navbar-dropdown-caret"></i>
         </button>
         <div class="navbar-dropdown-menu">
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="deposit">
+          <a class="navbar-dropdown-item" href="#finance/deposit" data-finance-cat="deposit">
             <i class="ph-duotone ph-money"></i>정기예금
           </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="savings">
+          <a class="navbar-dropdown-item" href="#finance/savings" data-finance-cat="savings">
             <i class="ph-duotone ph-piggy-bank"></i>정기적금
           </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="mortgage">
+          <a class="navbar-dropdown-item" href="#finance/mortgage" data-finance-cat="mortgage">
             <i class="ph-duotone ph-buildings"></i>주택담보대출
           </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="jeonse">
+          <a class="navbar-dropdown-item" href="#finance/jeonse" data-finance-cat="jeonse">
             <i class="ph-duotone ph-house-line"></i>전월세보증금대출
           </a>
-          <a class="navbar-dropdown-item" href="#finance" data-finance-cat="credit">
-            <i class="ph-duotone ph-credit-card"></i>신용담보대출
+          <a class="navbar-dropdown-item" href="#finance/credit" data-finance-cat="credit">
+            <i class="ph-duotone ph-credit-card"></i>개인신용대출
           </a>
         </div>
       </div>
@@ -1328,6 +1329,12 @@ try {
   <div class="finance-error" id="financeError" hidden>
     <i class="ph-duotone ph-cloud-slash"></i>
     <p id="financeErrorText">실시간 상품 정보를 불러오지 못했어요.</p>
+    <button type="button" class="finance-retry-btn" id="financeRetryBtn">다시 시도</button>
+  </div>
+
+  <div class="finance-empty" id="financeEmpty" hidden>
+    <i class="ph-duotone ph-magnifying-glass"></i>
+    <p id="financeEmptyText">조회된 상품이 없어요.</p>
   </div>
 
   <div class="finance-rank-list" id="financeRankList"></div>
@@ -1336,7 +1343,7 @@ try {
     <i class="ph-duotone ph-info"></i>
     <div class="finance-disclaimer-body">
       <p class="finance-disclaimer-asof" id="financeAsOf">금융감독원 「금융상품 한눈에」 Open API</p>
-      <p>실시간으로 조회한 공시 데이터이지만, 우대금리 조건과 한도는 은행별로 다를 수 있으니 가입 전 반드시 해당 은행에서 최신 조건을 다시 확인해 주세요.</p>
+      <p id="financeDisclaimerBody">실시간으로 조회한 공시 데이터이지만, 우대금리 조건과 한도는 은행별로 다를 수 있으니 가입 전 반드시 해당 은행에서 최신 조건을 다시 확인해 주세요.</p>
     </div>
   </div>
 
@@ -2626,47 +2633,9 @@ try {
     appMain.scrollTop = 0;
   }
 
-  // ---------- 금융: 최저/최고 금리 비교 대시보드 ----------
-  // 아래 수치는 가상 데이터가 아니라 실제 은행 상품명을 대상으로 조사한 값이지만,
-  // 은행 API를 직접 연동한 실시간 데이터가 아니라 조사 시점 기준 스냅샷이다.
-  // 카테고리별 asOf/source가 서로 다른 것은 조사에 사용한 자료의 발행 시점이 다르기 때문 —
-  // 실제 값은 반드시 각 은행 공식 채널·은행연합회 소비자포털(portal.kfb.or.kr)에서 재확인해야 한다.
-  // 금융감독원 Open API 응답엔 제목/설명 문구가 없어, 카테고리별 소개 문구만 정적으로 유지하고
-  // 실제 상품 목록(products)은 /api/finance-products에서 실시간으로 받아온다.
-  var FINANCE_META = {
-    "deposit": {
-      title: "정기예금",
-      subtitle: "실시간으로 조회한 시중은행 정기예금 상품의 금리를 비교해보세요.",
-      sorts: [
-        { key: "rate-desc", label: "금리 높은순" },
-        { key: "preferential", label: "우대금리순" }
-      ]
-    },
-    "savings": {
-      title: "정기적금",
-      subtitle: "실시간으로 조회한 정기적금 상품의 금리를 비교해보세요.",
-      sorts: [
-        { key: "rate-desc", label: "금리 높은순" },
-        { key: "preferential", label: "우대금리순" }
-      ]
-    },
-    "mortgage": {
-      title: "주택담보대출",
-      subtitle: "주택 구입 자금용 대출의 실시간 금리를 비교해보세요. 정확한 한도는 은행 확인이 꼭 필요해요.",
-      sorts: [ { key: "rate-asc", label: "금리 낮은순" } ]
-    },
-    "jeonse": {
-      title: "전월세보증금대출",
-      subtitle: "전세·월세 보증금 조달용 대출의 실시간 금리를 비교해보세요.",
-      sorts: [ { key: "rate-asc", label: "금리 낮은순" } ]
-    },
-    "credit": {
-      title: "신용대출",
-      subtitle: "직장인 신용대출·마이너스통장의 실시간 금리를 비교해보세요.",
-      sorts: [ { key: "rate-asc", label: "금리 낮은순" } ]
-    }
-  };
-
+  // ---------- 금융: 상품 유형별 금리 비교 ----------
+  // 금융감독원 Open API(금융상품 한눈에)를 /api/finance-products?type=<유형>으로 받아 보여준다.
+  // 유형별 요청·캐시·정렬·카드 필드·문구는 js/finance-products.js(FinanceProducts)가 정하고, 여기서는 화면에 그리기만 한다.
   // 금융감독원 API 응답(kor_co_nm)엔 은행 홈페이지 URL이 없어, "공식 은행 사이트로 이동" 버튼을
   // 위해 주요 은행만 직접 정리해 둔 보조 데이터 (mobile-app/src/data/bankHomepages.ts와 동일).
   var BANK_HOMEPAGES = {
@@ -2694,22 +2663,12 @@ try {
   };
   function getBankHomepage(bank){ return BANK_HOMEPAGES[bank] || null; }
 
-  var LOAN_FINANCE_CATEGORIES = ["mortgage", "jeonse", "credit"];
+  var FP = window.FinanceProducts;
   var currentFinanceCat = "deposit";
   var currentFinanceSort = "rate-desc";
   var currentFinanceProducts = [];
-  var currentFinanceAsOf = "";
-  var financeFetchToken = 0;
-
-  function formatFinanceRate(n){
-    return (typeof n === "number" && !isNaN(n)) ? n.toFixed(2) + "%" : "정보 없음";
-  }
-
-  // 필수 텍스트 필드(은행명·상품명 등)가 누락/null이어도 화면에 빈 값이나 undefined가 노출되지 않도록 하는 안전 장치
-  function safeFinanceText(val, fallback){
-    if (val === null || val === undefined || String(val).trim() === "") return fallback;
-    return String(val);
-  }
+  var financeShownCat = null;
+  var financeLoader = FP.createLoader(function(url){ return fetch(url); });
 
   function escapeFinanceHtml(str){
     return String(str == null ? "" : str)
@@ -2720,42 +2679,30 @@ try {
       .replace(/'/g, "&#39;");
   }
 
-  // 스포트라이트 카드는 실시간으로 받아온 products 배열 안에서 조건에 맞는 상품을 그대로 골라
-  // 보여준다 — 데이터 이중관리로 인한 불일치를 원천 차단하기 위함
+  // 스포트라이트 카드는 불러온 products 배열 안에서 유형별 기준(예·적금=최고금리 최고, 대출=최저금리 최저)으로 고른다
   function renderFinanceAd(cat){
     var el = document.getElementById("financeAdCard");
     if (!el) return;
-    var products = currentFinanceProducts;
-    if (!products.length) { el.innerHTML = ""; return; }
-
-    var isLoan = LOAN_FINANCE_CATEGORIES.indexOf(cat) !== -1;
-    var best = products[0];
-    products.forEach(function(p){
-      if (isLoan) { if (typeof p.baseRate === "number" && (typeof best.baseRate !== "number" || p.baseRate < best.baseRate)) best = p; }
-      else if (typeof p.maxRate === "number" && (typeof best.maxRate !== "number" || p.maxRate > best.maxRate)) { best = p; }
-    });
-
-    var rateValue = isLoan ? formatFinanceRate(best.baseRate) : formatFinanceRate(best.maxRate);
-    var rateLabel = isLoan ? "최저금리" : "최고 우대금리";
-
+    var sp = FP.spotlight(cat, currentFinanceProducts);
+    if (!sp) { el.innerHTML = ""; return; }
     el.innerHTML =
       '<span class="finance-ad-badge">LIVE</span>' +
       '<span class="finance-ad-icon"><i class="ph-duotone ph-bank"></i></span>' +
       '<div class="finance-ad-body">' +
-        '<p class="finance-ad-bank">' + escapeFinanceHtml(safeFinanceText(best.bank, "은행 미확인")) + '</p>' +
-        '<p class="finance-ad-title">' + escapeFinanceHtml(safeFinanceText(best.name, "상품명 미확인")) + '</p>' +
-        '<p class="finance-ad-desc">실시간 조회 상품 중 ' + (isLoan ? "가장 낮은 금리" : "가장 높은 우대금리") + '예요. 우대조건 충족 여부에 따라 실제 적용 금리는 달라질 수 있어요.</p>' +
+        '<p class="finance-ad-bank">' + escapeFinanceHtml(sp.bank || "은행 미확인") + '</p>' +
+        '<p class="finance-ad-title">' + escapeFinanceHtml(sp.name || "상품명 미확인") + '</p>' +
+        '<p class="finance-ad-desc">' + escapeFinanceHtml(sp.desc) + '</p>' +
       '</div>' +
       '<div class="finance-ad-rate">' +
-        '<span class="num">' + rateValue + '</span>' +
-        '<span class="lbl">' + rateLabel + '</span>' +
+        '<span class="num">' + escapeFinanceHtml(sp.value) + '</span>' +
+        '<span class="lbl">' + escapeFinanceHtml(sp.label) + '</span>' +
       '</div>';
   }
 
   function renderFinanceFilters(cat){
     var wrap = document.getElementById("financeFilterPills");
     if (!wrap) return;
-    wrap.innerHTML = FINANCE_META[cat].sorts.map(function(s){
+    wrap.innerHTML = FP.meta(cat).sorts.map(function(s){
       return '<button type="button" class="finance-filter-pill' + (s.key === currentFinanceSort ? ' active' : '') + '" data-sort="' + s.key + '">' + s.label + '</button>';
     }).join("");
     wrap.querySelectorAll(".finance-filter-pill").forEach(function(btn){
@@ -2767,41 +2714,14 @@ try {
     });
   }
 
-  function sortFinanceProducts(cat){
-    var list = currentFinanceProducts.slice();
-    var isLoan = LOAN_FINANCE_CATEGORIES.indexOf(cat) !== -1;
-    function rate(p, key){
-      if (typeof p[key] === "number") return p[key];
-      return isLoan ? Infinity : -Infinity;
-    }
-
-    if (currentFinanceSort === "rate-desc") {
-      list.sort(function(a, b){ return rate(b, "maxRate") - rate(a, "maxRate"); });
-    } else if (currentFinanceSort === "rate-asc") {
-      list.sort(function(a, b){ return rate(a, "baseRate") - rate(b, "baseRate"); });
-    } else if (currentFinanceSort === "preferential") {
-      list.sort(function(a, b){
-        return (rate(b, "maxRate") - rate(b, "baseRate")) - (rate(a, "maxRate") - rate(a, "baseRate"));
-      });
-    }
-    return list;
-  }
-
-  function openFinanceDetail(item, isLoan){
+  function openFinanceDetail(cat, item){
+    var head = FP.detailHead(cat, item);
     document.getElementById("financeDetailBank").textContent = item.bank;
     document.getElementById("financeDetailTitle").textContent = item.name;
-    document.getElementById("financeDetailRateLabel").textContent = isLoan ? "최저금리" : "최고 우대금리";
-    document.getElementById("financeDetailRate").textContent = formatFinanceRate(isLoan ? item.baseRate : item.maxRate);
+    document.getElementById("financeDetailRateLabel").textContent = head.label;
+    document.getElementById("financeDetailRate").textContent = head.value;
 
-    var rows = [];
-    if (item.specialCondition) rows.push(["우대조건", item.specialCondition]);
-    if (item.joinWay) rows.push(["가입 방법", item.joinWay]);
-    if (item.joinMember) rows.push(["가입 대상", item.joinMember]);
-    if (item.maxLimit) rows.push(["한도", item.maxLimit]);
-    if (item.maturityInterest) rows.push(["만기 후 이자율", item.maturityInterest]);
-    if (item.etcNote) rows.push(["기타 유의사항", item.etcNote]);
-
-    document.getElementById("financeDetailFields").innerHTML = rows.map(function(r){
+    document.getElementById("financeDetailFields").innerHTML = FP.detailRows(cat, item).map(function(r){
       return '<div class="calendar-detail-field-row"><span class="calendar-detail-field-label">' + escapeFinanceHtml(r[0]) + '</span><span class="calendar-detail-field-value">' + escapeFinanceHtml(r[1]) + '</span></div>';
     }).join("");
 
@@ -2831,30 +2751,23 @@ try {
     var countEl = document.getElementById("financeFilterCount");
     if (!wrap || !countEl) return;
 
-    var isLoan = LOAN_FINANCE_CATEGORIES.indexOf(cat) !== -1;
-    var list = sortFinanceProducts(cat);
+    var list = FP.sortProducts(cat, currentFinanceProducts, currentFinanceSort);
     countEl.textContent = list.length + "개 상품";
 
     wrap.innerHTML = list.map(function(item, idx){
-      var rank = idx + 1;
-      var hasBaseAndMax = typeof item.baseRate === "number" && typeof item.maxRate === "number";
-      var primaryRate = isLoan
-        ? formatFinanceRate(item.baseRate)
-        : formatFinanceRate(hasBaseAndMax ? item.maxRate : item.baseRate);
-      var secondaryRate = isLoan
-        ? (safeFinanceText(item.term, "가입 조건 확인 필요"))
-        : "기본 " + formatFinanceRate(item.baseRate) + " · " + safeFinanceText(item.term, "가입 기간 확인 필요");
-
+      var card = FP.cardModel(cat, item);
       return '' +
-        '<div class="finance-rank-item" data-idx="' + idx + '" data-rank="' + rank + '">' +
-          '<span class="finance-rank-num">' + rank + '</span>' +
+        '<div class="finance-rank-item" data-idx="' + idx + '" data-rank="' + (idx + 1) + '" data-cat="' + cat + '">' +
+          '<span class="finance-rank-num">' + (idx + 1) + '</span>' +
           '<div class="finance-rank-info">' +
-            '<p class="finance-rank-bank">' + escapeFinanceHtml(safeFinanceText(item.bank, "은행 미확인")) + '</p>' +
-            '<p class="finance-rank-name">' + escapeFinanceHtml(safeFinanceText(item.name, "상품명 미확인")) + '</p>' +
+            '<p class="finance-rank-bank">' + escapeFinanceHtml(card.bank) + '</p>' +
+            '<p class="finance-rank-name">' + escapeFinanceHtml(card.name) + '</p>' +
+            (card.tags.length ? '<p class="finance-rank-tags">' + card.tags.map(function(t){ return '<span class="finance-rank-tag">' + escapeFinanceHtml(t) + '</span>'; }).join("") + '</p>' : '') +
+            (card.meta ? '<p class="finance-rank-meta">' + escapeFinanceHtml(card.meta) + '</p>' : '') +
           '</div>' +
           '<div class="finance-rank-rates">' +
-            '<div class="finance-rank-rate-primary">' + primaryRate + '</div>' +
-            '<div class="finance-rank-rate-secondary">' + secondaryRate + '</div>' +
+            '<div class="finance-rank-rate-primary">' + (card.primaryLabel ? '<small>' + escapeFinanceHtml(card.primaryLabel) + '</small> ' : '') + escapeFinanceHtml(card.primaryValue) + '</div>' +
+            (card.secondary ? '<div class="finance-rank-rate-secondary">' + escapeFinanceHtml(card.secondary) + '</div>' : '') +
           '</div>' +
           '<i class="ph-duotone ph-caret-right finance-rank-chevron"></i>' +
         '</div>';
@@ -2862,78 +2775,77 @@ try {
 
     wrap.querySelectorAll(".finance-rank-item").forEach(function(el){
       el.addEventListener("click", function(){
-        var idx = Number(el.getAttribute("data-idx"));
-        openFinanceDetail(list[idx], isLoan);
+        openFinanceDetail(cat, list[Number(el.getAttribute("data-idx"))]);
       });
     });
   }
 
-  function switchFinanceCategory(cat){
-    if (!FINANCE_META[cat]) cat = "deposit";
+  function setFinanceState(state){
+    var map = { loading: "financeLoading", error: "financeError", empty: "financeEmpty" };
+    Object.keys(map).forEach(function(k){ document.getElementById(map[k]).hidden = state !== k; });
+    document.getElementById("financeDisclaimerWrap").hidden = state !== "ok" && state !== "empty";
+    document.querySelector(".finance-filter-row").style.visibility = state === "ok" ? "visible" : "hidden";
+  }
+
+  // 유형을 바꾸면 이전 유형의 목록·정렬·상태를 모두 비우고 그 유형의 데이터만 새로 불러온다.
+  function switchFinanceCategory(cat, force){
+    if (!FP.isCat(cat)) cat = "deposit";
+    var m = FP.meta(cat);
     currentFinanceCat = cat;
-    currentFinanceSort = FINANCE_META[cat].sorts[0].key;
+    financeShownCat = cat;
+    currentFinanceSort = FP.defaultSort(cat);
+    currentFinanceProducts = [];
 
     var titleEl = document.getElementById("financeTitle");
     var subtitleEl = document.getElementById("financeSubtitle");
-    if (titleEl) titleEl.textContent = FINANCE_META[cat].title;
-    if (subtitleEl) subtitleEl.textContent = FINANCE_META[cat].subtitle;
-
+    if (titleEl) titleEl.textContent = m.title;
+    if (subtitleEl) subtitleEl.textContent = m.subtitle;
     document.querySelectorAll("[data-finance-cat]").forEach(function(el){
       el.classList.toggle("is-selected", el.dataset.financeCat === cat);
     });
+    document.getElementById("financeRankList").innerHTML = "";
+    document.getElementById("financeAdCard").innerHTML = "";
+    document.getElementById("financeFilterPills").innerHTML = "";
+    document.getElementById("financeFilterCount").textContent = "";
+    document.getElementById("financeDisclaimerBody").textContent = m.disclaimer;
+    setFinanceState("loading");
 
-    var loadingEl = document.getElementById("financeLoading");
-    var errorEl = document.getElementById("financeError");
-    var disclaimerEl = document.getElementById("financeDisclaimerWrap");
-    var listEl = document.getElementById("financeRankList");
-    var adEl = document.getElementById("financeAdCard");
-    var filterRow = document.querySelector(".finance-filter-row");
-
-    currentFinanceProducts = [];
-    loadingEl.hidden = false;
-    errorEl.hidden = true;
-    disclaimerEl.hidden = true;
-    listEl.innerHTML = "";
-    adEl.innerHTML = "";
-    filterRow.style.visibility = "hidden";
-
-    var token = ++financeFetchToken;
-    fetch("/api/finance-products?type=" + cat)
-      .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
-      .then(function(result){
-        if (token !== financeFetchToken) return; // 카테고리를 빠르게 바꾼 경우 이전 응답은 버린다
-        if (!result.ok || result.data.error) throw new Error(result.data.error || "조회 실패");
-
-        currentFinanceProducts = result.data.products || [];
-        currentFinanceAsOf = result.data.asOf || "";
-
-        var asOfEl = document.getElementById("financeAsOf");
-        if (asOfEl) asOfEl.textContent = "금융감독원 「금융상품 한눈에」 Open API" + (currentFinanceAsOf ? " · " + currentFinanceAsOf + " 공시" : "");
-
-        renderFinanceAd(cat);
-        renderFinanceFilters(cat);
-        renderFinanceList(cat);
-
-        loadingEl.hidden = true;
-        disclaimerEl.hidden = false;
-        filterRow.style.visibility = "visible";
-      })
-      .catch(function(error){
-        if (token !== financeFetchToken) return;
-        console.error("실시간 금융상품 조회 실패:", error);
-        loadingEl.hidden = true;
-        errorEl.hidden = false;
-        document.getElementById("financeErrorText").textContent = "실시간 상품 정보를 불러오지 못했어요. 잠시 후 다시 시도해주세요.";
-      });
+    financeLoader.load(cat, !!force).then(function(r){
+      if (r.stale || cat !== currentFinanceCat) return; // 그 사이 다른 유형을 골랐다면 이전 응답은 버린다
+      var asOfEl = document.getElementById("financeAsOf");
+      if (r.status === "error") {
+        console.error("금융상품 조회 실패(" + cat + "):", r.error);
+        document.getElementById("financeErrorText").textContent = m.errorText;
+        setFinanceState("error");
+        return;
+      }
+      if (asOfEl) asOfEl.textContent = "금융감독원 「금융상품 한눈에」 Open API" + (r.asOf ? " · " + r.asOf + " 공시" : "");
+      if (r.status === "empty") {
+        document.getElementById("financeEmptyText").textContent = m.emptyText;
+        setFinanceState("empty");
+        return;
+      }
+      currentFinanceProducts = r.products;
+      renderFinanceAd(cat);
+      renderFinanceFilters(cat);
+      renderFinanceList(cat);
+      setFinanceState("ok");
+    });
   }
 
-  document.querySelectorAll("[data-finance-cat]").forEach(function(item){
-    item.addEventListener("click", function(){
-      switchFinanceCategory(item.dataset.financeCat);
-    });
+  document.getElementById("financeRetryBtn").addEventListener("click", function(){
+    switchFinanceCategory(currentFinanceCat, true);
   });
 
-  switchFinanceCategory(currentFinanceCat);
+  // 메뉴 링크(href="#finance/<유형>")가 해시를 바꾸면 syncFromHash가 이 함수를 불러 화면을 그 유형으로 맞춘다.
+  // 해시에 유형이 없는 "#finance"로 들어오면 마지막으로 보던 유형(처음엔 정기예금)을 쓴다.
+  function showFinanceFromHash(){
+    var parsed = FP.parseHash(location.hash);
+    if (!parsed) return;
+    var cat = parsed.cat || currentFinanceCat;
+    if (cat === financeShownCat) return;   // 이미 이 유형을 보여 주고 있으면 다시 불러오지 않는다
+    switchFinanceCategory(cat);
+  }
 
   // ---------- 금융 캘린더: 월별 금융 스케줄러 ----------
   // 경제지표(FOMC, 실업수당청구건수 등)는 자동 수집 API가 없어 계속 수동으로 관리한다.
@@ -6882,9 +6794,8 @@ try {
   if (missionLoanBtn) {
     missionLoanBtn.addEventListener("click", function(){
       claimMission("loan", 100, "최저 금리 대출 조회 완료! +100P", "대출 비교 미션");
-      activateView("finance");
-      if (location.hash !== "#finance") location.hash = "finance";
-      switchFinanceCategory("credit");
+      if (location.hash !== "#finance/credit") location.hash = "finance/credit";
+      else showFinanceFromHash();
     });
   }
 
@@ -8069,8 +7980,10 @@ try {
   })();
 
   function syncFromHash(){
-    var view = (location.hash || "").replace("#", "") || "home";
+    var isFinance = !!(window.FinanceProducts && window.FinanceProducts.parseHash(location.hash));
+    var view = isFinance ? "finance" : ((location.hash || "").replace("#", "") || "home");
     activateView(view);
+    if (isFinance) showFinanceFromHash();
   }
 
   window.addEventListener("hashchange", syncFromHash);

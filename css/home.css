@@ -1016,6 +1016,33 @@
   }
   .finance-error[hidden]{display:none;}
   .finance-error i{font-size:32px;--ph-duotone-secondary-opacity:0;}
+  .finance-error p,.finance-empty p{margin:0;}
+  .finance-retry-btn{
+    margin-top:4px;
+    padding:10px 20px;
+    border:none;
+    border-radius:999px;
+    background:var(--brand);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .finance-retry-btn:active{transform:scale(0.97);}
+  .finance-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    padding:56px 20px;
+    color:var(--ink-3);
+    font-size:13px;
+    font-weight:600;
+    text-align:center;
+  }
+  .finance-empty[hidden]{display:none;}
+  .finance-empty i{font-size:32px;--ph-duotone-secondary-opacity:0;}
   .finance-rank-item:hover{
     box-shadow:0 6px 18px rgba(15,23,42,0.08);
   }
@@ -1057,7 +1084,18 @@
     display:flex;
     flex-wrap:wrap;
     gap:6px;
+    margin:0 0 6px;
   }
+  .finance-rank-meta{
+    margin:0;
+    font-size:11.5px;
+    font-weight:600;
+    color:var(--ink-3);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .finance-rank-rate-primary small{font-size:11px;font-weight:700;color:var(--ink-3);letter-spacing:0;}
   .finance-rank-tag{
     display:inline-flex;
     align-items:center;
