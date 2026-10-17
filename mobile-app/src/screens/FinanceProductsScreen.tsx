@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,88 +6,63 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppScreen from '../components/AppScreen';
 import { useAppTheme } from '../context/ThemeContext';
 import type { ThemeColors, RADIUS, SHADOW } from '../constants/theme';
-import { FINANCE_DATA, LOAN_FINANCE_CATEGORIES } from '../data/financeProducts';
 import { getBankHomepage } from '../data/bankHomepages';
-import { fetchLiveFinanceProducts, LiveFinanceProduct } from '../lib/financeProductsApi';
+import { loadLiveFinanceProducts, LiveFinanceProduct } from '../lib/financeProductsApi';
+import { cardModel, defaultSort, detailHead, detailRows, isCat, meta, sortProducts, spotlight } from '../lib/financeProductsLogic';
+import type { FinanceCategory } from '../lib/financeProductsLogic';
 import type { RootStackParamList } from '../navigation/types';
 
 type RouteProps = RouteProp<RootStackParamList, 'FinanceProducts'>;
+type LoadState = 'loading' | 'ok' | 'empty' | 'error';
 
-function formatRate(n: number | null | undefined): string {
-  return typeof n === 'number' && !isNaN(n) ? `${n.toFixed(2)}%` : '정보 없음';
-}
-
-// index.html의 #view-finance(정기예금/정기적금/주택담보대출/전월세보증금대출/신용대출 실제 상품
-// 금리 비교 랭킹)를 이식한 화면 — 정적 조사 데이터 대신 금융감독원 "금융상품 한눈에" Open API를
-// 서버(functions/financeProductsLive) 경유로 실시간 조회하도록 교체했다. 카드를 탭하면 우대조건
-// 상세 모달이 뜨고, 모달 하단의 "공식 은행 사이트로 이동" 버튼으로 해당 은행 홈페이지로 연결된다.
+// index.html의 #view-finance(정기예금/정기적금/주택담보대출/전월세보증금대출/개인신용대출 실제 상품 금리 비교)를 이식한 화면.
+// 유형별 제목·정렬·대표 금리·카드/상세 필드·문구는 lib/financeProductsLogic.ts(웹 js/finance-products.js와 같은 규칙)가 정하고,
+// 금융감독원 "금융상품 한눈에" Open API는 서버(/api/finance-products?type=<유형>)를 거쳐 받는다. 카드를 탭하면 상세 모달이 뜨고,
+// 모달 하단의 "공식 은행 사이트로 이동" 버튼으로 해당 은행 홈페이지로 연결된다.
 export default function FinanceProductsScreen() {
   const route = useRoute<RouteProps>();
-  const category = route.params.category;
-  const isLoan = LOAN_FINANCE_CATEGORIES.includes(category);
-  const copy = FINANCE_DATA[category];
-  const [sort, setSort] = useState<'rate-desc' | 'rate-asc' | 'preferential'>(isLoan ? 'rate-asc' : 'rate-desc');
+  const category: FinanceCategory = isCat(route.params.category) ? route.params.category : 'deposit';
+  const copy = meta(category);
+  const [sort, setSort] = useState<string>(defaultSort(category));
 
   const [products, setProducts] = useState<LiveFinanceProduct[]>([]);
   const [asOf, setAsOf] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [state, setState] = useState<LoadState>('loading');
+  const [retryNonce, setRetryNonce] = useState(0);
   const [selected, setSelected] = useState<LiveFinanceProduct | null>(null);
 
   const { colors, radius, shadow } = useAppTheme();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(colors, radius, shadow, insets.bottom), [colors, radius, shadow, insets.bottom]);
 
+  // 유형을 바꾸면 이전 유형의 목록·정렬·상태를 모두 비우고 그 유형의 데이터만 새로 불러온다.
+  // 그 사이 다른 유형으로 바뀌면(cancelled) 이전 요청의 늦은 응답은 버린다.
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-    fetchLiveFinanceProducts(category)
-      .then(({ products: list, asOf: month }) => {
-        if (cancelled) return;
-        setProducts(list);
-        setAsOf(month);
-      })
-      .catch((e) => {
-        if (cancelled) return;
-        setError(e instanceof Error ? e.message : '실시간 상품 정보를 불러오지 못했습니다.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    setProducts([]);
+    setAsOf('');
+    setSort(defaultSort(category));
+    setState('loading');
+    loadLiveFinanceProducts(category, retryNonce > 0).then((r) => {
+      if (cancelled) return;
+      if (r.status === 'error') {
+        setState('error');
+        return;
+      }
+      setProducts(r.products);
+      setAsOf(r.asOf);
+      setState(r.status);
+    });
     return () => {
       cancelled = true;
     };
-  }, [category]);
+  }, [category, retryNonce]);
 
-  const sorted = useMemo(() => {
-    const list = products.slice();
-    const rate = (p: LiveFinanceProduct, key: 'baseRate' | 'maxRate') => (typeof p[key] === 'number' ? (p[key] as number) : isLoan ? Infinity : -Infinity);
-    if (sort === 'rate-desc') list.sort((a, b) => rate(b, 'maxRate') - rate(a, 'maxRate'));
-    else if (sort === 'rate-asc') list.sort((a, b) => rate(a, 'baseRate') - rate(b, 'baseRate'));
-    else if (sort === 'preferential') {
-      list.sort((a, b) => (rate(b, 'maxRate') - rate(b, 'baseRate')) - (rate(a, 'maxRate') - rate(a, 'baseRate')));
-    }
-    return list;
-  }, [products, sort, isLoan]);
+  const retry = useCallback(() => setRetryNonce((n) => n + 1), []);
 
-  const best = useMemo(() => {
-    if (!sorted.length) return null;
-    let candidate = sorted[0];
-    sorted.forEach((p) => {
-      if (isLoan) {
-        if (typeof p.baseRate === 'number' && (typeof candidate.baseRate !== 'number' || p.baseRate < candidate.baseRate)) candidate = p;
-      } else if (typeof p.maxRate === 'number' && (typeof candidate.maxRate !== 'number' || p.maxRate > candidate.maxRate)) {
-        candidate = p;
-      }
-    });
-    return candidate;
-  }, [sorted, isLoan]);
-
-  const sorts = isLoan ? [{ key: 'rate-asc' as const, label: '금리 낮은순' }] : [
-    { key: 'rate-desc' as const, label: '금리 높은순' },
-    { key: 'preferential' as const, label: '우대금리순' },
-  ];
+  const sorted = useMemo(() => sortProducts(category, products, sort), [category, products, sort]);
+  const best = useMemo(() => spotlight(category, sorted), [category, sorted]);
+  const sorts = copy.sorts;
 
   const openBankSite = (bank: string) => {
     const url = getBankHomepage(bank);
@@ -96,14 +71,17 @@ export default function FinanceProductsScreen() {
 
   return (
     <AppScreen>
-      {loading ? (
+      {state === 'loading' ? (
         <View style={styles.centerFill}>
           <ActivityIndicator color={colors.brand} />
         </View>
-      ) : error ? (
+      ) : state === 'error' ? (
         <View style={styles.centerFill}>
           <Ionicons name="cloud-offline-outline" size={36} color={colors.ink3} />
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>{copy.errorText}</Text>
+          <Pressable style={styles.retryBtn} onPress={retry} accessibilityRole="button" accessibilityLabel="다시 시도">
+            <Text style={styles.retryBtnText}>다시 시도</Text>
+          </Pressable>
         </View>
       ) : (
         <FlatList
@@ -126,13 +104,11 @@ export default function FinanceProductsScreen() {
                     <Text style={styles.adTitle} numberOfLines={1}>
                       {best.name}
                     </Text>
-                    <Text style={styles.adDesc}>
-                      실시간 조회 상품 중 {isLoan ? '가장 낮은 금리' : '가장 높은 우대금리'}예요. 우대조건 충족 여부에 따라 실제 적용 금리는 달라질 수 있어요.
-                    </Text>
+                    <Text style={styles.adDesc}>{best.desc}</Text>
                   </View>
                   <View style={styles.adRateWrap}>
-                    <Text style={styles.adRateNum}>{formatRate(isLoan ? best.baseRate : best.maxRate)}</Text>
-                    <Text style={styles.adRateLabel}>{isLoan ? '최저금리' : '최고 우대금리'}</Text>
+                    <Text style={styles.adRateNum}>{best.value}</Text>
+                    <Text style={styles.adRateLabel}>{best.label}</Text>
                   </View>
                 </View>
               ) : null}
@@ -153,28 +129,42 @@ export default function FinanceProductsScreen() {
             </>
           }
           renderItem={({ item, index }) => {
-            const rank = index + 1;
-            const hasBaseAndMax = typeof item.baseRate === 'number' && typeof item.maxRate === 'number';
-            const primaryRate = isLoan ? formatRate(item.baseRate) : formatRate(hasBaseAndMax ? item.maxRate : item.baseRate);
-            const secondaryRate = isLoan ? item.term || '가입 조건 확인 필요' : `기본 ${formatRate(item.baseRate)} · ${item.term || '가입 기간 확인 필요'}`;
+            const card = cardModel(category, item);
             return (
               <Pressable style={styles.rankItem} onPress={() => setSelected(item)}>
-                <Text style={styles.rankNum}>{rank}</Text>
+                <Text style={styles.rankNum}>{index + 1}</Text>
                 <View style={styles.rankInfo}>
-                  <Text style={styles.rankBank}>{item.bank}</Text>
+                  <Text style={styles.rankBank}>{card.bank}</Text>
                   <Text style={styles.rankName} numberOfLines={1}>
-                    {item.name}
+                    {card.name}
                   </Text>
+                  {card.tags.length ? (
+                    <View style={styles.tagRow}>
+                      {card.tags.map((t) => (
+                        <View key={t} style={styles.tag}>
+                          <Text style={styles.tagText}>{t}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : null}
+                  {card.meta ? (
+                    <Text style={styles.rankMeta} numberOfLines={1}>
+                      {card.meta}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.rankRates}>
-                  <Text style={styles.rankRatePrimary}>{primaryRate}</Text>
-                  <Text style={styles.rankRateSecondary}>{secondaryRate}</Text>
+                  <Text style={styles.rankRatePrimary}>
+                    {card.primaryLabel ? <Text style={styles.rankRateLabel}>{card.primaryLabel} </Text> : null}
+                    {card.primaryValue}
+                  </Text>
+                  {card.secondary ? <Text style={styles.rankRateSecondary}>{card.secondary}</Text> : null}
                 </View>
                 <Ionicons name="chevron-forward-outline" size={16} color={colors.ink3} />
               </Pressable>
             );
           }}
-          ListEmptyComponent={<Text style={styles.emptyText}>조회된 상품이 없어요.</Text>}
+          ListEmptyComponent={<Text style={styles.emptyText}>{copy.emptyText}</Text>}
           ListFooterComponent={
             <View style={styles.disclaimer}>
               <Ionicons name="information-circle-outline" size={16} color={colors.ink3} />
@@ -182,10 +172,7 @@ export default function FinanceProductsScreen() {
                 <Text style={styles.disclaimerAsOf}>
                   금융감독원 「금융상품 한눈에」 Open API{asOf ? ` · ${asOf} 공시` : ''}
                 </Text>
-                <Text style={styles.disclaimerText}>
-                  실시간으로 조회한 공시 데이터이지만, 우대금리 조건과 한도는 은행별로 다를 수 있으니 가입 전 반드시 해당 은행에서
-                  최신 조건을 다시 확인해 주세요.
-                </Text>
+                <Text style={styles.disclaimerText}>{copy.disclaimer}</Text>
               </View>
             </View>
           }
@@ -202,46 +189,16 @@ export default function FinanceProductsScreen() {
                   <Text style={styles.modalBank}>{selected.bank}</Text>
                   <Text style={styles.modalTitle}>{selected.name}</Text>
                   <View style={styles.modalRateRow}>
-                    <Text style={styles.modalRateNum}>{formatRate(isLoan ? selected.baseRate : selected.maxRate)}</Text>
-                    <Text style={styles.modalRateLabel}>{isLoan ? '최저금리' : '최고 우대금리'}</Text>
+                    <Text style={styles.modalRateNum}>{detailHead(category, selected).value}</Text>
+                    <Text style={styles.modalRateLabel}>{detailHead(category, selected).label}</Text>
                   </View>
 
-                  {selected.specialCondition ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>우대조건</Text>
-                      <Text style={styles.modalSectionBody}>{selected.specialCondition}</Text>
+                  {detailRows(category, selected).map(([label, value]) => (
+                    <View key={label} style={styles.modalSection}>
+                      <Text style={styles.modalSectionTitle}>{label}</Text>
+                      <Text style={styles.modalSectionBody}>{value}</Text>
                     </View>
-                  ) : null}
-                  {selected.joinWay ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>가입 방법</Text>
-                      <Text style={styles.modalSectionBody}>{selected.joinWay}</Text>
-                    </View>
-                  ) : null}
-                  {selected.joinMember ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>가입 대상</Text>
-                      <Text style={styles.modalSectionBody}>{selected.joinMember}</Text>
-                    </View>
-                  ) : null}
-                  {selected.maxLimit ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>한도</Text>
-                      <Text style={styles.modalSectionBody}>{selected.maxLimit}</Text>
-                    </View>
-                  ) : null}
-                  {selected.maturityInterest ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>만기 후 이자율</Text>
-                      <Text style={styles.modalSectionBody}>{selected.maturityInterest}</Text>
-                    </View>
-                  ) : null}
-                  {selected.etcNote ? (
-                    <View style={styles.modalSection}>
-                      <Text style={styles.modalSectionTitle}>기타 유의사항</Text>
-                      <Text style={styles.modalSectionBody}>{selected.etcNote}</Text>
-                    </View>
-                  ) : null}
+                  ))}
                 </ScrollView>
 
                 <View style={styles.modalFooter}>
@@ -315,6 +272,13 @@ function createStyles(colors: ThemeColors, radius: typeof RADIUS, shadow: typeof
     rankRates: { alignItems: 'flex-end' },
     rankRatePrimary: { fontSize: 16, fontWeight: '800', color: colors.brand },
     rankRateSecondary: { fontSize: 11, color: colors.ink3, marginTop: 2, textAlign: 'right' },
+    retryBtn: { marginTop: 4, backgroundColor: colors.brand, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 10 },
+    retryBtnText: { fontSize: 13, fontWeight: '700', color: '#fff' },
+    tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
+    tag: { backgroundColor: colors.card, borderRadius: 999, borderWidth: 1, borderColor: colors.line, paddingHorizontal: 8, paddingVertical: 3 },
+    tagText: { fontSize: 10.5, fontWeight: '700', color: colors.ink3 },
+    rankMeta: { fontSize: 11.5, color: colors.ink3, marginTop: 6 },
+    rankRateLabel: { fontSize: 11, fontWeight: '700', color: colors.ink3 },
     emptyText: { fontSize: 13, color: colors.ink3, textAlign: 'center', paddingVertical: 40 },
     disclaimer: { flexDirection: 'row', gap: 8, marginTop: 8, padding: 4 },
     disclaimerBody: { flex: 1 },

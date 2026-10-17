@@ -36,7 +36,7 @@ export const SIDEBAR_MENU: MenuEntry[] = [
       { label: '정기적금', icon: 'save-outline', url: `${SITE_ORIGIN}/#finance`, screen: 'FinanceProducts', screenParams: { category: 'savings' } },
       { label: '주택담보대출', icon: 'home-outline', url: `${SITE_ORIGIN}/#finance`, screen: 'FinanceProducts', screenParams: { category: 'mortgage' } },
       { label: '전월세보증금대출', icon: 'key-outline', url: `${SITE_ORIGIN}/#finance`, screen: 'FinanceProducts', screenParams: { category: 'jeonse' } },
-      { label: '신용담보대출', icon: 'card-outline', url: `${SITE_ORIGIN}/#finance`, screen: 'FinanceProducts', screenParams: { category: 'credit' } },
+      { label: '개인신용대출', icon: 'card-outline', url: `${SITE_ORIGIN}/#finance`, screen: 'FinanceProducts', screenParams: { category: 'credit' } },
     ],
   },
   { label: '정부 지원금', icon: 'gift-outline', url: `${SITE_ORIGIN}/#subsidy`, screen: 'Subsidy' },
