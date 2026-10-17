@@ -16,6 +16,14 @@
       "android": {
         "credentialsSource": "local"
       }
+    },
+    "bundle": {
+      "extends": "production",
+      "autoIncrement": false,
+      "android": {
+        "buildType": "app-bundle",
+        "credentialsSource": "local"
+      }
     }
   },
   "submit": {
