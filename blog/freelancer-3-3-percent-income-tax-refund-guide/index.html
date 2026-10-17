@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HWY33CNTB1');
+</script>
+<title>프리랜서 3.3% 원천징수, 5월 종합소득세 환급되는 구조와 계산 예시</title>
+<meta name="description" content="3.3%(소득세 3%+지방소득세 0.3%)는 미리 낸 세금입니다. 연 수입 3,600만 원 가정으로 필요경비 비율에 따라 환급과 추가 납부가 갈리는 계산을 정리했습니다.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/freelancer-3-3-percent-income-tax-refund-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="프리랜서 3.3% 원천징수, 5월 종합소득세 환급되는 구조와 계산 예시">
+<meta property="og:description" content="3.3%는 최종 세금이 아닙니다. 필요경비에 따라 환급과 추가 납부가 갈리는 구조를 계산 예시로 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/freelancer-3-3-percent-income-tax-refund-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7476413799189909"
+     crossorigin="anonymous"></script>
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"홈","item":"https://www.gofincalc.com/"},{"@type":"ListItem","position":2,"name":"블로그","item":"https://www.gofincalc.com/blog/"},{"@type":"ListItem","position":3,"name":"프리랜서 3.3% 원천징수, 5월 종합소득세 환급되는 구조와 계산 예시","item":"https://www.gofincalc.com/blog/freelancer-3-3-percent-income-tax-refund-guide/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"프리랜서 3.3% 원천징수, 5월 종합소득세 환급되는 구조와 계산 예시","description":"3.3%(소득세 3%+지방소득세 0.3%)는 미리 낸 세금입니다. 연 수입 3,600만 원 가정으로 필요경비 비율에 따라 환급과 추가 납부가 갈리는 계산을 정리했습니다.","datePublished":"2026-10-17","dateModified":"2026-10-17","inLanguage":"ko-KR","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.gofincalc.com/blog/freelancer-3-3-percent-income-tax-refund-guide/"},"author":{"@type":"Organization","name":"자산 파일럿 편집팀","url":"https://www.gofincalc.com/about/"},"publisher":{"@type":"Organization","name":"자산 파일럿","logo":{"@type":"ImageObject","url":"https://www.gofincalc.com/icons/icon-512.png"}}}</script>
+</head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">세금</p>
+  <h1 class="cp-title">프리랜서 3.3% 원천징수, 5월 종합소득세로 환급되는 구조와 계산 예시</h1>
+  <p class="cp-meta"><span>2026.10.17</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+
+    <p>프리랜서가 대가를 받을 때 지급처가 미리 떼는 <strong>3.3%</strong>는 최종 세금이 아니라 <strong>미리 낸 세금(원천징수)</strong>입니다. 소득세 3%와 지방소득세 0.3%를 합친 것이고, 다음 해 5월에 종합소득세 확정신고로 실제 세금을 정산합니다. 실제 세금이 미리 낸 금액보다 적으면 돌려받고, 많으면 차액을 더 냅니다. 어느 쪽이 될지는 수입에서 필요경비와 공제를 뺀 뒤의 과세표준에 달려 있습니다.</p>
+
+    <div class="cp-callout">
+      <span class="cp-callout-label">이 글이 필요한 분</span>
+      <p>강의·디자인·번역·배달 등으로 3.3%를 떼고 대가를 받는 프리랜서, 5월 종합소득세 신고를 처음 앞둔 분, "3.3% 환급"이라는 말이 실제로 얼마를 돌려받는다는 뜻인지 궁금한 분입니다.</p>
+    </div>
+
+    <h2>3.3%는 어떻게 구성되나</h2>
+    <p>원천징수 대상 사업소득에 대한 원천징수세율은 소득세법 제129조제1항제3호에서 <strong>100분의 3</strong>으로 정합니다. 여기에 개인지방소득세가 붙는데, 지방소득세는 소득세의 10%라서 수입의 0.3%가 됩니다. 국세청도 간이지급명세서 안내에서 대가를 지급할 때 <strong>"수입금액의 3.3%(지방소득세 포함)"</strong>를 원천징수한다고 설명합니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>지급액(수입)</th><th>소득세 3%</th><th>지방소득세 0.3%</th><th>원천징수 합계 3.3%</th><th>실제 받는 돈</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1,000,000원</td><td>30,000원</td><td>3,000원</td><td>33,000원</td><td>967,000원</td></tr>
+          <tr><td>3,000,000원</td><td>90,000원</td><td>9,000원</td><td>99,000원</td><td>2,901,000원</td></tr>
+          <tr><td>10,000,000원</td><td>300,000원</td><td>30,000원</td><td>330,000원</td><td>9,670,000원</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>국세청은 원천징수 대상 사업소득의 범위로 의료보건용역과, 저술가·작곡가 등이 직업상 물적 시설 없이 독립적으로 제공하는 저술·작곡·연기·강연·교정·번역 같은 인적용역을 안내합니다. 어떤 일이 이 범위에 들어가는지는 국세청 안내 페이지에서 확인할 수 있습니다.</p>
+
+    <h2>왜 5월에 다시 신고해야 하나</h2>
+    <p>3.3%는 지급 시점에 정해진 비율로 뗀 금액일 뿐, 내 실제 소득과 공제를 반영한 세금이 아닙니다. 소득세법 제70조는 종합소득금액이 있는 거주자가 <strong>다음 해 5월 1일부터 5월 31일까지</strong> 종합소득 과세표준을 신고하도록 정합니다. 확정신고를 할 때는 이미 낸 원천징수세액을 빼고 납부하며(제76조제3항), 원천징수한 세액이 총결정세액을 초과하면 그 초과분은 환급하거나 다른 국세에 충당합니다(제85조제4항).</p>
+    <p>국세청 모두채움 안내에 실린 예시도 같은 구조입니다. 학원강사 수입 1,000만 원에서 33만 원이 원천징수됐는데, 경비율과 공제를 적용한 실제 세금이 약 22만 원이라 차액 11만 원(종합소득세 10만 원 + 지방소득세 1만 원)을 돌려받는 경우입니다.</p>
+
+    <h2>직접 계산해 보면: 같은 수입, 다른 결과</h2>
+    <p>연 수입 3,600만 원을 3.3% 떼고 받은 프리랜서를 가정합니다. 원천징수된 금액은 118.8만원(소득세 108만원 + 지방소득세 10.8만원)입니다. 실제 세금은 <strong>필요경비를 얼마로 인정받느냐</strong>에 따라 크게 달라지므로, 필요경비 비율을 70%, 50%, 30%로 가정해 비교했습니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>가정한 필요경비 비율</th><th>소득금액</th><th>과세표준(본인 기본공제 150만 원 차감)</th><th>종합소득세</th><th>지방소득세(10%)</th><th>실제 세금 합계</th><th>3.3% 대비 정산 결과</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>70%</td><td>1,080만원</td><td>930만원</td><td>55.8만원</td><td>5.58만원</td><td>61.38만원</td><td><strong>57.42만원 환급</strong></td></tr>
+          <tr><td>50%</td><td>1,800만원</td><td>1,650만원</td><td>121.5만원</td><td>12.15만원</td><td>133.65만원</td><td><strong>14.85만원 추가 납부</strong></td></tr>
+          <tr><td>30%</td><td>2,520만원</td><td>2,370만원</td><td>229.5만원</td><td>22.95만원</td><td>252.45만원</td><td><strong>133.65만원 추가 납부</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="cp-formula">과세표준 = 수입 − 필요경비 − 기본공제 150만 원 / 세율은 소득세법 제55조(1,400만 원 이하 6%, 1,400만 원 초과 5,000만 원 이하는 84만 원 + 1,400만 원 초과분의 15%), 지방소득세는 지방세법 제92조에 따른 소득세율의 1/10</p>
+    <p>세 경우 모두 같은 수입인데 정산 결과는 환급과 추가 납부로 갈립니다. 필요경비가 수입의 70%로 인정되면 세금이 3.3%보다 적어 환급이 생기지만, 30%만 인정되면 3.3%로는 부족해 오히려 세금을 더 냅니다. "3.3%를 떼면 항상 환급"이 아닌 이유입니다.</p>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">이 계산에서 가정한 것</span>
+      <p>필요경비 비율(70%·50%·30%)은 설명을 위한 가정이며 실제 업종별 경비율이 아닙니다. 본인 기본공제 150만 원만 반영했고 다른 소득, 부양가족 공제, 세액공제, 건강보험료 공제는 넣지 않았습니다. 실제 필요경비는 장부로 증명하거나 국세청이 고시한 경비율을 적용하는 방식에 따라 달라지므로 신고 전에 국세청 홈택스 모의계산이나 세무 전문가 확인이 필요합니다.</p>
+    </div>
+
+    <h2>신고하지 않으면 어떻게 되나</h2>
+    <p>국세청 안내는 기한 내에 신고하지 않으면 환급금을 받을 수 없다고 설명하고, 환급받을 세액을 초과해 환급받은 경우에는 가산세가 붙을 수 있다고 안내합니다. 환급이 예상되지 않는 경우에도 소득세법 제70조제1항은 종합소득금액이 있는 거주자를 신고 대상으로 하며, 종합소득과세표준이 없거나 결손금이 있는 사람도 포함합니다. 소득이 적다는 이유로 신고하지 않기보다 내 수입이 지급처에서 어떻게 신고됐는지부터 확인하는 편이 안전합니다.</p>
+
+    <h2>다른 소득이 있으면 합산해서 신고합니다</h2>
+    <p>국세청은 소득이 발생한 다음 해 5월에 합산해 신고하라고 안내합니다. 직장에 다니면서 프리랜서 수입이 따로 있거나, 이자·배당 등 다른 소득이 있으면 합산 대상이 되어 세율 구간이 올라갈 수 있습니다. 배당·이자가 많은 경우는 <a href="/blog/dividend-tax-guide/">배당소득세와 금융소득종합과세 가이드</a>도 참고하세요.</p>
+
+    <h2>자주 틀리는 부분</h2>
+    <ul>
+      <li><strong>3.3%를 최종 세금으로 생각하는 경우.</strong> 위 계산처럼 정산하면 환급일 수도, 추가 납부일 수도 있습니다.</li>
+      <li><strong>환급이 자동으로 들어온다고 생각하는 경우.</strong> 환급은 5월 신고를 통해 정산될 때 생깁니다.</li>
+      <li><strong>소득세만 보고 지방소득세를 놓치는 경우.</strong> 3.3%에는 지방소득세 0.3%가 포함되어 있고, 정산할 때도 종합소득세의 10%가 지방소득세로 따로 계산됩니다.</li>
+      <li><strong>수입 기록 없이 신고하는 경우.</strong> 지급처가 제출한 지급명세서와 내가 받은 금액이 일치하는지 대조하려면 입금 내역과 계약서를 보관해야 합니다.</li>
+    </ul>
+
+    <h2>확인할 점</h2>
+    <ul class="cp-checklist">
+      <li>올해 3.3%가 원천징수된 수입을 모두 합산해 봤나요? (지급처별 지급명세서 또는 입금 내역)</li>
+      <li>필요경비를 장부로 증명할지, 경비율을 적용할지 정했나요?</li>
+      <li>직장 소득, 이자·배당 등 다른 소득이 있어 합산 신고 대상은 아닌가요?</li>
+      <li>5월 1일~31일 신고 기한을 달력에 표시했나요?</li>
+      <li>환급이 예상되더라도 추가 납부가 나올 가능성을 감안해 자금을 남겨 두었나요?</li>
+    </ul>
+
+    <div class="cp-cta">
+      <p>같은 금액을 근로소득으로 받을 때의 세금과 실수령액을 비교해 보세요.</p>
+      <a href="/calculators/salary/">연봉 계산기 바로가기</a>
+    </div>
+
+    <p>직장인의 연말정산 공제는 <a href="/blog/yearend-tax-settlement-deduction/">연말정산 공제 가이드</a>, 연봉별 실수령액은 <a href="/blog/salary-net-pay-by-bracket/">연봉 실수령액표</a>에서 볼 수 있습니다.</p>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 3.3%를 뗐는데 소득이 아주 적어도 신고해야 하나요?</p>
+      <p class="cp-faq-a">소득세법 제70조제1항은 종합소득금액이 있는 거주자(과세표준이 없거나 결손금이 있는 경우 포함)에게 5월 신고 의무를 정합니다. 환급을 받으려면 신고가 필요하다는 것이 국세청 안내이므로, 소득이 적을수록 오히려 신고 여부를 꼭 확인하세요.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 3.3%의 0.3%는 어디에 쓰이나요?</p>
+      <p class="cp-faq-a">개인지방소득세입니다. 소득세의 10%에 해당하며, 소득세 3%와 합쳐 3.3%가 됩니다. 지방세법 제92조의 종합소득 세율도 소득세율의 10분의 1 구조입니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 필요경비는 어떻게 정하나요?</p>
+      <p class="cp-faq-a">장부를 작성해 실제 지출로 증명하거나, 국세청이 업종별로 고시하는 경비율을 적용하는 방식이 있습니다. 어느 방식이 가능한지와 경비율 수치는 수입 규모와 업종에 따라 다르므로 홈택스나 세무서에서 확인해야 합니다.</p>
+    </div>
+
+    <h2>공식 출처</h2>
+    <ul>
+      <li><a href="https://www.law.go.kr/법령/소득세법/제129조" target="_blank" rel="noopener noreferrer">소득세법 제129조(원천징수세율)</a> — 국가법령정보센터</li>
+      <li><a href="https://www.law.go.kr/법령/소득세법/제70조" target="_blank" rel="noopener noreferrer">소득세법 제70조(종합소득과세표준 확정신고)</a> — 5월 1일~31일 신고</li>
+      <li><a href="https://www.law.go.kr/법령/소득세법/제55조" target="_blank" rel="noopener noreferrer">소득세법 제55조(세율)·제50조(기본공제)</a> — 종합소득세율, 기본공제 150만 원</li>
+      <li><a href="https://www.law.go.kr/법령/소득세법/제85조" target="_blank" rel="noopener noreferrer">소득세법 제76조(확정신고납부)·제85조(징수와 환급)</a> — 원천징수세액 공제와 환급</li>
+      <li><a href="https://www.law.go.kr/법령/지방세법/제92조" target="_blank" rel="noopener noreferrer">지방세법 제92조(세율)</a> — 종합소득 개인지방소득세 표준세율</li>
+      <li><a href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6620&cntntsId=7900" target="_blank" rel="noopener noreferrer">국세청 원천징수 대상 사업소득</a> — 인적용역 범위</li>
+      <li><a href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=40349&cntntsId=238925" target="_blank" rel="noopener noreferrer">국세청 간이지급명세서(거주자의 사업소득)</a> — 3.3% 원천징수, 지방소득세 포함</li>
+      <li><a href="https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=41095&cntntsId=239072" target="_blank" rel="noopener noreferrer">국세청 종합소득세 모두채움 신고 안내(환급)</a> — 환급 예시, 신고하지 않을 때</li>
+    </ul>
+
+    <p class="cp-disclaimer">본 글의 세율·신고기한은 「소득세법」(2026년 1월 1일 시행본)과 「지방세법」, 국세청 안내를 기준으로 했으며, 계산 예시의 필요경비 비율은 설명을 위한 가정입니다. 이 글은 일반적인 정보 제공을 목적으로 하며 금융·세무·법률 자문이 아닙니다. 법령과 기준은 개정될 수 있으니 실제 신청·신고·계약 전에는 공식 출처에서 최신 내용을 확인하시기 바랍니다. (기준일: 2026년 10월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+<script src="/js/link-tracking.js" defer></script>
+
+</body>
+</html>

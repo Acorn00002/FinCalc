@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HWY33CNTB1');
+</script>
+<title>전세 계약 전 등기부등본 보는 법, 갑구·을구에서 확인할 항목과 계산법</title>
+<meta name="description" content="전세 계약 전에 등기부등본의 갑구·을구·표제부에서 확인할 항목과, 근저당 채권최고액과 내 보증금을 시세와 비교하는 계산 예시를 정리했습니다.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/jeonse-registry-check-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="전세 계약 전 등기부등본 보는 법, 갑구·을구에서 확인할 항목과 계산법">
+<meta property="og:description" content="등기부등본 갑구·을구에서 확인할 항목과 선순위 채권+보증금 계산 예시를 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/jeonse-registry-check-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7476413799189909"
+     crossorigin="anonymous"></script>
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"홈","item":"https://www.gofincalc.com/"},{"@type":"ListItem","position":2,"name":"블로그","item":"https://www.gofincalc.com/blog/"},{"@type":"ListItem","position":3,"name":"전세 계약 전 등기부등본 보는 법, 갑구·을구에서 확인할 항목과 계산법","item":"https://www.gofincalc.com/blog/jeonse-registry-check-guide/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"전세 계약 전 등기부등본 보는 법, 갑구·을구에서 확인할 항목과 계산법","description":"전세 계약 전에 등기부등본의 갑구·을구·표제부에서 확인할 항목과, 근저당 채권최고액과 내 보증금을 시세와 비교하는 계산 예시를 정리했습니다.","datePublished":"2026-10-17","dateModified":"2026-10-17","inLanguage":"ko-KR","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.gofincalc.com/blog/jeonse-registry-check-guide/"},"author":{"@type":"Organization","name":"자산 파일럿 편집팀","url":"https://www.gofincalc.com/about/"},"publisher":{"@type":"Organization","name":"자산 파일럿","logo":{"@type":"ImageObject","url":"https://www.gofincalc.com/icons/icon-512.png"}}}</script>
+</head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">부동산·청약</p>
+  <h1 class="cp-title">전세 계약 전 등기부등본 보는 법, 갑구·을구에서 꼭 확인할 항목</h1>
+  <p class="cp-meta"><span>2026.10.17</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+
+    <p>전세 계약 전에 등기부등본(등기사항전부증명서)에서 꼭 확인할 것은 세 가지입니다. <strong>갑구</strong>에서 계약 상대방이 진짜 소유자인지, 압류·가압류·가처분·경매 신청 같은 기록이 없는지, <strong>을구</strong>에서 내 보증금보다 앞서는 근저당권이 얼마나 되는지입니다. 여기에 <strong>선순위 채권액과 내 보증금을 더한 금액이 주택 시세에 비해 과하지 않은지</strong>를 직접 계산해 보면 위험한 계약을 걸러낼 수 있습니다.</p>
+
+    <div class="cp-callout">
+      <span class="cp-callout-label">이 글이 필요한 분</span>
+      <p>전세 계약서를 쓰기 전이거나 잔금 전이라 등기부등본을 처음 열어 보는 분, 등기부등본은 받았지만 어디를 어떻게 읽어야 할지 모르는 분입니다.</p>
+    </div>
+
+    <h2>등기부등본은 세 부분으로 되어 있습니다</h2>
+    <p>부동산등기법 제15조제2항은 등기기록에 부동산의 표시에 관한 사항을 기록하는 <strong>표제부</strong>, 소유권에 관한 사항을 기록하는 <strong>갑구(甲區)</strong>, 소유권 외의 권리에 관한 사항을 기록하는 <strong>을구(乙區)</strong>를 둔다고 정합니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>구성</th><th>적혀 있는 내용</th><th>전세 계약 전에 볼 점</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>표제부</td><td>부동산의 표시(소재지, 건물 내역 등)</td><td>계약서의 주소·동·호수, 건물의 종류와 면적이 일치하는지</td></tr>
+          <tr><td>갑구</td><td>소유권에 관한 사항</td><td>현재 소유자가 계약 상대방과 같은지, 경매 신청·압류·가압류·가처분·가등기 등 소유권을 침해할 수 있는 기록이 없는지</td></tr>
+          <tr><td>을구</td><td>소유권 외의 권리(근저당권, 전세권, 임차권 등)</td><td>근저당권의 채권최고액과 설정일, 이미 설정된 전세권·임차권등기가 있는지</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>주택도시보증공사(HUG)도 전세보증금반환보증 안내에서 같은 순서로 확인하라고 안내합니다. 갑구는 경매신청·압류·가압류·가처분·가등기 같은 권리침해 사항이 없는지, 을구는 선순위채권이 주택가액의 일정 비율을 넘지 않는지 보라는 것입니다.</p>
+
+    <h2>단계별로 확인하기</h2>
+    <h3>1. 계약 상대방이 갑구의 소유자와 같은가</h3>
+    <p>갑구의 가장 최근 소유권 기록이 지금 계약하려는 집주인과 같은 사람인지 확인합니다. 대리인이 나오면 소유자 본인에게 직접 확인하고 위임 서류를 요구하는 것이 일반적인 확인 절차입니다.</p>
+    <h3>2. 갑구에 권리침해 기록이 있는가</h3>
+    <p>경매신청, 압류, 가압류, 가처분, 가등기 같은 기록이 있으면 집의 소유권이 불안정하다는 신호입니다. HUG는 이런 사항이 있으면 반환보증 가입이 어렵다고 안내합니다.</p>
+    <h3>3. 을구의 근저당권은 얼마인가</h3>
+    <p>을구에는 이 집을 담보로 빌린 대출이 근저당권으로 기록됩니다. 민법 제357조는 근저당을 "그 담보할 채무의 최고액만을 정하고 채무의 확정을 장래에 보류하여" 설정하는 것이라고 정합니다. 즉 등기부에 보이는 <strong>채권최고액은 실제 대출금이 아니라 담보하는 한도</strong>이므로, 이자까지 포함해 채권최고액을 실제 부담으로 잡고 계산하는 것이 보수적인 방법입니다(같은 조 제2항은 이자를 최고액에 산입한 것으로 봅니다). 근저당의 설정일도 함께 확인해야 합니다. 임차인의 권리는 전입신고 다음 날부터 생기므로(주택임대차보호법 제3조제1항), 그보다 앞서 설정된 근저당은 일반적으로 내 보증금보다 먼저 변제받습니다.</p>
+    <h3>4. 표제부와 건축물대장이 맞는가</h3>
+    <p>표제부의 소재지와 건물 내역이 계약서와 같은지 보고, 건축물대장에서 위반건축물로 기재되어 있지 않은지도 확인합니다. HUG는 반환보증 조건으로 건축물대장상 위반건축물이 아닐 것(아파트 제외)과 주택의 건물과 토지가 모두 임대인의 소유일 것을 둡니다.</p>
+
+    <h2>숫자로 확인하기: 선순위 채권과 보증금의 합계</h2>
+    <p>다음은 설명을 위한 가정입니다. 주택 시세 30,000만원, 을구의 근저당 채권최고액 12,000만원인 집에 전세 계약을 하려는 경우입니다. 주택 시세 대비 선순위 채권과 내 보증금을 더한 비율을 계산하고, 참고로 HUG 반환보증의 보증한도(주택가격 × 담보인정비율 90% − 선순위채권)와 비교했습니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>항목</th><th>보증금 1억 8천만 원</th><th>보증금 1억 4천만 원</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>주택 시세(가정)</td><td>30,000만원</td><td>30,000만원</td></tr>
+          <tr><td>근저당 채권최고액</td><td>12,000만원</td><td>12,000만원</td></tr>
+          <tr><td>내 보증금</td><td>18,000만원</td><td>14,000만원</td></tr>
+          <tr><td>선순위 채권 + 내 보증금</td><td>30,000만원</td><td>26,000만원</td></tr>
+          <tr><td>시세 대비 비율</td><td>100.0%</td><td>86.7%</td></tr>
+          <tr><td>HUG 기준 보증한도 (시세 × 90% − 선순위채권)</td><td>15,000만원</td><td>15,000만원</td></tr>
+          <tr><td>보증금이 보증한도 이내인가</td><td><strong>초과(가입 어려움)</strong></td><td>이내</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="cp-formula">선순위 채권 + 내 보증금 ≤ 주택가격 × 90% 이면 HUG 보증조건의 금액 기준을 충족 (그 밖의 조건은 별도)</p>
+    <p>보증금 1억 8천만 원이면 선순위 채권과 합쳐 주택 시세와 같아집니다. 집이 시세보다 낮게 낙찰되면 보증금 일부를 못 받을 수 있는 구조입니다. 보증금을 1억 4천만 원으로 낮추면 합계가 시세의 86.7%로 내려가 반환보증의 금액 기준을 충족합니다. 여기서 시세는 실제 거래가·공시가격·감정가가 서로 다를 수 있으므로, 어떤 기준을 쓸지에 따라 결과가 달라집니다. 주택가격을 정하는 순서는 HUG 안내에서 확인하세요.</p>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">다가구·다세대는 다른 세입자 보증금도 봐야 합니다</span>
+      <p>단독·다중·다가구주택은 다른 세입자의 보증금이 등기부등본에 나타나지 않는 경우가 많습니다. HUG는 이런 주택에서 나보다 우선하는 다른 세입자들의 선순위 보증금 합계를 포함해 계산한다고 안내합니다. 임대인이 확정일자 부여일, 차임, 보증금 정보를 제시하도록 한 주택임대차보호법 제3조의6·제3조의7에 따라 임대인에게 해당 정보를 요청하세요.</p>
+    </div>
+
+    <h2>언제, 몇 번 확인해야 하나</h2>
+    <ul class="cp-checklist">
+      <li>계약서를 쓰기 전: 소유자, 근저당, 압류·가압류 등을 처음 확인합니다.</li>
+      <li>잔금을 치르기 직전: 그 사이에 새 근저당이나 가압류가 생기지 않았는지 다시 확인합니다.</li>
+      <li>이사 후(전입신고 다음 날): 내 권리가 생기는 시점 직후에 이상이 없는지 확인합니다.</li>
+    </ul>
+
+    <p>임차인의 대항력은 전입신고 다음 날부터 생깁니다. 계약과 전입 사이에 집주인이 새 대출을 받아 근저당을 설정하면 내 권리보다 앞서게 될 수 있어서, 등기부를 한 번만 보고 끝내면 안 되는 이유입니다. 등기부등본은 대법원 인터넷등기소에서 열람·발급할 수 있고, 열람한 시점의 기록만 보여 주므로 열람 일시를 꼭 확인하세요.</p>
+
+    <h2>등기부등본만으로는 알 수 없는 것</h2>
+    <ul>
+      <li><strong>세금 체납.</strong> 임대인의 국세·지방세 체납은 등기부에 나오지 않습니다. 주택임대차보호법 제3조의7에 따라 임대인은 납세증명서를 제시하거나 미납국세와 체납액 열람에 동의해야 합니다.</li>
+      <li><strong>다른 세입자의 보증금.</strong> 위 설명처럼 다가구주택에서는 등기부 밖의 정보입니다.</li>
+      <li><strong>집이 실제로 얼마에 팔리는지.</strong> 등기부에는 시세가 없습니다. 실거래가와 공시가격은 국토교통부 공개 시스템에서 따로 확인해야 합니다.</li>
+    </ul>
+
+    <h2>확인할 점</h2>
+    <ul class="cp-checklist">
+      <li>갑구의 현재 소유자가 계약 상대방과 같은가요?</li>
+      <li>갑구에 경매 신청, 압류, 가압류, 가처분, 가등기가 없나요?</li>
+      <li>을구의 근저당 채권최고액과 설정일을 확인했고, 내 보증금과 합산해 시세와 비교했나요?</li>
+      <li>표제부와 건축물대장의 주소·면적·용도가 계약서와 같고, 위반건축물 표시가 없나요?</li>
+      <li>임대인에게 납세증명서(또는 미납국세 열람 동의)와 확정일자 정보를 받았나요?</li>
+      <li>잔금 직전과 이사 다음 날 등기부를 다시 열람했나요?</li>
+    </ul>
+
+    <div class="cp-cta">
+      <p>전세대출을 받는다면 한도와 월 이자를 함께 계산해 보세요.</p>
+      <a href="/calculators/loan-interest/">대출 이자 계산기 바로가기</a>
+    </div>
+
+    <p>등기부 확인 뒤에 해야 할 일은 <a href="/blog/jeonse-move-in-fixed-date-jeonse-right-guide/">전입신고·확정일자·전세권의 차이</a>에서, 보증금을 보험으로 보호하는 방법은 <a href="/blog/jeonse-deposit-return-guarantee-guide/">전세보증금 반환보증 가입 조건</a>에서 이어서 볼 수 있습니다. 대출 한도와 금리는 <a href="/blog/dsr-dti-loan-limit/">스트레스 DSR 이후 대출 한도</a>도 함께 확인하세요.</p>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 근저당 채권최고액이 1억 원이면 실제 대출도 1억 원인가요?</p>
+      <p class="cp-faq-a">아닙니다. 민법 제357조는 근저당을 채무의 최고액만 정하고 채무 확정을 미룬 채 설정할 수 있다고 정합니다. 채권최고액은 담보하는 한도이고 실제 대출금은 이보다 적을 수 있습니다. 이자도 최고액에 산입한 것으로 보므로 보수적으로 채권최고액 전체를 선순위 채권으로 계산하는 것이 일반적입니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 등기부등본이 깨끗하면 안전한가요?</p>
+      <p class="cp-faq-a">등기부는 등기된 권리만 보여 줍니다. 다가구주택의 다른 세입자 보증금, 임대인의 세금 체납, 건축물대장상 위반 여부는 따로 확인해야 하고, 계약과 잔금·전입 사이의 변동을 막으려면 여러 번 열람해야 합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 등기부등본은 어디서 열람하나요?</p>
+      <p class="cp-faq-a">대법원 인터넷등기소에서 열람·발급할 수 있습니다. 발급 일시가 기재되므로, 계약서를 쓰는 당일과 잔금일에 가까운 시점의 것을 보는 것이 좋습니다.</p>
+    </div>
+
+    <h2>공식 출처</h2>
+    <ul>
+      <li><a href="https://www.law.go.kr/법령/부동산등기법/제15조" target="_blank" rel="noopener noreferrer">부동산등기법 제15조(물적 편성주의)</a> — 등기기록의 표제부·갑구·을구</li>
+      <li><a href="https://www.law.go.kr/법령/부동산등기규칙/제13조" target="_blank" rel="noopener noreferrer">부동산등기규칙 제13조(등기기록의 양식)</a> — 국가법령정보센터</li>
+      <li><a href="https://www.law.go.kr/법령/민법/제357조" target="_blank" rel="noopener noreferrer">민법 제357조(근저당)</a> — 채권최고액</li>
+      <li><a href="https://www.law.go.kr/법령/주택임대차보호법" target="_blank" rel="noopener noreferrer">주택임대차보호법 제3조·제3조의6·제3조의7</a> — 대항력, 확정일자 정보, 임대인의 정보 제시 의무</li>
+      <li><a href="https://www.khug.or.kr/hug/web/ig/dr/igdr000001.jsp" target="_blank" rel="noopener noreferrer">주택도시보증공사 전세보증금반환보증 상품개요</a> — 등기부등본 확인사항, 보증한도 산식</li>
+    </ul>
+
+    <p class="cp-disclaimer">본 글은 「부동산등기법」, 「민법」, 「주택임대차보호법」과 주택도시보증공사 안내를 기준으로 했으며, 숫자 예시는 설명을 위한 가정입니다. 보증 조건은 HUG 공식 안내가 우선합니다. 이 글은 일반적인 정보 제공을 목적으로 하며 금융·세무·법률 자문이 아닙니다. 법령과 기준은 개정될 수 있으니 실제 신청·신고·계약 전에는 공식 출처에서 최신 내용을 확인하시기 바랍니다. (기준일: 2026년 10월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+<script src="/js/link-tracking.js" defer></script>
+
+</body>
+</html>

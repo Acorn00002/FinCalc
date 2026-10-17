@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HWY33CNTB1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HWY33CNTB1');
+</script>
+<title>ETF 비용 비교, 총보수만 보면 놓치는 괴리율과 20년 복리 영향</title>
+<meta name="description" content="ETF 비용은 TER와 매매수수료를 합쳐 봐야 하고, 사는 순간의 괴리율도 수익에 영향을 줍니다. 보수 0.05%와 0.5%의 20년 복리 차이와 괴리율 계산 사례를 정리했습니다.">
+<link rel="canonical" href="https://www.gofincalc.com/blog/etf-cost-expense-ratio-premium-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ETF 비용 비교, 총보수만 보면 놓치는 괴리율과 20년 복리 영향">
+<meta property="og:description" content="ETF 보수와 매매수수료, 괴리율을 함께 비교하는 방법을 20년 복리 계산 예시와 함께 정리했습니다.">
+<meta property="og:url" content="https://www.gofincalc.com/blog/etf-cost-expense-ratio-premium-guide/">
+<meta property="og:site_name" content="자산 파일럿">
+<link rel="icon" href="/icons/icon-192.png" type="image/png">
+<meta name="google-adsense-account" content="ca-pub-7476413799189909">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7476413799189909"
+     crossorigin="anonymous"></script>
+<script>
+try {
+  var __fpPref = localStorage.getItem("fincalc_theme_pref");
+  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
+} catch (e) {}
+</script>
+<link rel="stylesheet" href="/css/content.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"홈","item":"https://www.gofincalc.com/"},{"@type":"ListItem","position":2,"name":"블로그","item":"https://www.gofincalc.com/blog/"},{"@type":"ListItem","position":3,"name":"ETF 비용 비교, 총보수만 보면 놓치는 괴리율과 20년 복리 영향","item":"https://www.gofincalc.com/blog/etf-cost-expense-ratio-premium-guide/"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"ETF 비용 비교, 총보수만 보면 놓치는 괴리율과 20년 복리 영향","description":"ETF 비용은 TER와 매매수수료를 합쳐 봐야 하고, 사는 순간의 괴리율도 수익에 영향을 줍니다. 보수 0.05%와 0.5%의 20년 복리 차이와 괴리율 계산 사례를 정리했습니다.","datePublished":"2026-10-17","dateModified":"2026-10-17","inLanguage":"ko-KR","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.gofincalc.com/blog/etf-cost-expense-ratio-premium-guide/"},"author":{"@type":"Organization","name":"자산 파일럿 편집팀","url":"https://www.gofincalc.com/about/"},"publisher":{"@type":"Organization","name":"자산 파일럿","logo":{"@type":"ImageObject","url":"https://www.gofincalc.com/icons/icon-512.png"}}}</script>
+</head>
+<body>
+
+<header class="cp-header">
+  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+  <nav class="cp-header-nav">
+    <a href="/calculators/">계산기</a>
+    <a href="https://www.gofincalc.com/blog/">블로그</a>
+  </nav>
+</header>
+
+<main class="cp-wrap">
+  <a class="cp-back" href="/blog/">← 블로그 목록</a>
+  <p class="cp-eyebrow">투자</p>
+  <h1 class="cp-title">ETF 비용 비교, 총보수만 보면 놓치는 괴리율과 장기 복리 영향</h1>
+  <p class="cp-meta"><span>2026.10.17</span><span>자산 파일럿 편집팀</span></p>
+
+  <article class="cp-card cp-article">
+
+    <p>ETF를 고를 때는 총보수만 보는 경우가 많지만 실제 부담은 <strong>보수와 매매수수료를 합친 비용</strong>이고, 사고팔 때의 <strong>시장가격이 순자산가치(iNAV)와 얼마나 벌어져 있는지(괴리율)</strong>도 수익에 영향을 줍니다. 보수는 작아 보여도 복리로 쌓이면 장기 수익을 눈에 띄게 깎습니다. 이 글은 금융투자협회와 한국거래소가 공개한 기준으로 비용 구조를 정리하고, 보수 차이가 20년 뒤 얼마나 되는지 계산해 봅니다.</p>
+
+    <div class="cp-callout">
+      <span class="cp-callout-label">이 글이 필요한 분</span>
+      <p>ETF에 처음 투자하면서 같은 지수를 따라가는 상품 중 무엇을 골라야 할지 고민하는 분, 총보수와 괴리율이 무슨 뜻인지 헷갈리는 분, 장기 투자에서 비용이 수익을 얼마나 깎는지 숫자로 보고 싶은 분입니다.</p>
+    </div>
+
+    <h2>ETF란 무엇이고, 어디서 비용이 나가나</h2>
+    <p>금융감독원 e-금융교육센터는 상장지수펀드(ETF)를 특정 지수나 자산 가격의 움직임과 수익률이 연동되도록 설계되어 거래소에서 주식처럼 거래되는 펀드로 설명하고, ETF도 금융투자상품이어서 원금 손실이 날 수 있다고 안내합니다. 펀드이므로 운용 비용이 들고, 거래소에서 사고팔기 때문에 증권사 수수료도 듭니다.</p>
+    <p>금융투자협회 펀드수익비용계산기는 비용을 이렇게 나눠 봅니다. <strong>TER(연평균 비용율)</strong>은 자산운용사가 제공하는 값이고, 여기에 <strong>매매중개수수료율</strong>을 더한 것이 연평균수수료율입니다. 이 값의 복리효과를 제거해 투자자가 연간 실제로 부담하는 비율로 바꾼 것이 <strong>실효연평균수수료율</strong>입니다. 즉 TER만이 아니라 매매수수료까지 합쳐서 비교해야 합니다. 상품별 TER는 운용사 상품 페이지와 금융투자협회 펀드 다모아에서 확인할 수 있고, 증권사 매매수수료는 증권사마다 다르므로 거래하는 증권사의 안내를 직접 확인해야 합니다.</p>
+
+    <h2>보수 차이가 20년 뒤 얼마나 되나: 계산 예시</h2>
+    <p>1,000만 원을 연 6% 수익률로 20년간 굴린다고 가정하고, 보수를 연 0.05%, 0.30%, 0.50%로 달리했습니다. 보수는 매년 수익률에서 빠진다고 단순화했고, 보수 수치는 설명을 위한 가정입니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>가정한 연 보수</th><th>보수 차감 후 수익률</th><th>20년 뒤 평가액</th><th>보수 없을 때와의 차이</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>보수 없음(기준)</td><td>6.00%</td><td>3,207.14만원</td><td>—</td></tr>
+          <tr><td>연 0.05%</td><td>5.95%</td><td>3,177.01만원</td><td>30.12만원</td></tr>
+          <tr><td>연 0.30%</td><td>5.70%</td><td>3,030.4만원</td><td>176.74만원</td></tr>
+          <tr><td>연 0.50%</td><td>5.50%</td><td>2,917.76만원</td><td>289.38만원</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="cp-formula">20년 뒤 금액 = 원금 × (1 + 수익률 − 연 보수)<sup>20</sup></p>
+    <p>0.05%와 0.50%를 비교하면 20년 뒤 평가액 차이가 약 259.26만원입니다. 한 해 차이는 0.45%포인트에 불과하지만 복리로 20년 쌓이면 원금 1,000만 원의 약 26%에 해당하는 금액이 됩니다. 반대로 투자 기간이 짧거나 거래가 잦다면 보수보다 매매수수료와 호가 차이가 더 큰 비용이 될 수 있습니다.</p>
+
+    <h2>괴리율: 사는 가격이 가치보다 비쌀 때</h2>
+    <p>한국거래소는 괴리율을 <strong>"ETF 시장가격과 ETF 투자대상자산의 순자산가치(NAV)의 차이를 비율로 표시한 투자위험지표"</strong>로 설명하고, 음수(-)는 일시적으로 시장가격이 순자산가치보다 저평가된 상태를 뜻한다고 안내합니다. 양수(+)는 시장가격이 고평가된 상태입니다. 장중에는 실시간 순자산가치인 iNAV와 비교합니다.</p>
+    <p>실제 공시 사례로 계산해 보겠습니다. 한국거래소 공시(2025년 5월 23일)에 따르면 TIMEFOLIO 글로벌소비트렌드액티브 ETF는 종가 10,300원, iNAV 10,513.51원으로 괴리율이 -2.03%였습니다.</p>
+    <p class="cp-formula">괴리율 = (시장가격 − iNAV) ÷ iNAV = (10,300 − 10,513.51) ÷ 10,513.51 ≈ -2.03%</p>
+    <p>이 공시는 해외 선물 등을 헤지 수단으로 쓰는 유동성공급자(LP)가 헤지 대상의 괴리율과 거래비용 등을 iNAV에 반영해 호가를 내기 때문에 괴리가 생길 수 있고, 시장 상황에 따라 확대될 수 있다고 안내합니다. 괴리율이 +2%인 상태에서 사면 같은 가치의 ETF를 2% 비싸게 사는 셈이고, 가격이 정상화되면 기초자산이 오르지 않아도 손해가 날 수 있습니다. 한국거래소의 다른 투자유의 공시(2022년 3월 3일)도 시장가격이 고평가된 상태에서 LP의 유동성 공급이 원활해져 가격이 정상화되면 기초자산 가격 변동과 무관하게 투자자 손실이 발생할 수 있다고 경고했습니다.</p>
+    <div class="cp-callout cp-callout--warn">
+      <span class="cp-callout-label">괴리율은 매수 직전에 확인하세요</span>
+      <p>괴리율과 iNAV는 장중에 계속 바뀝니다. 호가창에서 시장가격과 iNAV를 함께 보고 괴리가 큰 구간은 피하는 것이 기본입니다. 일반적으로 거래량이 적은 ETF는 사려는 가격과 팔려는 가격의 차이도 커서 실제 거래 비용이 늘어날 수 있습니다.</p>
+    </div>
+
+    <h2>해외 ETF라면 환전과 세금도 비용입니다</h2>
+    <p>해외 상장 ETF는 보수와 매매수수료에 더해 환전 비용이 듭니다. 환전 우대율을 따져 보는 방법은 <a href="/blog/exchange-rate-preferential-guide/">환전 우대율 가이드</a>에서, 해외 주식·ETF 양도소득세 구조는 <a href="/blog/global-stock-tax-guide/">해외주식 양도소득세 가이드</a>에서 정리했습니다. 이 글은 세금 구조를 다루지 않으므로, 과세 방식은 반드시 해당 글과 국세청 안내로 확인하세요.</p>
+
+    <h2>ETF 고르는 순서</h2>
+    <ul class="cp-checklist">
+      <li>같은 지수를 따라가는 ETF끼리 비교한다. 추종 지수가 다르면 보수 비교만으로 판단할 수 없다.</li>
+      <li>운용사 상품 페이지 또는 금융투자협회 펀드 다모아에서 TER와 총보수를 확인한다.</li>
+      <li>거래하는 증권사의 매매수수료를 확인해 TER와 합산한 연간 비용을 추정한다.</li>
+      <li>최근 한 달 정도의 괴리율 흐름과 거래량을 확인한다.</li>
+      <li>매수 직전 호가창에서 시장가격과 iNAV 차이를 본다.</li>
+      <li>레버리지·인버스처럼 구조가 복잡한 상품이라면 투자 설명서의 손실 구조를 먼저 읽는다.</li>
+      <li>해외 상장이라면 환전 비용과 세금 구조를 따로 계산한다.</li>
+    </ul>
+
+    <div class="cp-cta">
+      <p>투자 기간별로 수익이 어떻게 달라지는지 복리 계산기로 직접 계산해 보세요.</p>
+      <a href="/calculators/compound-interest/">복리 계산기 바로가기</a>
+    </div>
+
+    <p>해외 ETF 보유 후 세후 수령액은 <a href="/calculators/global-net/">해외주식 실수령액 계산기</a>로, 분배금 세금은 <a href="/blog/dividend-tax-guide/">배당소득세 가이드</a>에서 확인할 수 있습니다.</p>
+
+    <h2>자주 묻는 질문</h2>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 총보수가 가장 낮은 ETF가 항상 좋은가요?</p>
+      <p class="cp-faq-a">아닙니다. 보수가 낮아도 거래량이 적어 호가 차이가 크거나 괴리율이 자주 커지면 실제 비용이 늘 수 있습니다. 같은 지수를 추종하는 상품끼리 보수, 매매수수료, 괴리율, 거래량을 함께 비교해야 합니다.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. TER와 총보수는 같은 말인가요?</p>
+      <p class="cp-faq-a">TER는 금융투자협회 안내에서 자산운용사가 제공하는 "연평균 비용율"로 소개되는 값입니다. 상품 설명서의 총보수와 같은 개념인지, 어떤 비용이 포함되는지는 운용사 설명서와 금융투자협회 안내에서 확인해야 하므로, 비교할 때는 같은 기준의 수치끼리 사용하세요.</p>
+    </div>
+    <div class="cp-faq-item">
+      <p class="cp-faq-q">Q. 괴리율이 크면 사지 말아야 하나요?</p>
+      <p class="cp-faq-a">한국거래소는 괴리율을 투자위험지표로 안내합니다. 괴리율이 양수로 크면 비싸게 사는 것이어서 주의가 필요하지만, 시점과 상품에 따라 달라지므로 매수 직전 호가와 iNAV를 직접 확인하세요. 이 글은 투자 권유가 아닙니다.</p>
+    </div>
+
+    <h2>공식 출처</h2>
+    <ul>
+      <li><a href="https://www.fss.or.kr/edu/fec/contMng/view.do?contentsSlno=620&menuNo=300017" target="_blank" rel="noopener noreferrer">금융감독원 e-금융교육센터 ETF 안내</a> — ETF 정의와 투자 유의사항</li>
+      <li><a href="https://dis.kofia.or.kr/wq/html/COMFundCalc.html" target="_blank" rel="noopener noreferrer">금융투자협회 펀드수익비용계산기</a> — TER, 매매중개수수료율, 실효연평균수수료율</li>
+      <li><a href="https://kind.krx.co.kr/external/2025/05/26/000001/20250526000004/68648.htm" target="_blank" rel="noopener noreferrer">한국거래소 KIND ETF 괴리율 초과 공시(2025년 5월 23일)</a> — 괴리율 정의, iNAV, LP 설명과 계산 사례</li>
+      <li><a href="https://kind.krx.co.kr/external/2022/03/03/000229/20220303000588/68615.htm" target="_blank" rel="noopener noreferrer">한국거래소 KIND ETF 투자유의 안내(2022년 3월 3일)</a> — 괴리율이 양수일 때의 위험 안내</li>
+      <li><a href="https://dis.kofia.or.kr/websquare/index.jsp?w2xPath=%2Fwq%2Fdamoa%2FDISFundAnnFundUnit.xml&divisionId=MDIS08006000000000&serviceId=SDIS08006000000" target="_blank" rel="noopener noreferrer">금융투자협회 펀드 다모아 ETF</a> — 상품별 보수·비용 비교</li>
+    </ul>
+
+    <p class="cp-disclaimer">본 글은 금융감독원·금융투자협회·한국거래소가 공개한 설명과 공시를 기준으로 했으며, 보수·수익률 수치는 설명을 위한 가정입니다. 특정 상품의 매수·매도를 권유하지 않습니다. 이 글은 일반적인 정보 제공을 목적으로 하며 금융·세무·법률 자문이 아닙니다. 법령과 기준은 개정될 수 있으니 실제 신청·신고·계약 전에는 공식 출처에서 최신 내용을 확인하시기 바랍니다. (기준일: 2026년 10월)</p>
+    <p class="cp-back" style="margin-top:28px;"><a href="https://www.gofincalc.com/#finpilot">← Asset Pilot 메인 계산기로 돌아가기</a></p>
+  </article>
+</main>
+
+<footer class="cp-footer">
+  <span>© 2026 자산 파일럿(gofincalc.com)</span>
+  <div class="cp-footer-links">
+    <a href="/about/">회사소개</a>
+    <a href="/privacy/">개인정보처리방침</a>
+    <a href="/terms/">이용약관</a>
+    <a href="/contact/">문의하기</a>
+  <a href="https://www.instagram.com/gofincalc.app" target="_blank" rel="noopener noreferrer">인스타그램</a>
+  </div>
+</footer>
+
+<script src="/js/link-tracking.js" defer></script>
+
+</body>
+</html>
