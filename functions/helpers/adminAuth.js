@@ -15,10 +15,13 @@ const ALLOWED_ORIGINS = [
 // Vercel Preview(이 프로젝트 계정의 fin-calc-* 배포)만 허용한다.
 const PREVIEW_ORIGIN_RE = /^https:\/\/fin-calc-[a-z0-9-]+-wnstjd20620-2295s-projects\.vercel\.app$/;
 // onRequest({ cors: ADMIN_CORS }) 에 그대로 전달한다.
-const ADMIN_CORS = ALLOWED_ORIGINS.concat([PREVIEW_ORIGIN_RE]);
+// 로컬 에뮬레이터에서만 localhost 를 허용한다(배포 환경에서는 FUNCTIONS_EMULATOR 가 설정되지 않는다).
+const LOCAL_ORIGIN_RE = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+const IS_EMULATOR = process.env.FUNCTIONS_EMULATOR === "true";
+const ADMIN_CORS = ALLOWED_ORIGINS.concat([PREVIEW_ORIGIN_RE]).concat(IS_EMULATOR ? [LOCAL_ORIGIN_RE] : []);
 
 function isAllowedOrigin(origin) {
-  return ALLOWED_ORIGINS.indexOf(origin) > -1 || PREVIEW_ORIGIN_RE.test(origin || "");
+  return ALLOWED_ORIGINS.indexOf(origin) > -1 || PREVIEW_ORIGIN_RE.test(origin || "") || (IS_EMULATOR && LOCAL_ORIGIN_RE.test(origin || ""));
 }
 
 // 인스턴스 메모리 기반 슬라이딩 윈도우 제한기(함수 인스턴스별로 적용됨 — 단일 인스턴스 남용과 무차별 대입을 막는 용도).
