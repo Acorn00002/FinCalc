@@ -3,212 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>세무사 상담 신청 목록 | 관리자</title>
-<meta name="robots" content="noindex, nofollow">
+<title>관리자 | 자산 파일럿</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
 <link rel="icon" href="/icons/icon-192.png" type="image/png">
-<script>
-try {
-  var __fpPref = localStorage.getItem("fincalc_theme_pref");
-  if (__fpPref === "dark" || __fpPref === "light") document.documentElement.setAttribute("data-theme", __fpPref);
-} catch (e) {}
-</script>
-<link rel="stylesheet" href="/css/content.css">
-<style>
-  .adm-form { display: flex; gap: 8px; margin: 20px 0; }
-  .adm-input {
-    flex: 1; padding: 12px 14px; border-radius: 12px; border: 1px solid #e2e5ea;
-    font-size: 14.5px; font-family: inherit;
-  }
-  .adm-btn {
-    padding: 12px 20px; border-radius: 12px; border: none; background: #1f6feb;
-    color: #fff; font-weight: 700; font-size: 14.5px; cursor: pointer; white-space: nowrap;
-  }
-  .adm-btn:disabled { opacity: .6; cursor: default; }
-  .adm-result { font-size: 13.5px; color: #6b7280; margin: 8px 0 0; }
-  .adm-item {
-    padding: 16px; border: 1px solid #e2e5ea; border-radius: 14px; margin-bottom: 10px;
-  }
-  .adm-item-title { font-weight: 700; font-size: 14.5px; margin: 0 0 6px; }
-  .adm-item-meta { font-size: 13.5px; color: #6b7280; margin: 0 0 4px; white-space: pre-wrap; }
-  .adm-item-time { font-size: 12.5px; color: #9aa1ac; margin: 0; }
-  .adm-section { margin-top: 44px; padding-top: 24px; border-top: 1px solid #e2e5ea; }
-  .adm-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .adm-btn-sm { padding: 7px 12px; border-radius: 10px; border: 1px solid #e2e5ea; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .adm-btn-danger { color: #d1242f; border-color: #f0b8bc; }
-  .adm-btn-sm:disabled { opacity: .6; cursor: default; }
-</style>
+<link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
 
-<header class="cp-header">
-  <a class="cp-logo" href="https://www.gofincalc.com/"><img class="cp-logo-mark" src="/icons/icon-192.png" alt="">자산 파일럿</a>
+<header class="adm-header">
+  <span class="adm-brand">자산 파일럿 · 관리자</span>
+  <span class="adm-user" id="admUser" hidden></span>
+  <button type="button" class="adm-btn adm-btn-ghost" id="admSignOut" hidden>로그아웃</button>
 </header>
 
-<main class="cp-wrap">
-  <p class="cp-eyebrow">ADMIN</p>
-  <h1 class="cp-title">세무사 상담 신청 목록</h1>
-  <p class="cp-meta">비밀값을 입력하면 사용자가 남긴 절세 상담 신청 내역을 확인할 수 있어요.</p>
+<main class="adm-wrap">
+  <!-- 로그인 전에는 이 카드만 보이며, 관리자 데이터 요청은 일절 하지 않는다. -->
+  <section class="adm-card" id="admGate">
+    <h1>관리자 로그인</h1>
+    <p class="adm-note">관리자 권한이 부여된 Google 계정으로 로그인하세요. 공유 비밀값은 더 이상 사용하지 않습니다.</p>
+    <button type="button" class="adm-btn" id="admSignIn">Google 계정으로 로그인</button>
+    <p class="adm-result" id="admGateMsg" role="status"></p>
+  </section>
 
-  <div class="adm-form">
-    <input type="password" class="adm-input" id="admSecret" placeholder="비밀값">
-    <button type="button" class="adm-btn" id="admLoadBtn">불러오기</button>
-  </div>
-  <p class="adm-result" id="admResult"></p>
+  <section id="admApp" hidden>
+    <nav class="adm-tabs" id="admTabs">
+      <button type="button" class="adm-tab is-active" data-tab="push">푸시 발송</button>
+      <button type="button" class="adm-tab" data-tab="calendar">캘린더 일정</button>
+      <button type="button" class="adm-tab" data-tab="system">동기화·로그</button>
+      <button type="button" class="adm-tab" data-tab="tax">세무 상담 신청</button>
+      <button type="button" class="adm-tab" data-tab="lounge">라운지 관리</button>
+    </nav>
 
-  <div id="admList" style="margin-top:18px;"></div>
-  <section class="adm-section">
-    <p class="cp-eyebrow">ADMIN</p>
-    <h2 class="cp-title" style="font-size:22px;">자산 라운지 관리</h2>
-    <p class="cp-meta">신고된 글·댓글을 확인하고 삭제하거나 작성자를 차단합니다. 위에 입력한 비밀값을 사용합니다(서버에서 검증).</p>
-    <div class="adm-form">
-      <button type="button" class="adm-btn" id="loungeLoadBtn">신고된 글·댓글 불러오기</button>
-    </div>
-    <p class="adm-result" id="loungeResult"></p>
-    <div id="loungeList" style="margin-top:14px;"></div>
-    <div class="adm-form">
-      <input type="text" class="adm-input" id="loungeUid" placeholder="사용자 uid" autocomplete="off">
-      <button type="button" class="adm-btn" id="loungeBanBtn">차단</button>
-      <button type="button" class="adm-btn" id="loungeUnbanBtn" style="background:#6b7280;">차단 해제</button>
-    </div>
+    <section class="adm-card" data-panel="push">
+      <h2>푸시 알림 발송</h2>
+      <label class="adm-label" for="pushTitle">제목 (60자 이내)</label>
+      <input class="adm-input" id="pushTitle" maxlength="60" autocomplete="off">
+      <label class="adm-label" for="pushBody">내용 (200자 이내)</label>
+      <textarea class="adm-input adm-textarea" id="pushBody" maxlength="200"></textarea>
+      <label class="adm-label" for="pushLink">이동 링크 (선택: calendar / lounge / mypage 등)</label>
+      <input class="adm-input" id="pushLink" maxlength="60" autocomplete="off">
+      <label class="adm-label" for="pushSchedule">예약 발송 시각 (선택, 비우면 즉시 발송)</label>
+      <input class="adm-input" id="pushSchedule" type="datetime-local">
+      <button type="button" class="adm-btn" id="pushSubmit">발송하기</button>
+      <p class="adm-result" id="pushResult" role="status"></p>
+    </section>
+
+    <section class="adm-card" data-panel="calendar" hidden>
+      <h2 id="calFormTitle">캘린더 일정 등록</h2>
+      <input type="hidden" id="calEditId">
+      <label class="adm-label" for="calCategory">카테고리</label>
+      <select class="adm-input" id="calCategory">
+        <option value="subsidy">정부지원금</option>
+        <option value="realestate">부동산 청약</option>
+        <option value="ipo">공모주 / 증시</option>
+        <option value="stock">주식</option>
+        <option value="tax">세금</option>
+        <option value="economy">경제</option>
+      </select>
+      <label class="adm-label" for="calDate">날짜 (D-Day 기준일)</label>
+      <input class="adm-input" id="calDate" type="date">
+      <label class="adm-label" for="calTitle">제목 (80자 이내)</label>
+      <input class="adm-input" id="calTitle" maxlength="80" autocomplete="off">
+      <label class="adm-label" for="calMeta">부제 / 요약 (선택)</label>
+      <input class="adm-input" id="calMeta" maxlength="120" autocomplete="off">
+      <label class="adm-label" for="calStatus">상태 (선택)</label>
+      <select class="adm-input" id="calStatus">
+        <option value="">없음</option><option value="예정">예정</option><option value="확정">확정</option>
+        <option value="변경">변경</option><option value="연기">연기</option><option value="취소">취소</option><option value="종료">종료</option>
+      </select>
+      <label class="adm-label" for="calFlag">국가</label>
+      <select class="adm-input" id="calFlag"><option value="kr">한국</option><option value="us">미국</option></select>
+      <label class="adm-label" for="calLink">신청 / 원문 링크 (선택, http(s)만)</label>
+      <input class="adm-input" id="calLink" maxlength="500" autocomplete="off">
+      <details class="adm-details">
+        <summary>상세 항목 (카테고리별, 선택)</summary>
+        <label class="adm-label" for="calEligibility">신청 자격 요건 (정부지원금)</label>
+        <input class="adm-input" id="calEligibility" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calApplyPeriod">신청 기간 (정부지원금)</label>
+        <input class="adm-input" id="calApplyPeriod" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calSupplyType">공급 유형 (청약)</label>
+        <input class="adm-input" id="calSupplyType" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calWinnerDate">당첨자 발표일 (청약)</label>
+        <input class="adm-input" id="calWinnerDate" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calUnderwriter">주관 증권사 (공모주)</label>
+        <input class="adm-input" id="calUnderwriter" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calOfferPrice">공모가 (공모주)</label>
+        <input class="adm-input" id="calOfferPrice" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calRefundDate">환불일 (공모주)</label>
+        <input class="adm-input" id="calRefundDate" maxlength="300" autocomplete="off">
+        <label class="adm-label" for="calListingDate">상장일 (공모주)</label>
+        <input class="adm-input" id="calListingDate" maxlength="300" autocomplete="off">
+      </details>
+      <label class="adm-label" for="calImportance">중요도 override</label>
+      <select class="adm-input" id="calImportance">
+        <option value="">자동 규칙 사용(설정 안 함)</option><option value="매우중요">매우중요</option><option value="중요">중요</option><option value="일반">일반</option>
+      </select>
+      <label class="adm-label" for="calDescription">초보자용 설명 override (200자 이내)</label>
+      <input class="adm-input" id="calDescription" maxlength="200" autocomplete="off">
+      <label class="adm-check"><input type="checkbox" id="calHidden"> 사용자 화면에서 숨기기(삭제 아님)</label>
+      <div class="adm-row">
+        <button type="button" class="adm-btn" id="calSubmit">등록하기</button>
+        <button type="button" class="adm-btn adm-btn-ghost" id="calCancel" hidden>수정 취소</button>
+      </div>
+      <p class="adm-result" id="calResult" role="status"></p>
+      <h3>최근 일정 (30건)</h3>
+      <div id="calList"></div>
+    </section>
+
+    <section class="adm-card" data-panel="system" hidden>
+      <h2>수동 동기화</h2>
+      <div class="adm-row">
+        <button type="button" class="adm-btn" id="syncCalendarBtn">캘린더(DART·청약홈) 동기화</button>
+        <button type="button" class="adm-btn" id="syncIpoBtn">공모주 캐시 갱신</button>
+        <button type="button" class="adm-btn" id="syncEconBtn">경제지표 동기화</button>
+      </div>
+      <p class="adm-result" id="syncResult" role="status"></p>
+      <h3>검수 필요 일정</h3>
+      <div id="reviewList"></div>
+      <h3>동기화 로그 (최근 20건)</h3>
+      <div id="logList"></div>
+      <h3>경제지표 스냅샷</h3>
+      <div id="indicatorList"></div>
+    </section>
+
+    <section class="adm-card" data-panel="tax" hidden>
+      <h2>세무 상담 신청 목록</h2>
+      <p class="adm-note">연락처 등 개인정보가 포함됩니다. 화면 공유·캡처 시 주의하세요.</p>
+      <button type="button" class="adm-btn" id="taxLoad">불러오기</button>
+      <p class="adm-result" id="taxResult" role="status"></p>
+      <div id="taxList"></div>
+    </section>
+
+    <section class="adm-card" data-panel="lounge" hidden>
+      <h2>자산 라운지 관리</h2>
+      <p class="adm-note">신고된 글·댓글을 삭제하거나 작성자를 차단합니다.</p>
+      <button type="button" class="adm-btn" id="loungeLoad">신고된 글·댓글 불러오기</button>
+      <p class="adm-result" id="loungeResult" role="status"></p>
+      <div id="loungeList"></div>
+      <label class="adm-label" for="loungeUid">사용자 uid</label>
+      <input class="adm-input" id="loungeUid" autocomplete="off">
+      <div class="adm-row">
+        <button type="button" class="adm-btn" id="loungeBan">차단</button>
+        <button type="button" class="adm-btn adm-btn-ghost" id="loungeUnban">차단 해제</button>
+      </div>
+    </section>
   </section>
 </main>
 
-<script>
-  var ENDPOINT = "https://asia-northeast3-asset-filot.cloudfunctions.net/getTaxConsultLeads";
-
-  function escapeAdmHtml(str){
-    return String(str || "").replace(/[&<>"']/g, function(ch){
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
-  }
-
-  function formatAdmDate(iso){
-    if (!iso) return "";
-    var d = new Date(iso);
-    if (isNaN(d.getTime())) return "";
-    return d.getFullYear() + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + String(d.getDate()).padStart(2, "0") +
-      " " + String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
-  }
-
-  document.getElementById("admLoadBtn").addEventListener("click", function(){
-    var btn = this;
-    var secret = document.getElementById("admSecret").value.trim();
-    var resultEl = document.getElementById("admResult");
-    var listEl = document.getElementById("admList");
-    if (!secret) { resultEl.textContent = "비밀값을 입력하세요."; return; }
-
-    btn.disabled = true;
-    resultEl.textContent = "불러오는 중...";
-    listEl.innerHTML = "";
-
-    fetch(ENDPOINT + "?secret=" + encodeURIComponent(secret))
-      .then(function(res){ return res.json().then(function(data){ return { ok: res.ok, data: data }; }); })
-      .then(function(result){
-        if (!result.ok) {
-          resultEl.textContent = "실패: " + (result.data.error || "알 수 없는 오류");
-          return;
-        }
-        var leads = result.data.leads || [];
-        resultEl.textContent = leads.length + "건";
-        if (!leads.length) {
-          listEl.innerHTML = '<p class="adm-result">신청 내역이 없어요.</p>';
-          return;
-        }
-        listEl.innerHTML = leads.map(function(lead){
-          return '' +
-            '<div class="adm-item">' +
-              '<p class="adm-item-title">[' + escapeAdmHtml(lead.category) + '] ' + escapeAdmHtml(lead.contact) + '</p>' +
-              '<p class="adm-item-meta">' + escapeAdmHtml(lead.message || "(내용 없음)") + '</p>' +
-              '<p class="adm-item-time">' + formatAdmDate(lead.createdAt) + '</p>' +
-            '</div>';
-        }).join("");
-      })
-      .catch(function(error){
-        resultEl.textContent = "요청 실패: " + error.message;
-      })
-      .then(function(){
-        btn.disabled = false;
-      });
-  });
-  // ---------- 자산 라운지 관리 ----------
-  var MOD_ENDPOINT = "https://asia-northeast3-asset-filot.cloudfunctions.net/moderateLounge";
-
-  function modCall(payload){
-    var secret = document.getElementById("admSecret").value.trim();
-    if (!secret) return Promise.reject(new Error("위 칸에 비밀값을 먼저 입력하세요."));
-    return fetch(MOD_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-admin-secret": secret },
-      body: JSON.stringify(payload)
-    }).then(function(res){
-      return res.json().then(function(data){
-        if (!res.ok) throw new Error(data.error || ("오류 " + res.status));
-        return data;
-      });
-    });
-  }
-
-  function loadLoungeReports(){
-    var resultEl = document.getElementById("loungeResult");
-    var listEl = document.getElementById("loungeList");
-    resultEl.textContent = "불러오는 중...";
-    listEl.innerHTML = "";
-    modCall({ action: "list" }).then(function(data){
-      var items = data.items || [];
-      resultEl.textContent = "신고된 항목 " + items.length + "건";
-      listEl.innerHTML = items.map(function(it){
-        var label = it.type === "post" ? "글" : "댓글";
-        return '' +
-          '<div class="adm-item" data-type="' + escapeAdmHtml(it.type) + '" data-id="' + escapeAdmHtml(it.id) + '" data-uid="' + escapeAdmHtml(it.uid) + '">' +
-            '<p class="adm-item-title">[' + label + '] ' + escapeAdmHtml(it.title || it.content) + (it.blinded ? ' (블라인드됨)' : '') + '</p>' +
-            '<p class="adm-item-meta">' + escapeAdmHtml(it.title ? it.content : "") + '</p>' +
-            '<p class="adm-item-time">신고 ' + it.reportCount + '건 · 작성자 ' + escapeAdmHtml(it.uid) + '</p>' +
-            '<div class="adm-actions">' +
-              '<button type="button" class="adm-btn-sm adm-btn-danger" data-act="delete">삭제</button>' +
-              '<button type="button" class="adm-btn-sm" data-act="dismiss">신고 해제</button>' +
-              '<button type="button" class="adm-btn-sm adm-btn-danger" data-act="ban">작성자 차단(+글 삭제)</button>' +
-            '</div>' +
-          '</div>';
-      }).join("");
-    }).catch(function(err){
-      resultEl.textContent = "실패: " + err.message;
-    });
-  }
-
-  document.getElementById("loungeLoadBtn").addEventListener("click", loadLoungeReports);
-
-  document.getElementById("loungeList").addEventListener("click", function(e){
-    var btn = e.target.closest("button[data-act]");
-    if (!btn) return;
-    var item = btn.closest(".adm-item");
-    var act = btn.getAttribute("data-act");
-    var type = item.getAttribute("data-type");
-    var id = item.getAttribute("data-id");
-    var uid = item.getAttribute("data-uid");
-    var msg = act === "delete" ? "이 항목을 삭제할까요? (글이면 댓글도 함께 삭제됩니다)"
-      : act === "ban" ? "작성자를 차단하고 작성한 글·댓글을 모두 삭제할까요?"
-      : "신고를 해제할까요?";
-    if (!window.confirm(msg)) return;
-    var payload = act === "ban" ? { action: "ban", uid: uid, reason: "신고 누적", deleteContent: true } : { action: act, type: type, id: id };
-    btn.disabled = true;
-    modCall(payload).then(function(){ loadLoungeReports(); }).catch(function(err){
-      document.getElementById("loungeResult").textContent = "실패: " + err.message;
-      btn.disabled = false;
-    });
-  });
-
-  function manualBan(action){
-    var uid = document.getElementById("loungeUid").value.trim();
-    var resultEl = document.getElementById("loungeResult");
-    if (!uid) { resultEl.textContent = "uid를 입력하세요."; return; }
-    if (!window.confirm(uid + " 계정을 " + (action === "ban" ? "차단" : "차단 해제") + "할까요?")) return;
-    modCall({ action: action, uid: uid, reason: "관리자 수동 처리" }).then(function(){
-      resultEl.textContent = (action === "ban" ? "차단" : "차단 해제") + " 완료: " + uid;
-    }).catch(function(err){ resultEl.textContent = "실패: " + err.message; });
-  }
-  document.getElementById("loungeBanBtn").addEventListener("click", function(){ manualBan("ban"); });
-  document.getElementById("loungeUnbanBtn").addEventListener("click", function(){ manualBan("unban"); });
-</script>
-
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="/admin/admin.js"></script>
 </body>
 </html>
