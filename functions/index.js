@@ -7,6 +7,19 @@ const { computeEcosPeriod, parseEcosResponse } = require("./helpers/ecosParser")
 admin.initializeApp();
 const db = admin.firestore();
 
+// ---------- 관리자 인증 ----------
+// 관리자 전용 엔드포인트는 Firebase ID Token(Authorization: Bearer) + custom claim admin:true 로만 호출할 수 있다.
+const { createAdminGuard, withLegacySecret, ADMIN_CORS } = require("./helpers/adminAuth");
+const { validatePush, validateCalendarEvent, validateDeleteId } = require("./helpers/adminValidate");
+const functionsLogger = require("firebase-functions/logger");
+const adminGuard = createAdminGuard({
+  verifyIdToken: (token) => admin.auth().verifyIdToken(token, true),
+  logger: functionsLogger,
+  logSalt: process.env.ADMIN_LOG_SALT || ""
+});
+// [전환기 호환 — 마지막 단계에서 제거] 새 관리자 화면 검증이 끝나기 전까지만 구형 공유 비밀값도 허용한다.
+const adminGate = withLegacySecret(adminGuard, [process.env.SEND_PUSH_SECRET, process.env.CALENDAR_SYNC_SECRET], functionsLogger);
+
 // ---------- /api/news ----------
 // 구글 뉴스 카테고리별 RSS — 헤드라인/경제/세계는 고정 topic ID(opaque 값, 실제 200/XML 응답을 확인한 것만 사용),
 // 시사/생활은 대응하는 topic ID가 없어(구글 뉴스 상단 탭에 없음) 검색 RSS(q=키워드)로 대체한다.
@@ -353,7 +366,6 @@ exports.deleteAccount = onRequest({ cors: true, region: "asia-northeast3" }, asy
 
 const DART_API_KEY = process.env.DART_API_KEY || "";
 const DATA_GO_KR_API_KEY = process.env.DATA_GO_KR_API_KEY || "";
-const CALENDAR_SYNC_SECRET = process.env.CALENDAR_SYNC_SECRET || "";
 
 const DART_LIST_URL = "https://opendart.fss.or.kr/api/list.json";
 // 실제 발급받은 키로 확인한 정확한 엔드포인트(odcloud.kr 기반, Swagger 문서로 직접 검증):
@@ -983,11 +995,9 @@ exports.syncFinancialCalendar = onSchedule(
 // 수동 실행용 — API 키를 새로 넣은 뒤 새벽 2시까지 기다리지 않고 바로 테스트하고 싶을 때 사용.
 // ?secret=CALENDAR_SYNC_SECRET 쿼리 파라미터로 보호한다 (공개 엔드포인트를 무단으로 반복 호출하면
 // DART/공공데이터포털의 일일 호출 한도를 낭비할 수 있어 반드시 비밀값 없이는 실행되지 않게 막아둠).
-exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 300 }, async (req, res) => {
-  if (!CALENDAR_SYNC_SECRET || req.query.secret !== CALENDAR_SYNC_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.syncFinancialCalendarManual = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3", timeoutSeconds: 300 }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "syncFinancialCalendarManual", methods: ["POST"] });
+  if (!adminWho) return;
   try {
     const result = await runCalendarSync();
     res.status(200).json(result);
@@ -1000,7 +1010,6 @@ exports.syncFinancialCalendarManual = onRequest({ cors: true, region: "asia-nort
 // ---------- 푸시 알림 발송 ----------
 // 이 앱은 별도 관리자 계정 체계가 없어(1인 개발), CALENDAR_SYNC_SECRET과 동일한 방식으로
 // 공유 비밀값 하나로 발송 권한을 제한한다. 값을 아는 사람만 /api/send-push를 호출할 수 있다.
-const SEND_PUSH_SECRET = process.env.SEND_PUSH_SECRET || "";
 
 // notifications 문서 하나를 실제 FCM 푸시로 fcmTokens에 등록된 모든 기기에 발송한다.
 // 만료/삭제된 토큰은 발송 응답에서 걸러내 fcmTokens에서 함께 정리한다(무효 토큰이 계속 쌓이는 것 방지).
@@ -1040,24 +1049,18 @@ async function dispatchPushToAllTokens(title, body, link) {
 
 // 즉시 발송 또는 예약 발송 — 예약된 건은 notifications 문서를 sent:false로 만들어두기만 하고,
 // 실제 발송은 아래 dispatchScheduledPushes 스케줄러가 시간이 되면 처리한다.
-exports.sendPushNotification = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "POST 요청만 지원합니다." });
-    return;
-  }
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.sendPushNotification = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "sendPushNotification", methods: ["POST"] });
+  if (!adminWho) return;
 
-  const { title, body, icon, link, scheduledFor } = req.body || {};
-  if (!title || !body) {
-    res.status(400).json({ error: "title, body가 필요합니다." });
+  const checkedPush = validatePush(req.body);
+  if (checkedPush.error) {
+    res.status(400).json({ error: checkedPush.error });
     return;
   }
-
-  const scheduledDate = scheduledFor ? new Date(scheduledFor) : null;
-  const isScheduled = !!(scheduledDate && !isNaN(scheduledDate.getTime()) && scheduledDate.getTime() > Date.now());
+  const { title, body, icon, link } = checkedPush.value;
+  const scheduledDate = checkedPush.value.scheduledFor;
+  const isScheduled = !!(scheduledDate && scheduledDate.getTime() > Date.now());
 
   try {
     const docRef = await db.collection("notifications").add({
@@ -1108,36 +1111,31 @@ exports.dispatchScheduledPushes = onSchedule(
 // calendarEvents는 firestore.rules에서 클라이언트 write를 전부 막아뒀으므로, 수동 등록도
 // DART/청약홈 자동 수집과 동일하게 Admin SDK를 쓰는 이 함수를 거쳐야 한다.
 // 별도 관리자 계정 체계가 없어 SEND_PUSH_SECRET을 그대로 재사용한다(같은 사람이 관리하는 값이라 자연스러움).
-exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "POST 요청만 지원합니다." });
-    return;
-  }
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.upsertCalendarEvent = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "upsertCalendarEvent", methods: ["POST","PUT"] });
+  if (!adminWho) return;
 
-  const {
-    id, date, category, type, title, meta, status, flag, link, details,
-    importanceOverride, descriptionOverride, hidden
-  } = req.body || {};
-  if (!date || !category || !title) {
-    res.status(400).json({ error: "date, category, title은 필수입니다." });
+  const checkedEvent = validateCalendarEvent(req.body, req.method === "PUT");
+  if (checkedEvent.error) {
+    res.status(400).json({ error: checkedEvent.error });
     return;
   }
-  const IMPORTANCE_VALUES = ["매우중요", "중요", "일반"];
+  const { id, date, category, type, title, meta, status, flag, link, details, importanceOverride, descriptionOverride, hidden } = checkedEvent.value;
+  if (req.method === "POST" && id) {
+    res.status(400).json({ error: "새 일정 등록에는 id를 보낼 수 없습니다. 수정은 PUT을 사용하세요." });
+    return;
+  }
 
   const docData = {
     date,
     category,
-    type: type || "",
+    type: type,
     title,
-    meta: meta || "",
-    status: status || null,
-    flag: flag || "kr",
-    link: link || "",
-    details: details && typeof details === "object" ? details : null,
+    meta: meta,
+    status: status,
+    flag: flag,
+    link: link,
+    details: details,
     source: "admin",
     isAutomatic: false,
     needsReview: false,
@@ -1146,9 +1144,9 @@ exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
   // 관리자 전용 필드 — 이 엔드포인트는 관리자 화면에서만 호출되고 자동 수집 파이프라인
   // (dart/dart-ipo/cheongyakhome/gov24, upsertCalendarEvents 복수형 함수)은 절대 호출하지 않으므로,
   // 매번 그대로 덮어써도 다음 자동 동기화 때 사라지지 않는다 — 빈 값을 보내면 override를 해제(null)한다.
-  docData.importanceOverride = IMPORTANCE_VALUES.indexOf(importanceOverride) > -1 ? importanceOverride : null;
-  docData.descriptionOverride = descriptionOverride ? String(descriptionOverride).slice(0, 200) : null;
-  docData.hidden = !!hidden;
+  docData.importanceOverride = importanceOverride;
+  docData.descriptionOverride = descriptionOverride;
+  docData.hidden = hidden;
 
   try {
     if (id) {
@@ -1164,20 +1162,15 @@ exports.upsertCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
   }
 });
 
-exports.deleteCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "POST 요청만 지원합니다." });
+exports.deleteCalendarEvent = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "deleteCalendarEvent", methods: ["DELETE"] });
+  if (!adminWho) return;
+  const checkedId = validateDeleteId((req.body && req.body.id) || req.query.id);
+  if (checkedId.error) {
+    res.status(400).json({ error: checkedId.error });
     return;
   }
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
-  const { id } = req.body || {};
-  if (!id) {
-    res.status(400).json({ error: "id가 필요합니다." });
-    return;
-  }
+  const id = checkedId.value;
   try {
     await db.collection("calendarEvents").doc(id).delete();
     res.status(200).json({ ok: true });
@@ -1191,11 +1184,9 @@ exports.deleteCalendarEvent = onRequest({ cors: true, region: "asia-northeast3" 
 // taxConsultLeads는 연락처 등 개인정보라 firestore.rules에서 클라이언트 read를 전면 차단해뒀다
 // (본인조차 다시 못 봄). 그래서 조회는 Admin SDK로 규칙을 우회하는 이 함수를 통해서만 가능하고,
 // 다른 관리자 함수와 동일하게 SEND_PUSH_SECRET을 아는 사람만 호출할 수 있다.
-exports.getTaxConsultLeads = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.getTaxConsultLeads = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "getTaxConsultLeads", methods: ["GET"] });
+  if (!adminWho) return;
   try {
     const snapshot = await db.collection("taxConsultLeads").orderBy("createdAt", "desc").limit(200).get();
     const leads = snapshot.docs.map((doc) => {
@@ -1361,11 +1352,9 @@ async function mapWithConcurrency(items, limit, fn) {
   return results;
 }
 
-exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 540 }, async (req, res) => {
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.syncGov24Subsidies = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3", timeoutSeconds: 540 }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "syncGov24Subsidies", methods: ["POST"] });
+  if (!adminWho) return;
   if (!GOV24_API_KEY) {
     res.status(500).json({ error: "GOV24 API 키(EXPO_PUBLIC_GOV24_API_KEY)가 설정되지 않았습니다." });
     return;
@@ -1486,11 +1475,9 @@ exports.syncGov24Subsidies = onRequest({ cors: true, region: "asia-northeast3", 
 //    (헬퍼가 supportPrograms·calendarEvents 등 보호 컬렉션 이름을 코드 수준에서 거부한다).
 // 상세·지원조건 조회가 실패하면 해당 필드를 빈 값으로 덮어쓰지 않고 생략한다. 로직은 helpers/gov24Eligibility.js 참고.
 const gov24Staging = require("./helpers/gov24Eligibility");
-exports.syncGov24SubsidiesStaging = onRequest({ cors: true, region: "asia-northeast3", timeoutSeconds: 300, memory: "512MiB" }, async (req, res) => {
-  if (!SEND_PUSH_SECRET || req.query.secret !== SEND_PUSH_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.syncGov24SubsidiesStaging = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3", timeoutSeconds: 300, memory: "512MiB" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "syncGov24SubsidiesStaging", methods: ["POST"] });
+  if (!adminWho) return;
   if (!GOV24_API_KEY) {
     res.status(500).json({ error: "GOV24 API 키가 설정되지 않았습니다." });
     return;
@@ -1873,11 +1860,9 @@ exports.syncEconomicIndicators = onSchedule(
 
 // 수동 실행용(키 발급 직후 즉시 검증하고 싶을 때) — 캘린더와 동일한 비밀값을 재사용한다
 // (둘 다 "금융 데이터 동기화"라는 같은 성격의 관리자 작업이라 시크릿을 따로 늘리지 않았다).
-exports.syncEconomicIndicatorsManual = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (!CALENDAR_SYNC_SECRET || req.query.secret !== CALENDAR_SYNC_SECRET) {
-    res.status(403).json({ error: "권한이 없습니다." });
-    return;
-  }
+exports.syncEconomicIndicatorsManual = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "syncEconomicIndicatorsManual", methods: ["POST"] });
+  if (!adminWho) return;
   try {
     const result = await syncEconomicIndicators();
     res.status(200).json(result);
@@ -1887,26 +1872,70 @@ exports.syncEconomicIndicatorsManual = onRequest({ cors: true, region: "asia-nor
   }
 });
 
+// ---------- 관리자 대시보드 조회 (일정 목록·검수 목록·동기화 로그·경제지표) ----------
+function adminIso(v) { return v && v.toDate ? v.toDate().toISOString() : null; }
+function adminText(v, max) { return typeof v === "string" ? v.slice(0, max) : ""; }
+exports.adminData = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "adminData", methods: ["GET"] });
+  if (!adminWho) return;
+  const kind = String(req.query.kind || "");
+  try {
+    if (kind === "calendar" || kind === "needsReview") {
+      const q = kind === "calendar"
+        ? db.collection("calendarEvents").orderBy("date", "desc").limit(30)
+        : db.collection("calendarEvents").where("needsReview", "==", true).limit(30);
+      const snap = await q.get();
+      res.status(200).json({ items: snap.docs.map((d) => {
+        const e = d.data();
+        return { id: d.id, category: adminText(e.category, 20), title: adminText(e.title, 120), date: adminText(e.date, 10), source: adminText(e.source, 40), sourceUrl: adminText(e.sourceUrl, 500) };
+      }) });
+      return;
+    }
+    if (kind === "calendarEvent") {
+      const checked = validateDeleteId(String(req.query.id || ""));
+      if (checked.error) { res.status(400).json({ error: checked.error }); return; }
+      const doc = await db.collection("calendarEvents").doc(checked.value).get();
+      if (!doc.exists) { res.status(404).json({ error: "일정을 찾을 수 없습니다." }); return; }
+      const e = doc.data();
+      res.status(200).json({ item: {
+        id: doc.id, date: adminText(e.date, 10), category: adminText(e.category, 20), title: adminText(e.title, 120), meta: adminText(e.meta, 120),
+        status: e.status || "", flag: e.flag || "kr", link: adminText(e.link || e.sourceUrl, 500),
+        details: e.details && typeof e.details === "object" ? e.details : null,
+        importanceOverride: e.importanceOverride || "", descriptionOverride: adminText(e.descriptionOverride, 200), hidden: !!e.hidden
+      } });
+      return;
+    }
+    if (kind === "syncLogs") {
+      const snap = await db.collection("syncLogs").orderBy("ranAt", "desc").limit(20).get();
+      res.status(200).json({ items: snap.docs.map((d) => {
+        const l = d.data();
+        return { job: adminText(l.job, 60), ranAt: adminIso(l.ranAt), error: adminText(l.error, 300), result: l.result ? JSON.stringify(l.result).slice(0, 400) : "" };
+      }) });
+      return;
+    }
+    if (kind === "indicators") {
+      const snap = await db.collection("economicIndicators").get();
+      res.status(200).json({ items: snap.docs.map((d) => {
+        const i = d.data();
+        return { id: d.id, label: adminText(i.label, 60), value: i.value === undefined ? "" : String(i.value).slice(0, 40), unit: adminText(i.unit, 20), period: adminText(i.period, 20), collectedAt: adminIso(i.collectedAt) };
+      }) });
+      return;
+    }
+    res.status(400).json({ error: "kind 값이 올바르지 않습니다." });
+  } catch (error) {
+    console.error("관리자 조회 실패:", error.code || error.name);
+    res.status(500).json({ error: "조회 중 오류가 발생했습니다." });
+  }
+});
+
 // ---------- 자산 라운지 관리자 조치 (삭제·신고 해제·차단) ----------
 // 기존 관리자 엔드포인트와 같은 비밀값(SEND_PUSH_SECRET)으로 보호하되, 로그에 남는 쿼리스트링 대신
 // x-admin-secret 헤더로 받고 상수 시간 비교를 쓴다. 실제 조치는 Admin SDK로 실행되어 클라이언트가 규칙을 우회할 여지가 없다.
 const { moderate: moderateLoungeAction } = require("./helpers/loungeModeration");
 
-function secretsMatch(provided, expected) {
-  const a = crypto.createHash("sha256").update(String(provided || "")).digest();
-  const b = crypto.createHash("sha256").update(String(expected || "")).digest();
-  return crypto.timingSafeEqual(a, b);
-}
-
-exports.moderateLounge = onRequest({ cors: true, region: "asia-northeast3" }, async (req, res) => {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "POST 요청만 지원합니다." });
-    return;
-  }
-  if (!SEND_PUSH_SECRET || !secretsMatch(req.get("x-admin-secret"), SEND_PUSH_SECRET)) {
-    res.status(401).json({ error: "인증에 실패했습니다." });
-    return;
-  }
+exports.moderateLounge = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
+  const adminWho = await adminGate(req, res, { endpoint: "moderateLounge", methods: ["POST"] });
+  if (!adminWho) return;
   try {
     const out = await moderateLoungeAction(db, admin.firestore.FieldValue, req.body);
     res.status(out.status).json(out.json);
