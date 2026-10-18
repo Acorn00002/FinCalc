@@ -2129,7 +2129,7 @@ document.addEventListener('DOMContentLoaded', () => {
 (function () {
     // 2026년 기준(국민연금 요율은 2026년부터 매년 0.5%p씩 8년간 단계 인상되는 연금개혁 첫해 적용분,
     // 기준소득월액 상하한액은 2026-07-01 조정분, 건강보험·장기요양은 2026-01-01 고시분) — 보건복지부
-    // 2026-11-04 보도자료("2026년도 장기요양보험료율 0.9448%") 및 국민연금공단 2026년도 기준소득월액
+    // 2025-11-04 보도자료("2026년도 장기요양보험료율 0.9448%", 건강보험료 대비 13.14%) 및 국민연금공단 2026년도 기준소득월액
     // 상·하한액 조정 안내로 확인.
     var NATIONAL_PENSION_RATE = 0.0475;
     var NATIONAL_PENSION_FLOOR = 410000;
@@ -2172,15 +2172,16 @@ document.addEventListener('DOMContentLoaded', () => {
         var cap;
         if (gross <= 33000000) cap = 740000;
         else if (gross <= 70000000) cap = Math.max(660000, 740000 - (gross - 33000000) * 0.008);
-        else cap = Math.max(500000, 660000 - (gross - 70000000) * 0.5);
+        else if (gross <= 120000000) cap = Math.max(500000, 660000 - (gross - 70000000) * 0.5);
+        else cap = Math.max(200000, 500000 - (gross - 120000000) * 0.5);
         return Math.min(credit, cap);
     }
 
     function getChildTaxCredit(childCount) {
         if (childCount <= 0) return 0;
-        if (childCount === 1) return 150000;
-        if (childCount === 2) return 350000;
-        return 350000 + (childCount - 2) * 300000;
+        if (childCount === 1) return 250000;
+        if (childCount === 2) return 550000;
+        return 550000 + (childCount - 2) * 400000;
     }
 
     function renderSalaryResult(data) {

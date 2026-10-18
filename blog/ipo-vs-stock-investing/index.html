@@ -11,12 +11,12 @@
   gtag('js', new Date());
   gtag('config', 'G-HWY33CNTB1');
 </script>
-<title>공모주 청약, 자금 회전율까지 계산하면 생각보다 수익률이 낮은 이유</title>
-<meta name="description" content="공모주는 안전하다는 인식과 달리, 증거금이 묶이는 기간의 기회비용까지 계산하면 실제 수익률은 낮아질 수 있습니다. 일반 주식투자와의 차이를 비교했습니다.">
+<title>공모주 청약 수익률 계산 — 증거금 대비로 보면 얼마일까 (균등배정 예시)</title>
+<meta name="description" content="공모가 20,000원·균등배정 5주 가정으로 상장일 수익과 증거금 기회비용을 계산했습니다. 상장일 +60%·0%·-20% 시나리오별 증거금 대비 수익률과 일반 주식투자와의 차이를 정리했습니다.">
 <link rel="canonical" href="https://www.gofincalc.com/blog/ipo-vs-stock-investing/">
 <meta property="og:type" content="article">
-<meta property="og:title" content="공모주 청약, 자금 회전율까지 계산하면 생각보다 수익률이 낮은 이유">
-<meta property="og:description" content="증거금이 묶이는 기간의 기회비용까지 계산하면 실제 수익률은 낮아질 수 있습니다. 일반 주식투자와의 차이를 비교했습니다.">
+<meta property="og:title" content="공모주 청약 수익률 계산 — 증거금 대비로 보면 얼마일까 (균등배정 예시)">
+<meta property="og:description" content="균등배정 예시로 증거금 대비 수익률과 기회비용을 계산하고 일반 주식투자와 비교했습니다.">
 <meta property="og:url" content="https://www.gofincalc.com/blog/ipo-vs-stock-investing/">
 <meta property="og:site_name" content="자산 파일럿">
 <link rel="icon" href="/icons/icon-192.png" type="image/png">
@@ -30,7 +30,7 @@ try {
 } catch (e) {}
 </script>
 <link rel="stylesheet" href="/css/content.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "공모주 청약, 자금 회전율까지 계산하면 생각보다 수익률이 낮은 이유", "item": "https://www.gofincalc.com/blog/ipo-vs-stock-investing/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "공모주에 당첨되면 무조건 수익이 나나요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 아니요, 상장 이후 주가는 시장 상황과 기업 실적에 따라 공모가보다 낮아질 수도 있어요. 배정받았다고 해서 반드시 수익을 보장받는 것은 아닙니다."}}, {"@type": "Question", "name": "공모주 투자에 세금이 따로 붙나요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 매도 시점에는 일반 주식과 동일하게 증권거래세가 부과되고, 배당을 받는다면 배당소득세도 동일하게 적용됩니다."}}, {"@type": "Question", "name": "공모주만 골라서 투자하는 전략도 괜찮을까요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 공모주 투자만으로 포트폴리오를 구성하면 청약 물량과 일정에 따라 자금 운용이 불규칙해질 수 있어요. 기존 상장 종목과 함께 균형 있게 배분하는 것을 권장합니다."}}]}</script></head>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "홈", "item": "https://www.gofincalc.com/"}, {"@type": "ListItem", "position": 2, "name": "블로그", "item": "https://www.gofincalc.com/blog/"}, {"@type": "ListItem", "position": 3, "name": "공모주 청약 수익률 계산 — 증거금 대비로 보면 얼마일까 (균등배정 예시)", "item": "https://www.gofincalc.com/blog/ipo-vs-stock-investing/"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "공모주에 당첨되면 무조건 수익이 나나요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 아니요, 상장 이후 주가는 시장 상황과 기업 실적에 따라 공모가보다 낮아질 수도 있어요. 배정받았다고 해서 반드시 수익을 보장받는 것은 아닙니다."}}, {"@type": "Question", "name": "공모주 투자에 세금이 따로 붙나요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 매도 시점에는 일반 주식과 동일하게 증권거래세가 부과되고, 배당을 받는다면 배당소득세도 동일하게 적용됩니다."}}, {"@type": "Question", "name": "공모주만 골라서 투자하는 전략도 괜찮을까요?", "acceptedAnswer": {"@type": "Answer", "text": "A. 공모주 투자만으로 포트폴리오를 구성하면 청약 물량과 일정에 따라 자금 운용이 불규칙해질 수 있어요. 기존 상장 종목과 함께 균형 있게 배분하는 것을 권장합니다."}}]}</script></head>
 <body>
 
 <header class="cp-header">
@@ -44,7 +44,7 @@ try {
 <main class="cp-wrap">
   <a class="cp-back" href="/blog/">← 블로그 목록</a>
   <p class="cp-eyebrow">공모주</p>
-  <h1 class="cp-title">공모주 청약, 자금 회전율까지 계산하면 생각보다 수익률이 낮은 이유</h1>
+  <h1 class="cp-title">공모주 청약 수익률 계산 — 증거금 대비로 보면 얼마일까 (균등배정 예시)</h1>
   <p class="cp-meta"><span>2026.09.03</span><span>자산 파일럿 편집팀</span></p>
 
   <article class="cp-card cp-article">
@@ -75,6 +75,22 @@ try {
     <h2>세금과 비용 차이</h2>
     <p>공모주 청약은 별도의 청약 수수료가 거의 들지 않는 경우가 많지만, 증거금이 계좌에 묶이는 기간 동안 발생하는 기회비용을 고려해야 해요. 매도 시 발생하는 증권거래세와 배당소득세 등은 일반 주식 매매와 동일하게 적용됩니다. 상장 이후 장기 보유로 전환한다면 세금 측면에서는 일반 주식투자와 큰 차이가 없어요.</p>
 
+    <h2>증거금 대비 수익률을 직접 계산해 보면</h2>
+    <p>제목의 질문에 숫자로 답해 보겠습니다. 가정: 공모가 20,000원, 증거금 1,000만 원을 넣고 균등배정으로 <strong>5주(10만 원어치)</strong>를 배정받음, 증거금이 묶이는 기간 4일, 같은 돈을 연 3% 예금에 뒀다면 얻었을 이자가 기회비용. 공식은 <strong>수익 = 배정수량 × (상장일 가격 − 공모가)</strong>, <strong>기회비용 = 증거금 × 연이율 × 묶인 일수 ÷ 365</strong>이며 이 예시의 기회비용은 약 3,288원입니다.</p>
+    <div class="cp-table-wrap">
+      <table class="cp-table">
+        <thead>
+          <tr><th>상장일 시나리오</th><th>배정분 손익(수수료·세금 제외)</th><th>증거금 대비 수익률</th><th>기회비용 차감 후</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>상장일 시초가 +60% (32,000원)</td><td>+60,000원</td><td>0.60%</td><td>+56,712원</td></tr>
+          <tr><td>공모가와 동일 (20,000원)</td><td>+0원</td><td>0.00%</td><td>+-3,288원</td></tr>
+          <tr><td>시초가 -20% (16,000원)</td><td>-20,000원</td><td>-0.20%</td><td>-23,288원</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>이 예시에서 눈에 띄는 점은 두 가지입니다. 첫째, 시초가가 +60%로 크게 올라도 증거금 1,000만 원 대비 수익률은 0.60%에 그칩니다. 배정 수량이 작아 대부분의 증거금은 환불되기 때문입니다. 둘째, 기회비용(약 3,288원)은 이 정도 수익 앞에서는 작지만, 시초가가 공모가와 같을 때는 수익이 0원이고 기회비용만큼이 마이너스가 됩니다. 즉 공모주의 성패는 <strong>얼마나 배정받느냐와 상장일 가격</strong>이 대부분을 좌우하며, 두 값 모두 청약 전에는 알 수 없습니다. 균등배정 5주, 4일은 설명용 가정이며 경쟁률·증권사 배정 물량에 따라 크게 달라집니다.</p>
+
     <h2>실무에서 자주 놓치는 함정 2가지</h2>
     <div class="cp-callout cp-callout--warn">
       <span class="cp-callout-label">함정 1 — 자금 회전율(기회비용)을 계산에서 빠뜨림</span>
@@ -85,12 +101,13 @@ try {
       <p>공모주는 확정된 가격에 진입한다는 점에서 안정적으로 느껴지지만, 실제로는 상장 이후 주가가 공모가를 밑도는 경우도 적지 않습니다. 특히 시장 전반의 투자심리가 위축된 시기에는 흥행에 실패하는 종목이 늘어나므로, "공모주=안전자산"이라는 인식은 주의가 필요합니다.</p>
     </div>
 
-    <h2>지금 바로 해볼 3단계</h2>
-    <ol>
-      <li><strong>최근 청약했던 종목들의 증거금 납입일부터 환불일까지 자금이 묶인 기간을 정리해봅니다.</strong></li>
-      <li><strong>배정 수량 기준 수익률과, 자금이 묶인 기간의 기회비용을 함께 계산해 실질 수익률을 비교해봅니다.</strong></li>
-      <li><strong>공모주와 기존 상장 종목 투자 비중을 본인의 자금 운용 계획에 맞게 균형 있게 배분합니다.</strong></li>
-    </ol>
+    <h2>청약 전에 확인할 것</h2>
+    <ul class="cp-checklist">
+      <li>청약일부터 환불일까지 며칠 동안 증거금이 묶이는지 증권사 안내에서 확인했나요? (일정은 <a href="/ipo-calendar/">공모주 캘린더</a>에서 확인)</li>
+      <li>균등배정 최소 수량이 몇 주이고, 그 수량이 공모가 기준 얼마인지 계산해 봤나요? 증거금 전체가 아니라 배정액이 수익의 기준입니다.</li>
+      <li>같은 기간 다른 청약이나 투자에 자금을 동시에 쓸 수 있는지, 계좌 자금이 묶여 놓치는 일정이 없는지 점검했나요?</li>
+      <li>기관 의무보유확약 비율, 유통 가능 물량 등 상장일 매도 압력을 가늠할 정보를 투자설명서에서 확인했나요?</li>
+    </ul>
 
     <h2>자주 묻는 질문</h2>
     <div class="cp-faq-item">
