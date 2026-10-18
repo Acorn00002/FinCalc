@@ -6,6 +6,7 @@
 //   (Auth 에뮬레이터를 쓰려면 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 와 GCLOUD_PROJECT 를 지정)
 // - UID는 반드시 사람이 확인한 값을 --uid 로 직접 넘긴다. 이메일 조회(lookup)는 마스킹된 UID만 출력한다.
 // 사용:
+//   (자격 증명이 없으면 명령 끝에 --firebase-cli 를 붙이면 'firebase login' 계정을 사용)
 //   node scripts/admin-claim.js lookup --email you@example.com
 //   node scripts/admin-claim.js grant  --uid <UID> --yes
 //   node scripts/admin-claim.js revoke --uid <UID> --yes
@@ -24,6 +25,14 @@ function parseArgs(argv) {
   }
   return out;
 }
+// 서비스 계정 키가 없을 때: 이 PC 에서 'firebase login' 한 본인 계정의 토큰을 임시로 빌려 쓴다(--firebase-cli).
+function firebaseCliCredential() {
+  const path = require("path"); const { execSync } = require("child_process");
+  const authLib = require(path.join(execSync("npm root -g").toString().trim(), "firebase-tools", "lib", "auth"));
+  const acct = authLib.getGlobalDefaultAccount();
+  if (!acct) throw new Error("firebase login 상태가 아닙니다.");
+  return { getAccessToken: async () => { const t = await authLib.getAccessToken(acct.tokens.refresh_token, []); return { access_token: t.access_token, expires_in: t.expires_in || 3000 }; } };
+}
 function mask(uid) {
   return uid.length <= 8 ? uid[0] + "***" : uid.slice(0, 4) + "…" + uid.slice(-3);
 }
@@ -36,7 +45,9 @@ function maskEmail(e) {
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   const cmd = args._[0];
-  admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT || "asset-filot" });
+  const initOpts = { projectId: process.env.GCLOUD_PROJECT || "asset-filot" };
+  if (args["firebase-cli"] === true) initOpts.credential = firebaseCliCredential();
+  admin.initializeApp(initOpts);
   const auth = admin.auth();
 
   if (cmd === "lookup") {
