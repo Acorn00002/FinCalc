@@ -62,12 +62,6 @@ function anon(kind, value, salt) {
   return kind + ":" + crypto.createHash("sha256").update(String(salt || "") + String(value)).digest("hex").slice(0, 12);
 }
 
-function timingSafeEqualStr(a, b) {
-  const x = crypto.createHash("sha256").update(String(a || "")).digest();
-  const y = crypto.createHash("sha256").update(String(b || "")).digest();
-  return crypto.timingSafeEqual(x, y);
-}
-
 /**
  * @param {object} opts
  * @param {(token:string)=>Promise<object>} opts.verifyIdToken  admin.auth().verifyIdToken 래퍼
@@ -146,19 +140,4 @@ function createAdminGuard(opts) {
   };
 }
 
-/**
- * [전환기 호환 — 마지막 단계에서 제거] 새 관리자 화면 검증이 끝나기 전까지만 구형 공유 비밀값(쿼리 secret / x-admin-secret)도 허용한다.
- */
-function withLegacySecret(guard, secrets, logger) {
-  const list = (secrets || []).filter(Boolean);
-  return async function gate(req, res, cfg) {
-    const provided = (req.query && req.query.secret) || (req.get && req.get("x-admin-secret"));
-    if (provided && list.some((x) => timingSafeEqualStr(provided, x))) {
-      logger.warn("admin_access_legacy_secret", { endpoint: cfg.endpoint });
-      return { uid: "legacy-secret" };
-    }
-    return guard(req, res, cfg);
-  };
-}
-
-module.exports = { withLegacySecret, createAdminGuard, RateLimiter, ADMIN_CORS, ALLOWED_ORIGINS, PREVIEW_ORIGIN_RE, isAllowedOrigin, timingSafeEqualStr, clientIp };
+module.exports = { createAdminGuard, RateLimiter, ADMIN_CORS, ALLOWED_ORIGINS, PREVIEW_ORIGIN_RE, isAllowedOrigin, clientIp };

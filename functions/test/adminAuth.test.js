@@ -1,7 +1,7 @@
 "use strict";
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createAdminGuard, withLegacySecret, isAllowedOrigin, ADMIN_CORS } = require("../helpers/adminAuth");
+const { createAdminGuard, isAllowedOrigin, ADMIN_CORS } = require("../helpers/adminAuth");
 
 const GOOD_TOKEN = "good.token.value-ABC123";
 const USER_TOKEN = "user.token.value-XYZ789";
@@ -148,12 +148,13 @@ test("감사 로그에는 토큰·Authorization·비밀값·원본 UID/IP·본�
   assert.match(logs[0][1].actor, /^(uid|ip):[0-9a-f]{12}$/);
 });
 
-test("[전환기 호환] 구형 비밀값은 허용 목록과 일치할 때만 통과하고, 일치하지 않으면 가드로 넘어간다", async () => {
-  const { guard, logs } = makeEnv();
-  const gate = withLegacySecret(guard, [OLD_SECRET], { warn: (m, d) => logs.push([m, d]) });
-  assert.deepEqual(await gate(mockReq({ query: { secret: OLD_SECRET } }), mockRes(), CFG), { uid: "legacy-secret" });
-  const res = mockRes();
-  assert.equal(await gate(mockReq({ query: { secret: "wrong" } }), res, CFG), null);
-  assert.equal(res.statusCode, 401);
-  assert.ok(!JSON.stringify(logs).includes(OLD_SECRET));
+test("과거 공유 비밀값이 서버 환경에 남아 있어도 가드는 사용하지 않는다(쿼리·헤더 모두 401)", async () => {
+  process.env.SEND_PUSH_SECRET = OLD_SECRET; process.env.CALENDAR_SYNC_SECRET = OLD_SECRET;
+  const { guard } = makeEnv();
+  for (const req of [mockReq({ query: { secret: OLD_SECRET } }), mockReq({ headers: { "x-admin-secret": OLD_SECRET } })]) {
+    const res = mockRes();
+    assert.equal(await guard(req, res, CFG), null);
+    assert.equal(res.statusCode, 401);
+  }
+  delete process.env.SEND_PUSH_SECRET; delete process.env.CALENDAR_SYNC_SECRET;
 });

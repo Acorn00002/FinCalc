@@ -9,7 +9,7 @@ const db = admin.firestore();
 
 // ---------- 관리자 인증 ----------
 // 관리자 전용 엔드포인트는 Firebase ID Token(Authorization: Bearer) + custom claim admin:true 로만 호출할 수 있다.
-const { createAdminGuard, withLegacySecret, ADMIN_CORS } = require("./helpers/adminAuth");
+const { createAdminGuard, ADMIN_CORS } = require("./helpers/adminAuth");
 const { validatePush, validateCalendarEvent, validateDeleteId } = require("./helpers/adminValidate");
 const functionsLogger = require("firebase-functions/logger");
 const adminGuard = createAdminGuard({
@@ -17,8 +17,8 @@ const adminGuard = createAdminGuard({
   logger: functionsLogger,
   logSalt: process.env.ADMIN_LOG_SALT || ""
 });
-// [전환기 호환 — 마지막 단계에서 제거] 새 관리자 화면 검증이 끝나기 전까지만 구형 공유 비밀값도 허용한다.
-const adminGate = withLegacySecret(adminGuard, [process.env.SEND_PUSH_SECRET, process.env.CALENDAR_SYNC_SECRET], functionsLogger);
+// 구형 공유 비밀값(?secret=, x-admin-secret)은 더 이상 인증 수단이 아니다 — 관리자 호출은 Firebase ID Token 만 허용한다.
+const adminGate = adminGuard;
 
 // ---------- /api/news ----------
 // 구글 뉴스 카테고리별 RSS — 헤드라인/경제/세계는 고정 topic ID(opaque 값, 실제 200/XML 응답을 확인한 것만 사용),
@@ -993,8 +993,7 @@ exports.syncFinancialCalendar = onSchedule(
 );
 
 // 수동 실행용 — API 키를 새로 넣은 뒤 새벽 2시까지 기다리지 않고 바로 테스트하고 싶을 때 사용.
-// ?secret=CALENDAR_SYNC_SECRET 쿼리 파라미터로 보호한다 (공개 엔드포인트를 무단으로 반복 호출하면
-// DART/공공데이터포털의 일일 호출 한도를 낭비할 수 있어 반드시 비밀값 없이는 실행되지 않게 막아둠).
+// 관리자(Firebase ID Token + admin claim)만 호출할 수 있다 — 무단 반복 호출은 DART/공공데이터포털 일일 호출 한도를 낭비하므로 인증 없이는 실행되지 않는다.
 exports.syncFinancialCalendarManual = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3", timeoutSeconds: 300 }, async (req, res) => {
   const adminWho = await adminGate(req, res, { endpoint: "syncFinancialCalendarManual", methods: ["POST"] });
   if (!adminWho) return;
@@ -1008,8 +1007,7 @@ exports.syncFinancialCalendarManual = onRequest({ cors: ADMIN_CORS, region: "asi
 });
 
 // ---------- 푸시 알림 발송 ----------
-// 이 앱은 별도 관리자 계정 체계가 없어(1인 개발), CALENDAR_SYNC_SECRET과 동일한 방식으로
-// 공유 비밀값 하나로 발송 권한을 제한한다. 값을 아는 사람만 /api/send-push를 호출할 수 있다.
+// 발송 권한은 Firebase 관리자 인증(admin claim)으로만 허용한다.
 
 // notifications 문서 하나를 실제 FCM 푸시로 fcmTokens에 등록된 모든 기기에 발송한다.
 // 만료/삭제된 토큰은 발송 응답에서 걸러내 fcmTokens에서 함께 정리한다(무효 토큰이 계속 쌓이는 것 방지).
@@ -1110,7 +1108,7 @@ exports.dispatchScheduledPushes = onSchedule(
 // ---------- 금융 캘린더 관리자 CRUD (정부지원금 / 부동산청약 / 공모주 등) ----------
 // calendarEvents는 firestore.rules에서 클라이언트 write를 전부 막아뒀으므로, 수동 등록도
 // DART/청약홈 자동 수집과 동일하게 Admin SDK를 쓰는 이 함수를 거쳐야 한다.
-// 별도 관리자 계정 체계가 없어 SEND_PUSH_SECRET을 그대로 재사용한다(같은 사람이 관리하는 값이라 자연스러움).
+// 관리자 인증(Firebase ID Token + admin claim)으로 보호한다.
 exports.upsertCalendarEvent = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
   const adminWho = await adminGate(req, res, { endpoint: "upsertCalendarEvent", methods: ["POST","PUT"] });
   if (!adminWho) return;
@@ -1183,7 +1181,7 @@ exports.deleteCalendarEvent = onRequest({ cors: ADMIN_CORS, region: "asia-northe
 // ---------- 세무사 1:1 절세 상담 신청 목록 조회 ----------
 // taxConsultLeads는 연락처 등 개인정보라 firestore.rules에서 클라이언트 read를 전면 차단해뒀다
 // (본인조차 다시 못 봄). 그래서 조회는 Admin SDK로 규칙을 우회하는 이 함수를 통해서만 가능하고,
-// 다른 관리자 함수와 동일하게 SEND_PUSH_SECRET을 아는 사람만 호출할 수 있다.
+// 다른 관리자 함수와 동일하게 관리자 인증(admin claim)이 있는 사람만 호출할 수 있다.
 exports.getTaxConsultLeads = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {
   const adminWho = await adminGate(req, res, { endpoint: "getTaxConsultLeads", methods: ["GET"] });
   if (!adminWho) return;
@@ -1929,8 +1927,7 @@ exports.adminData = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, a
 });
 
 // ---------- 자산 라운지 관리자 조치 (삭제·신고 해제·차단) ----------
-// 기존 관리자 엔드포인트와 같은 비밀값(SEND_PUSH_SECRET)으로 보호하되, 로그에 남는 쿼리스트링 대신
-// x-admin-secret 헤더로 받고 상수 시간 비교를 쓴다. 실제 조치는 Admin SDK로 실행되어 클라이언트가 규칙을 우회할 여지가 없다.
+// 다른 관리자 엔드포인트와 동일하게 Firebase 관리자 인증으로 보호한다. 실제 조치는 Admin SDK로 실행되어 클라이언트가 규칙을 우회할 여지가 없다.
 const { moderate: moderateLoungeAction } = require("./helpers/loungeModeration");
 
 exports.moderateLounge = onRequest({ cors: ADMIN_CORS, region: "asia-northeast3" }, async (req, res) => {

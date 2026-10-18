@@ -12,7 +12,7 @@
 - **스케줄링** — Vercel Cron이 아니라 **Firebase Scheduled Functions**(`onSchedule`)가 이미 이 역할을 하고 있다.
   예: `syncFinancialCalendar`(매일 새벽 2시), `syncIpoScheduleCache`(20분마다).
 - **보안** — Firestore Security Rules로 `allow read: if true; allow write: if false;`(Admin SDK만 서버에서 쓰기),
-  민감한 수동 트리거는 `CALENDAR_SYNC_SECRET`/`SEND_PUSH_SECRET` 쿼리 파라미터로 보호.
+  민감한 수동 트리거는 Firebase 관리자 인증으로 보호. 관리자 호출은 Firebase ID Token(Authorization: Bearer) + admin custom claim만 허용한다(구형 공유 비밀값은 폐기됨). claim 부여는 functions/scripts/admin-claim.js 참고.
 - **관리자 화면** — `#admin-calendar`(로그인 불필요, 비밀값으로 보호)에서 캘린더 일정 CRUD 가능.
 - **프론트엔드 반영** — `index.html`이 하드코딩된 `MANUAL_CALENDAR_EVENTS`(수동 폴백)와 Firestore
   `calendarEvents`를 합쳐서(`concat`) 렌더링 — 자동화가 실패해도 수동 데이터가 사라지지 않는 구조가 이미 있었다.
@@ -47,7 +47,7 @@
 - **한국은행 ECOS 경제지표 동기화(신규)**: 기준금리(`722Y001`/`0101000`), 소비자물가지수(`901Y009`/`0`),
   원/달러 환율(`731Y001`/`0000001`) 3종을 `economicIndicators` 컬렉션(문서 ID = 지표 key)에 스냅샷 저장.
   - 매일 오전 9시(KST) 자동 실행: `exports.syncEconomicIndicators` (`onSchedule`)
-  - 수동 실행(키 발급 직후 검증용): `exports.syncEconomicIndicatorsManual` (`?secret=CALENDAR_SYNC_SECRET`)
+  - 수동 실행(키 발급 직후 검증용): `exports.syncEconomicIndicatorsManual` (관리자 인증 필요, POST)
   - **주의**: ECOS는 "통계값"만 제공하고 "다음 발표일"은 알려주지 않는다. 발표 예정일을 추측해서 캘린더
     이벤트로 만들지 않기로 했다 — 대신 "가장 최근 관측치" 스냅샷만 저장하고, 관리자 화면에서 확인 가능하게 했다.
 - **관리자 화면 확장**: `#admin-calendar`에 동기화 로그 최근 20건, 경제지표 스냅샷을 읽기 전용으로 보여주는
@@ -68,7 +68,7 @@
    `.env` 파일을 그대로 배포에 사용하는 방식이므로, 배포 서버(로컬에서 `firebase deploy --only functions` 실행하는
    머신)의 `functions/.env`에 값이 들어 있어야 한다.
 4. 키를 넣은 뒤, 브라우저에서 아래 수동 트리거로 실제 응답을 한 번 확인할 것을 권장한다(라이브 검증 안 된 코드이므로):
-   `https://<functions-domain>/syncEconomicIndicatorsManual?secret=<CALENDAR_SYNC_SECRET 값>`
+   `/admin/` 화면의 "경제지표 동기화" 버튼(관리자 로그인 필요)
 5. `#admin-calendar` 화면에서 "경제지표 스냅샷" 섹션에 값이 뜨는지 확인.
 
 ## 6. 환경변수 목록 (이번 작업 관련)
@@ -76,7 +76,7 @@
 | 변수 | 위치 | 상태 |
 |---|---|---|
 | `ECOS_API_KEY` | `functions/.env` | 비어 있음 — 사용자가 발급 후 채워야 함 |
-| `CALENDAR_SYNC_SECRET` | `functions/.env` | 기존 값 재사용(ECOS 수동 트리거도 동일 비밀값 사용) |
+| (폐기) `CALENDAR_SYNC_SECRET` | - | 관리자 인증 전환으로 더 이상 사용하지 않음 |
 
 새 시크릿을 추가로 만들지 않고 기존 `CALENDAR_SYNC_SECRET`을 재사용했다 — 캘린더 동기화와 경제지표 동기화는
 성격이 같은 "관리자 전용 수동 동기화" 작업이라 시크릿을 분리할 이유가 없었다.

@@ -80,7 +80,7 @@
 - **Firestore 쓰기 권한**: `userAssets/{uid}`는 `request.auth.uid == userId`로 본인만 쓰기 가능하고,
   필드 이름·타입·음수 여부까지 서버(Security Rules)에서 검증한다. `calendarEvents`/`supportPrograms`
   등 자동 수집 컬렉션은 클라이언트 쓰기 자체가 전면 차단(`allow write: if false`)돼 있고 Admin SDK로만
-  쓸 수 있다. 관리자 전용 엔드포인트는 전부 `SEND_PUSH_SECRET`/`CALENDAR_SYNC_SECRET` 비밀값으로 보호됨.
+  쓸 수 있다. 관리자 전용 엔드포인트는 전부 Firebase ID Token + admin claim으로 보호됨(공유 비밀값 폐기).
 - **AI 자산 업데이트 제안**: 코드 검색으로 재확인 — `assetUpdateProposal`은 백엔드에서 **HTTP 응답으로만**
   반환되고, 실제 Firestore 쓰기(`saveUserAssetFields`)는 오직 "저장하기" 버튼 클릭 핸들러 안에서만
   호출된다. AI가 직접 쓰는 경로는 존재하지 않는다.
