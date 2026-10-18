@@ -1,6 +1,26 @@
 {
   "redirects": [
     {
+      "source": "/blog/subscription-score-by-tier-strategy",
+      "destination": "https://www.gofincalc.com/blog/housing-subscription-score-guide/",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/subscription-score-by-tier-strategy/",
+      "destination": "https://www.gofincalc.com/blog/housing-subscription-score-guide/",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/newlywed-first-home-special-supply-guide",
+      "destination": "https://www.gofincalc.com/blog/special-supply-guide/",
+      "statusCode": 301
+    },
+    {
+      "source": "/blog/newlywed-first-home-special-supply-guide/",
+      "destination": "https://www.gofincalc.com/blog/special-supply-guide/",
+      "statusCode": 301
+    },
+    {
       "source": "/taxpilot/salary.html",
       "destination": "https://www.gofincalc.com/calculators/salary/",
       "statusCode": 301
@@ -8,7 +28,10 @@
     {
       "source": "/:path*",
       "has": [
-        { "type": "host", "value": "gofincalc.com" }
+        {
+          "type": "host",
+          "value": "gofincalc.com"
+        }
       ],
       "destination": "https://www.gofincalc.com/:path*",
       "statusCode": 301
