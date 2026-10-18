@@ -343,12 +343,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.gofincalc.com/news/</loc>
-    <lastmod>2026-09-18</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
     <loc>https://www.gofincalc.com/lounge/</loc>
     <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
